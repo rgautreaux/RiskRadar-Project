@@ -234,6 +234,61 @@ Time ─────────────────────────
 +------------------+
 ```
 
+## MariaDB (MySQL) Schema Breakdown
+
+RiskRadar supports MariaDB/MySQL in addition to SQLite. For scraper ingestion, the operational tables are:
+
+- `alerts` — one row per normalized alert from any source
+  - Primary key: `id`
+  - Dedup key: `UNIQUE(source, source_id)`
+  - Core fields: `source`, `source_id`, `alert_type`, `severity`, `title`, `description`
+  - Geo/time fields: `latitude`, `longitude`, `location_name`, `event_start`, `event_end`
+  - Metadata: `raw_data`, `fetched_at`, `created_at`, `updated_at`
+
+- `scrape_log` — one row per scraper run
+  - Primary key: `id`
+  - Run tracking: `source`, `status`, `alerts_fetched`, `alerts_new`, `duration_ms`
+  - Diagnostics: `error_message`, `started_at`, `completed_at`
+
+- `summaries` — generated digest records from LLM output
+  - Primary key: `id`
+  - Core fields: `title`, `content`, `summary_type`, `alert_ids`, `region`
+  - Metadata: `generated_at`, `model_used`, `token_count`, `created_at`
+
+- `users` — profile + alert preference records
+  - Primary key: `id`
+  - Identity/preference fields: `email` (unique), `display_name`, `zip_code`, `alert_types`, `notify_severity`
+  - Device/location fields: `device_token`, `latitude`, `longitude`
+  - Metadata: `created_at`, `updated_at`
+
+MariaDB migration used for scraper compatibility:
+
+- `backend/db/migrations/2026-03-03_mariadb_scraper_alignment.sql`
+
+Set DB runtime connection in `.env`:
+
+```env
+DATABASE_URL=mysql+pymysql://riskradar_user:your_password@127.0.0.1:3306/riskradar_db
+```
+
+---
+
+## Database-Scraper Connection
+
+Scrapers and database persistence are connected through `BaseScraper.run()`:
+
+1. `fetch_raw_data()` pulls source data (NWS, EPA, FIRMS, AirNow, Generic API, or Web source).
+2. `normalize()` maps each raw record into the `alerts` table shape.
+3. Dedup checks `alerts` by `(source, source_id)`.
+4. New alerts are inserted; duplicates are skipped.
+5. Each run writes a `scrape_log` row with fetched/new counts, duration, and status.
+
+This means database troubleshooting should focus on:
+
+- schema compatibility with `alerts` and `scrape_log`
+- valid `DATABASE_URL`
+- scraper-specific external API response shape
+
 ---
 
 ## API Endpoints
@@ -471,6 +526,100 @@ python -m pytest tests/test_scrapers.py::TestAqiToSeverity -v
 ```
 
 Tests use an in-memory SQLite database and mock all external calls. No API keys needed.
+
+### Troubleshooting DB-Scraper
+
+Use this exact command from the project root to run the dedicated scraper/database integration tests:
+
+```bash
+cd backend
+python -m pytest tests/test_scraper_db_integration.py -v --tb=short
+```
+
+What common failures usually mean:
+
+- `OperationalError` / connection refused
+  - `DATABASE_URL` is incorrect or MariaDB is not running.
+
+- `ModuleNotFoundError: pymysql`
+  - MariaDB driver is missing in environment; install backend requirements.
+
+- assertion failures on alert counts
+  - Dedup key conflict or schema mismatch (`alerts` not aligned with model fields).
+
+- failures writing `scrape_log`
+  - `scrape_log` columns/constraints do not match expected schema.
+
+- failures in live scrape script but test passes
+  - external API/auth/network issue (integration test mocks external HTTP).
+
+
+# MariaDB Migration Notes
+
+Use `2026-03-03_mariadb_scraper_alignment.sql` to align an existing MariaDB schema with the backend ORM models used by scrapers.
+
+**What it fixes:**
+
+- `alerts` shape and nullability to match `db.models.Alert`
+- `scrape_log` shape to match `db.models.ScrapeLog`
+- `summaries.reigon` typo to `summaries.region`
+- `users` shape to match `db.models.User`
+- Removes constraints/indexes that block recurring scraper inserts
+
+## Apply MariaDB Migrations
+
+```sql
+SOURCE backend/db/migrations/2026-03-03_mariadb_scraper_alignment.sql;
+```
+
+## Runtime configuration for MariaDB Migrations
+
+Set `DATABASE_URL` in `.env` to run backend against MariaDB.
+
+Example:
+
+```env
+DATABASE_URL=mysql+pymysql://riskradar_user:your_password@127.0.0.1:3306/riskradar_db
+```
+
+If `DATABASE_URL` is not set, backend continues using local SQLite (`DB_PATH`).
+
+---
+
+### MariaDB Quick Verify
+
+After running a scraper or the integration test, use these SQL checks:
+
+```sql
+-- 1) Confirm database and table access
+SELECT DATABASE() AS active_db;
+SHOW TABLES LIKE 'alerts';
+SHOW TABLES LIKE 'scrape_log';
+
+-- 2) Check latest scrape runs
+SELECT id, source, status, alerts_fetched, alerts_new, duration_ms, completed_at
+FROM scrape_log
+ORDER BY id DESC
+LIMIT 10;
+
+-- 3) Check newest alerts inserted
+SELECT id, source, source_id, alert_type, severity, LEFT(title, 120) AS title
+FROM alerts
+ORDER BY id DESC
+LIMIT 10;
+
+-- 4) Verify dedup key behavior (should return at most 1 row per pair)
+SELECT source, source_id, COUNT(*) AS c
+FROM alerts
+GROUP BY source, source_id
+HAVING COUNT(*) > 1;
+```
+
+Expected results:
+
+- `scrape_log` has new rows for each run with `status='success'` (or `failure` with `error_message`).
+- `alerts` row count increases only for new source records.
+- dedup query returns zero rows.
 
 ---
 
