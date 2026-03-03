@@ -1,8 +1,8 @@
 # GitHub Copilot Session 1  - Git Pull Problem Fix
 
-User: How do I resolve this error so I can pull all the changes made to the main branch?
+**User:** How do I resolve this error so I can pull all the changes made to the main branch?
 
-GitHub Copilot: This error means your local `main` and the remote `main` started from different root commits, so Git won’t merge automatically. I’ll quickly check your repo state and then give you the safest command sequence to pull everything without losing work.
+**GitHub Copilot:** This error means your local `main` and the remote `main` started from different root commits, so Git won’t merge automatically. I’ll quickly check your repo state and then give you the safest command sequence to pull everything without losing work.
 
 Ran terminal command: Get-Location; git status -sb; git remote -v
 
@@ -34,9 +34,9 @@ This keeps a backup branch just in case, then makes `main` exactly match remote.
 
 Given your local commit is mostly IDE files + README.md, the reset approach is usually cleaner. Want me to run the recommended commands for you now?
 
-User: Yes
+**User:** Yes
 
-GitHub Copilot: I’m running the safe sync sequence now: creating a backup branch, fetching remote tags/commits, then hard-resetting local `main` to `origin/main` so pull issues are gone.
+**GitHub Copilot:** I’m running the safe sync sequence now: creating a backup branch, fetching remote tags/commits, then hard-resetting local `main` to `origin/main` so pull issues are gone.
 
 Ran terminal command: git branch backup/local-main-before-sync; git fetch origin --tags; git checkout main; git reset --hard origin/main; git status -sb
 
@@ -59,11 +59,11 @@ Want me to also remove the backup branch later once you confirm everything looks
 
 # GitHub Copilot Session 2  - Database and Scraper Compatibility Attempt 1
 
-User: Will the MySQL Database be able to accept the data collected by the Scraper?  
+**User:** Will the MySQL Database be able to accept the data collected by the Scraper?  
 
 If not, what changes to the database can be made to the database for this to happen?
 
-GitHub Copilot: **Short answer:** *Possibly, but not guaranteed* without checking the scraper output format against your current table schema.
+**GitHub Copilot:** **Short answer:** *Possibly, but not guaranteed* without checking the scraper output format against your current table schema.
 
 To confirm, compare:
 
@@ -113,9 +113,9 @@ ALTER TABLE scraped_items
 
 If you share your **current table DDL** and a **sample scraper JSON record**, I can give an exact yes/no and a precise migration script.
 
-User: These are all the scrapers within the /scrapers directory in addition to the Database MySQL File
+**User:** These are all the scrapers within the /scrapers directory in addition to the Database MySQL File
 
-Workspace: Collecting workspace informationGot it. Your active scraper set is:
+**Workspace:** Collecting workspace informationGot it. Your active scraper set is:
 
 - Base abstraction: `scrapers.base_scraper.BaseScraper` in base_scraper.py
 - Legacy scrapers:
@@ -133,11 +133,11 @@ Workspace: Collecting workspace informationGot it. Your active scraper set is:
 
 Notable mismatch to track: runtime DB is SQLite via `db.database.engine` in database.py, while riskradar_db.sql is MariaDB-oriented. Also, API keys are hardcoded in `scrapers.airnow_scraper.AirNowScraper.fetch_raw_data` and `scrapers.web_scraper.WebScraper.fetch_raw_data`.
 
-User: Will the MySQL Database be able to accept the data collected by the Scraper as outlined by the Project Plan?  
+**User:** Will the MySQL Database be able to accept the data collected by the Scraper as outlined by the Project Plan?  
 
 If not, what changes to the database can be made to the database for this to happen?
 
-Workspace: Collecting workspace informationNo — **not as currently defined** in riskradar_db.sql.
+**Workspace:** Collecting workspace informationNo — **not as currently defined** in riskradar_db.sql.
 
 The scraper pipeline writes rows shaped like `db.models.Alert` and `db.models.ScrapeLog` via `scrapers.base_scraper.BaseScraper.run`.  
 Your MariaDB schema in riskradar_db.sql has required fields those writes do not provide (especially `alerts.article_id`, `alerts.priority`, and several non-null `scrape_log` columns).
@@ -166,9 +166,9 @@ Also, runtime is currently SQLite in `db.database.DATABASE_URL`, not MySQL.
 
 A practical path is to treat `db.models` as source-of-truth and regenerate MariaDB schema from it.
 
-User: Start implementation
+**User:** Start implementation
 
-GitHub Copilot: I’ll start implementing the schema alignment so scraper inserts work end-to-end with MySQL/MariaDB. First I’m reading the current ORM models and SQL dump to generate a precise migration-safe update.
+**GitHub Copilot:** I’ll start implementing the schema alignment so scraper inserts work end-to-end with MySQL/MariaDB. First I’m reading the current ORM models and SQL dump to generate a precise migration-safe update.
 
 Read [](file:///c%3A/Users/rebec/OneDrive/Documents/GitHub/Team6-SeniorProject/backend/db/models.py)
 
@@ -300,9 +300,9 @@ Read [](file:///c%3A/Users/rebec/OneDrive/Documents/GitHub/Team6-SeniorProject/b
 
 Made changes.
 
-User: Apply this migration to the MariaDB Database
+**User:** Apply this migration to the MariaDB Database
 
-GitHub Copilot: I’m going to apply the SQL migration directly against your local MariaDB instance now, then verify the updated table structures for `alerts`, `scrape_log`, `summaries`, and `users`.
+**GitHub Copilot:** I’m going to apply the SQL migration directly against your local MariaDB instance now, then verify the updated table structures for `alerts`, `scrape_log`, `summaries`, and `users`.
 
 Read [](file:///c%3A/Users/rebec/OneDrive/Documents/GitHub/Team6-SeniorProject)
 
@@ -382,9 +382,9 @@ Want me to run a quick scraper smoke test next (one source) to confirm inserts i
 
 Made changes.
 
-User: Yes, run this test to assure that the Scraper and Datbase work cohesively together End-to-End
+**User:** Yes, run this test to assure that the Scraper and Datbase work cohesively together End-to-End
 
-GitHub Copilot: I’ll run a real end-to-end smoke test now: execute a scraper run against MariaDB, then verify new records in `alerts` and `scrape_log` with SQL checks. I’ll first inspect the safest entrypoint script and environment requirements.
+**GitHub Copilot:** I’ll run a real end-to-end smoke test now: execute a scraper run against MariaDB, then verify new records in `alerts` and `scrape_log` with SQL checks. I’ll first inspect the safest entrypoint script and environment requirements.
 
 Read [](file:///c%3A/Users/rebec/OneDrive/Documents/GitHub/Team6-SeniorProject/backend/test_scrape_and_summarize.py)
 
