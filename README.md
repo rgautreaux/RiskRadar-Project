@@ -6,12 +6,12 @@ The project focuses on developing a mobile app called **RiskRadar** to help resi
 
 ---
 
-### Project Purpose
+# Project Purpose
 RiskRadar is designed to help users identify and manage potential environmental conditions and risks they may encounter whilst traveling or their day-to-day activities. The app provides features such as real-time alerts, climate data statistics, and user-friendly 5-Minute Summaries.
 
 ---
 
-### Team Members, Roles, Responsibilities, and Contributions
+# Team Members, Roles, Responsibilities, and Contributions
 
 | Qui                           | Back-end development, Jira                                                                 | (Contributions) |
 
