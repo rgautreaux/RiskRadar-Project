@@ -433,3 +433,42 @@ Ran terminal command: & 'C:\xampp\mysql\bin\mysql.exe' -u root riskradar_db -e "
 - LLM summary generation failed with DeepSeek 402 (insufficient balance), but scraper ingestion and DB persistence were fully validated.
 
 Want me to add an automated pytest integration test that asserts this same DB write path (with network calls mocked) so you can re-run it in CI?
+
+---
+
+
+I’m adding that automated integration coverage now by creating a pytest that runs scrapers through run() with mocked network responses and asserts both alerts and scrape_log writes. I’ll first inspect current test patterns so it matches your existing suite style.
+
+I’ve identified a good fit: a new tests/test_scraper_db_integration.py that mocks external APIs but uses real scraper classes and real ORM writes in one test. I’ll read the scraper implementations now so the mocked payloads match exactly.
+
+I’m now writing a dedicated integration test file that exercises real scraper run() behavior, validates DB writes to alerts and scrape_log, and verifies dedup on a second run—this will make DB↔scraper troubleshooting much faster.
+
+The new integration tests are in place. I’m running that test file now to confirm it passes in your current environment and truly helps troubleshooting.
+
+Push-Location '.\backend'; & '..\.venv\Scripts\python.exe' -m pytest tests/test_scraper_db_integration.py -v --tb=short; Pop-Location
+ Enable shell integration to improve command detection
+
+The failures are from overlapping httpx.get patches (both scrapers share the same httpx module object). I’ll switch to one unified mocked httpx.get handler so NWS and EPA routes both resolve correctly.
+
+I’m making one small follow-up so this is reproducible for teammates: I’ll add pymysql to backend requirements since MySQL/MariaDB connectivity now depends on it.
+
+Implemented. The automated integration coverage is now in the project and passing.
+
+What changed
+
+Added new end-to-end scraper/DB integration tests in test_scraper_db_integration.py.
+Added MySQL driver dependency in requirements.txt.
+What the new tests verify
+
+Real scraper run() flow persists to alerts and scrape_log (with external APIs mocked).
+Sources covered: NWSScraper, EPAScraper, and config-driven GenericAPIScraper (USGS-style config).
+Second run deduplicates alerts while still writing new scrape logs (alerts_new == 0 on rerun).
+Validation run
+
+Command executed: python -m pytest tests/test_scraper_db_integration.py -q (from backend)
+Result: 2 passed
+If you want, I can add a short “Troubleshooting DB-Scraper” section in README.md with the exact command to run this test and what failures usually mean.
+
+GPT-5.3-Codex • 0.9x
+
+---
