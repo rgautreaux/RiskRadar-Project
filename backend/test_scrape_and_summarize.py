@@ -86,7 +86,7 @@ def main():
             if summary:
                 logger.info(f"Summary generated! (model={summary.model_used}, tokens={summary.token_count})")
                 print("--- DAILY DIGEST ---")
-                logger.info(f"Summary content: {summary.content}")
+                print(f"Summary content: {summary.content}")
                 print("--- END ---")
             else:
                 logger.warning("No summary generated (no recent alerts).")

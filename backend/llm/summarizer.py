@@ -35,7 +35,7 @@ class Summarizer:
                     {"role": "system", "content": system},
                     {"role": "user", "content": user},
                 ],
-                max_completion_tokens=10000, # OpenAI's max for gpt-5-mini is 120000 tokens
+                max_completion_tokens=settings.LLM_MAX_TOKENS,
             )
             text = resp.choices[0].message.content
             tokens = resp.usage.total_tokens if resp.usage else 0

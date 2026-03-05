@@ -385,11 +385,19 @@ backend/
 ## Quick Start
 
 ### 1. Install dependencies
-
+**For Mac**:
 ```bash
 cd backend
 python -m venv ../.venv
 source ../.venv/bin/activate
+pip install -r requirements.txt
+```
+
+**For Windows (Powershell)**:
+```bash
+cd backend
+python -m venv ../.venv
+source ../.venv/Scripts/Activate.ps1
 pip install -r requirements.txt
 ```
 
@@ -403,9 +411,9 @@ NASA_FIRMS_MAP_KEY=your_nasa_key
 FIRECRAWL_API_KEY=your_firecrawl_key
 
 # Required for summary generation
-LLM_API_KEY=your_openai_key
-LLM_PROVIDER=openai
-LLM_MODEL=gpt-4o-mini
+LLM_API_KEY=your_llm_key
+LLM_PROVIDER=llm_provider
+LLM_MODEL=llm_model
 ```
 
 ### 3. Run the server
