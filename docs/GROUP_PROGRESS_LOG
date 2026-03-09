@@ -141,3 +141,123 @@ Copy/paste this block for each new work session:
 ```
 
 ## Rebecca Gautreaux Log — 2026-03-09
+
+### Session Focus
+- Design and implement automated data retention cleanup for database scalability and routing efficiency.
+- Add scheduled cleanup execution with archive-first behavior, batched deletes, and monitoring logs.
+- Validate retention behavior and end-to-end backend cohesion with repeatable pytest coverage.
+- Remove non-blocking Pydantic deprecation warnings to keep the codebase forward-compatible.
+
+### Major Developments Completed
+
+#### 1) Retention Configuration Added (Feature Flags + Policy Controls)
+- Updated `backend/config/settings.py` to add retention controls:
+	- `RETENTION_ENABLED`
+	- `RETENTION_DRY_RUN`
+	- `RETENTION_BATCH_SIZE`
+	- `RETENTION_MAX_ROWS_PER_RUN`
+	- `RETENTION_ALERTS_DAYS`
+	- `RETENTION_SUMMARIES_DAYS`
+	- `RETENTION_SCRAPE_LOG_DAYS`
+	- `RETENTION_NIGHTLY_HOUR_UTC`
+	- `RETENTION_WEEKLY_DAY_UTC`
+	- `RETENTION_WEEKLY_HOUR_UTC`
+- Why this was needed:
+	- Enables safe rollout and policy tuning without code changes.
+	- Supports mixed retention windows by table and controlled production activation.
+
+#### 2) Retention Data Model Expansion Implemented
+- Updated `backend/db/models.py` with archive/monitoring tables:
+	- `AlertArchive`
+	- `SummaryArchive`
+	- `ScrapeLogArchive`
+	- `CleanupRun`
+- Why this was needed:
+	- Preserves historical records for audit/reporting before deletion.
+	- Provides run-level observability (rows eligible/archived/deleted, runtime, status, error details, estimated bytes reclaimed).
+
+#### 3) Cleanup Engine Implemented
+- Added `backend/db/retention.py`.
+- Implemented cleanup workflow:
+	- Computes UTC retention cutoffs.
+	- Selects table specs by schedule type (nightly vs weekly).
+	- Archives records first, then deletes in deterministic batches.
+	- Honors dry-run mode and max-rows-per-run safety limits.
+	- Logs each run into `cleanup_runs` and emits structured logger output.
+	- Handles failures per table and records failure metadata.
+- Why this was needed:
+	- Prevents large lock-prone deletes and reduces performance spikes.
+	- Ensures data lifecycle control is measurable and recoverable.
+
+#### 4) Scheduler Integration Added
+- Updated `backend/scrapers/scheduler.py` to register retention jobs when enabled:
+	- `retention_nightly`
+	- `retention_weekly`
+- Jobs use cron scheduling in UTC and integrate with existing APScheduler startup lifecycle.
+- Why this was needed:
+	- Automates recurring cleanup instead of relying on manual execution.
+	- Separates high-churn nightly cleanup from broader weekly retention passes.
+
+#### 5) MariaDB Retention Migration + Indexes Added
+- Added migration: `backend/db/migrations/2026-03-09_mariadb_retention_cleanup.sql`.
+- Migration includes:
+	- Archive tables (`alerts_archive`, `summaries_archive`, `scrape_log_archive`)
+	- Monitoring table (`cleanup_runs`)
+	- Indexes for cleanup/routing performance on date/status-relevant fields.
+- Updated `backend/db/migrations/MIGRATION_NOTES.md` with apply order and retention env var runbook.
+- Why this was needed:
+	- Aligns runtime retention code with MariaDB schema.
+	- Improves query/cleanup efficiency and operational repeatability.
+
+#### 6) Automated Retention Test Coverage Added
+- Added `backend/tests/test_retention.py` with coverage for:
+	- Dry-run behavior (no deletes, logging still recorded).
+	- Archive + batched delete behavior.
+	- Scheduler registration when retention is enabled.
+- Why this was needed:
+	- Ensures retention behavior remains stable during future refactors.
+	- Provides repeatable proof that cleanup safety controls work.
+
+#### 7) Pydantic Warning Remediation Completed
+- Updated deprecated class-based config usage to Pydantic v2 style:
+	- `backend/config/settings.py` -> `SettingsConfigDict`
+	- `backend/schemas/alert.py` -> `ConfigDict(from_attributes=True)`
+	- `backend/schemas/user.py` -> `ConfigDict(from_attributes=True)`
+- Why this was needed:
+	- Eliminates deprecation warnings that would become future breakage risks.
+	- Keeps settings/schema configuration aligned with supported Pydantic patterns.
+
+### Commands / Verification Used
+- Retention + model validation:
+	- `python -m pytest tests/test_retention.py tests/test_models.py -v --tb=short`
+	- Result: `11 passed`
+- DB/API regression validation:
+	- `python -m pytest tests/test_scraper_db_integration.py tests/test_api_alerts.py tests/test_api_summaries.py tests/test_api_users.py -v --tb=short`
+	- Result: `28 passed`
+- Full backend cohesion verification:
+	- `python -m pytest -v --tb=short`
+	- Result: `78 passed`
+
+### Issues / Blockers
+- Initial non-blocking warnings from deprecated Pydantic config style (`class Config`) in settings and schema files.
+- Resolved within the same session by migrating to Pydantic v2 config objects.
+
+### Decisions Made
+- Archive strategy: same-database archive tables.
+- Scheduling strategy: both nightly and weekly jobs.
+- Retention strategy: mixed windows by table (not single window for all tables).
+- Partitioning strategy: phase-1 readiness only (no immediate partition DDL rollout).
+- Safety strategy: dry-run first, max-row caps per run, and backup/restore gate before live delete mode.
+
+### Outcome
+- Automated retention framework is implemented end-to-end in backend code, scheduler wiring, and MariaDB migrations.
+- Monitoring and auditability are built in through `cleanup_runs` and archive tables.
+- Regression and cohesion checks pass across retention, API, scraper, and model paths.
+- Pydantic warning debt from Session 4 is fully resolved.
+
+### Next Steps
+- Apply `2026-03-09_mariadb_retention_cleanup.sql` on MariaDB instance(s).
+- Run first production pass with:
+	- `RETENTION_ENABLED=true`
+	- `RETENTION_DRY_RUN=true`
+- Review `cleanup_runs`, then perform backup/restore validation before enabling real deletes.
