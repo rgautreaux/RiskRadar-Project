@@ -9,6 +9,8 @@
 api_sources:
 
   # USGS Earthquake API — no API key required
+  # Environmental type -> earthquake
+  # Usage -> Monitoring earthquakes worldwide, with location, magnitude, etc.
   - name: "usgs_earthquakes"
     enabled: true
     alert_type: "earthquake"
@@ -76,6 +78,235 @@ api_sources:
   #       - gte: 5.0
   #         value: "critical"
   #       - default: "low"
+
+  # World Bank Open Data API — no API key required
+  # Environmental type -> Environemtal, social, and governance (ESG) indicators
+  # Usage -> Monitoring ESG indicators worldwide, such as CO2 emissions per capita, deforestation rates, etc.
+  - name: "world_bank_esg"
+    enabled: false
+    alert_type: "environmental"
+    url: "https://api.worldbank.org/v2/country/all/indicator/EN.ATM.CO2E.PC?format=json&per_page=32500&mrv=1"
+    method: "GET"
+    interval_minutes: 30
+    request:
+      params: {}
+      headers: {}
+    auth:
+      type: "none"
+    response:
+      format: "json"
+      items_path: "[1]"
+    field_mapping:
+      source_id: "countryiso3code"
+      title: "indicator.value"
+      description: "indicator.id"
+      latitude: null
+      longitude: null
+      location_name: "country.value"
+      event_start: "date"
+      event_end: null
+      raw_data: "__full_item__"
+    severity:
+      type: "threshold"
+      field: "value"
+      thresholds:
+        - gte: 10.0
+          value: "critical"
+        - gte: 5.0
+          value: "high"
+        - gte: 1.0
+          value: "moderate"
+        - default: "low"
+
+    # Our World in Data API — no API key required
+    # Environmental type -> Natural disasters and climate impacts
+    # Usage -> Monitoring natural disasters worldwide, including floods, storms, droughts, etc.
+  - name: "emdat_natural_disasters"
+    enabled: false
+    alert_type: "environmental"
+    url: "https://api.emdat.be/"
+    method: "POST"
+    interval_minutes: 30
+    request:
+      headers:
+        Content-Type: "application/json"
+      body:
+        query: |
+          query natural_disasters {
+            api_version
+            public_emdat(filters: {
+              classif: ["nat-*"]
+              include_hist: false
+            }, cursor: {
+              limit: -1
+            }) {
+              total_available
+              data {
+                disno
+                classif_key
+                location
+                start_year
+                start_month
+                start_day
+                end_year
+                end_month
+                end_day
+                total_deaths
+                total_affected
+                total_dam
+              }
+            }
+          }
+    auth:
+      type: "api_key"
+      header: "Authorization"
+      value: "${EMDAT_API_KEY}"
+    response:
+      format: "json"
+      items_path: "data.public_emdat.data"
+    field_mapping:
+      source_id: "disno"
+      title: "classif_key"
+      description: "location"
+      latitude: null
+      longitude: null
+      location_name: "location"
+      event_start: "start_year"
+      event_end: "end_year"
+      raw_data: "__full_item__"
+    severity:
+      type: "mapping"
+      field: "total_deaths"
+      map:
+        "10000+": "critical"
+        "1000-9999": "high"
+        "100-999": "moderate"
+        "0-99": "low"
+      default: "low"
+
+  # C02 Earth - no API key required
+  # Environmental type -> CO2 levels at Mauna Loa Observatory
+  # Usage -> C02 monitoring
+  - name: "noaa_mauna_loa_co2"
+    enabled: false
+    alert_type: "environmental"
+    url: "https://gml.noaa.gov/webdata/ccgg/trends/co2/co2_weekly_mlo.csv"
+    method: "GET"
+    interval_minutes: 1440  # daily — data updates weekly
+    request:
+      params: {}
+      headers: {}
+    auth:
+      type: "none"
+    response:
+      format: "csv"
+      items_path: null
+      skip_rows: 51        # file has 51 comment lines starting with "#" before headers
+    field_mapping:
+      source_id: null
+      title: null
+      description: null
+      latitude: null
+      longitude: null
+      location_name: null
+      event_start: "date"           # YYYY-MM-DD derived from year/month/day columns
+      event_end: null
+      raw_data: "__full_item__"
+    severity:
+      type: "threshold"
+      field: "average"              # CO2 ppm value
+      thresholds:
+        - gte: 425.0
+          value: "critical"
+        - gte: 420.0
+          value: "high"
+        - gte: 415.0
+          value: "moderate"
+        - default: "low"
+  
+  # OpenAQ API — no API key required
+  # Environmental type -> Air quality measurements worldwide
+  # Usage -> Monitoring air quality (PM2.5, PM10, etc.) in different cities globally.
+  - name: "openaq_air_quality"
+    enabled: false
+    alert_type: "environmental"
+    url: "https://api.openaq.org/v3/parameters/2/latest"
+    method: "GET"
+    interval_minutes: 30
+    request:
+      params:
+        limit: 1000
+        page: 1
+      headers:
+        X-API-Key: "${OPENAQ_API_KEY}"
+    auth:
+      type: "api_key"
+      header: "X-API-Key"
+      env_var: "OPENAQ_API_KEY"
+    response:
+      format: "json"
+      items_path: "results"
+    field_mapping:
+      source_id: "sensorsId"
+      title: "parameter.displayName"
+      description: "parameter.description"
+      latitude: "coordinates.latitude"
+      longitude: "coordinates.longitude"
+      location_name: "locationsId"
+      event_start: "datetime.utc"
+      event_end: null
+      raw_data: "__full_item__"
+    severity:
+      type: "threshold"
+      field: "value"
+      thresholds:
+        - gte: 55.5
+          value: "critical"   # EPA "Unhealthy" PM2.5 threshold (µg/m³)
+        - gte: 35.5
+          value: "high"       # EPA "Unhealthy for Sensitive Groups"
+        - gte: 12.1
+          value: "moderate"   # EPA "Moderate"
+        - default: "low"
+
+# **POSSIBLE NEW SOURCES TO ADD:**
+# Global Biodiversity Information Facility (GBIF) API — no API key required
+# Environmental type -> Invasive species occurrences
+  - name: "gbif_occurrences"
+    enabled: false
+    alert_type: "environmental"
+    url: "https://api.gbif.org/v1/occurrence/search"
+    method: "GET"
+    interval_minutes: 60 # Not updated frequently, so we can check less often
+    request:
+      params:
+        hasCoordinate: true
+        hasGeospatialIssue: false
+        establishmentMeans: "INVASIVE"
+        limit: 300
+      headers: {}
+    auth:
+      type: "none"
+    response:
+      format: "json"
+      items_path: "results"
+    field_mapping:
+      source_id: "gbifID"
+      title: "species"
+      description: "scientificName"
+      latitude: "decimalLatitude"
+      longitude: "decimalLongitude"
+      location_name: "countryCode"
+      event_start: "eventDate"
+      event_end: null
+      raw_data: "__full_item__"
+    severity:
+      type: "mapping"
+      field: "taxonRank"
+      map:
+        "SPECIES": "high"
+        "GENUS": "moderate"
+        "FAMILY": "low"
+      default: "low"
 
 web_sources: []
 
