@@ -140,3 +140,306 @@ Copy/paste this block for each new work session:
 - 
 ```
 
+## Rebecca Gautreaux Log — 2026-03-09
+
+### Session Focus
+- Design and implement automated data retention cleanup for database scalability and routing efficiency.
+- Add scheduled cleanup execution with archive-first behavior, batched deletes, and monitoring logs.
+- Validate retention behavior and end-to-end backend cohesion with repeatable pytest coverage.
+- Remove non-blocking Pydantic deprecation warnings to keep the codebase forward-compatible.
+
+### Major Developments Completed
+
+#### 1) Retention Configuration Added (Feature Flags + Policy Controls)
+- Updated `backend/config/settings.py` to add retention controls:
+	- `RETENTION_ENABLED`
+	- `RETENTION_DRY_RUN`
+	- `RETENTION_BATCH_SIZE`
+	- `RETENTION_MAX_ROWS_PER_RUN`
+	- `RETENTION_ALERTS_DAYS`
+	- `RETENTION_SUMMARIES_DAYS`
+	- `RETENTION_SCRAPE_LOG_DAYS`
+	- `RETENTION_NIGHTLY_HOUR_UTC`
+	- `RETENTION_WEEKLY_DAY_UTC`
+	- `RETENTION_WEEKLY_HOUR_UTC`
+- Why this was needed:
+	- Enables safe rollout and policy tuning without code changes.
+	- Supports mixed retention windows by table and controlled production activation.
+
+#### 2) Retention Data Model Expansion Implemented
+- Updated `backend/db/models.py` with archive/monitoring tables:
+	- `AlertArchive`
+	- `SummaryArchive`
+	- `ScrapeLogArchive`
+	- `CleanupRun`
+- Why this was needed:
+	- Preserves historical records for audit/reporting before deletion.
+	- Provides run-level observability (rows eligible/archived/deleted, runtime, status, error details, estimated bytes reclaimed).
+
+#### 3) Cleanup Engine Implemented
+- Added `backend/db/retention.py`.
+- Implemented cleanup workflow:
+	- Computes UTC retention cutoffs.
+	- Selects table specs by schedule type (nightly vs weekly).
+	- Archives records first, then deletes in deterministic batches.
+	- Honors dry-run mode and max-rows-per-run safety limits.
+	- Logs each run into `cleanup_runs` and emits structured logger output.
+	- Handles failures per table and records failure metadata.
+- Why this was needed:
+	- Prevents large lock-prone deletes and reduces performance spikes.
+	- Ensures data lifecycle control is measurable and recoverable.
+
+#### 4) Scheduler Integration Added
+- Updated `backend/scrapers/scheduler.py` to register retention jobs when enabled:
+	- `retention_nightly`
+	- `retention_weekly`
+- Jobs use cron scheduling in UTC and integrate with existing APScheduler startup lifecycle.
+- Why this was needed:
+	- Automates recurring cleanup instead of relying on manual execution.
+	- Separates high-churn nightly cleanup from broader weekly retention passes.
+
+#### 5) MariaDB Retention Migration + Indexes Added
+- Added migration: `backend/db/migrations/2026-03-09_mariadb_retention_cleanup.sql`.
+- Migration includes:
+	- Archive tables (`alerts_archive`, `summaries_archive`, `scrape_log_archive`)
+	- Monitoring table (`cleanup_runs`)
+	- Indexes for cleanup/routing performance on date/status-relevant fields.
+- Updated `backend/db/migrations/MIGRATION_NOTES.md` with apply order and retention env var runbook.
+- Why this was needed:
+	- Aligns runtime retention code with MariaDB schema.
+	- Improves query/cleanup efficiency and operational repeatability.
+
+#### 6) Automated Retention Test Coverage Added
+- Added `backend/tests/test_retention.py` with coverage for:
+	- Dry-run behavior (no deletes, logging still recorded).
+	- Archive + batched delete behavior.
+	- Scheduler registration when retention is enabled.
+- Why this was needed:
+	- Ensures retention behavior remains stable during future refactors.
+	- Provides repeatable proof that cleanup safety controls work.
+
+#### 7) Pydantic Warning Remediation Completed
+- Updated deprecated class-based config usage to Pydantic v2 style:
+	- `backend/config/settings.py` -> `SettingsConfigDict`
+	- `backend/schemas/alert.py` -> `ConfigDict(from_attributes=True)`
+	- `backend/schemas/user.py` -> `ConfigDict(from_attributes=True)`
+- Why this was needed:
+	- Eliminates deprecation warnings that would become future breakage risks.
+	- Keeps settings/schema configuration aligned with supported Pydantic patterns.
+
+### Commands / Verification Used
+- Retention + model validation:
+	- `python -m pytest tests/test_retention.py tests/test_models.py -v --tb=short`
+	- Result: `11 passed`
+- DB/API regression validation:
+	- `python -m pytest tests/test_scraper_db_integration.py tests/test_api_alerts.py tests/test_api_summaries.py tests/test_api_users.py -v --tb=short`
+	- Result: `28 passed`
+- Full backend cohesion verification:
+	- `python -m pytest -v --tb=short`
+	- Result: `78 passed`
+
+### Issues / Blockers
+- Initial non-blocking warnings from deprecated Pydantic config style (`class Config`) in settings and schema files.
+- Resolved within the same session by migrating to Pydantic v2 config objects.
+
+### Decisions Made
+- Archive strategy: same-database archive tables.
+- Scheduling strategy: both nightly and weekly jobs.
+- Retention strategy: mixed windows by table (not single window for all tables).
+- Partitioning strategy: phase-1 readiness only (no immediate partition DDL rollout).
+- Safety strategy: dry-run first, max-row caps per run, and backup/restore gate before live delete mode.
+
+### Outcome
+- Automated retention framework is implemented end-to-end in backend code, scheduler wiring, and MariaDB migrations.
+- Monitoring and auditability are built in through `cleanup_runs` and archive tables.
+- Regression and cohesion checks pass across retention, API, scraper, and model paths.
+- Pydantic warning debt from Session 4 is fully resolved.
+
+### Next Steps
+- Apply `2026-03-09_mariadb_retention_cleanup.sql` on MariaDB instance(s).
+- Run first production pass with:
+	- `RETENTION_ENABLED=true`
+	- `RETENTION_DRY_RUN=true`
+- Review `cleanup_runs`, then perform backup/restore validation before enabling real deletes.
+
+
+## Rebecca Gautreaux Log — 2026-03-09
+
+### Session Focus
+- Create a centralized TODO tracker for remaining project objectives.
+- Convert objectives into a week-by-week SCRUM structure with clear ownership and dates.
+- Improve tracking clarity using status indicators and evidence-based completion updates.
+- Verify backend health and keep tracker status aligned with actual test outcomes.
+
+### Major Developments Completed
+
+#### 1) Project TODO Tracker Created
+- Added `docs/TODO.md` as a structured planning and execution tracker.
+- Included project goals spanning MVP scope, scraping/data reliability, DB/API/AI work, security, integration, QA, and final presentation deliverables.
+- Why this was needed:
+	- Consolidates scattered action items into one operational board.
+	- Provides a single source of truth for team planning and progress reporting.
+
+#### 2) Dates + Owners Added With April 13 Delivery Target
+- Updated `docs/TODO.md` with target dates and role-based ownership across workstreams.
+- Built timeline so most implementation work lands by **Apr 13, 2026**, with Apr 14–Apr 20 reserved for presentation polish.
+- Why this was needed:
+	- Aligns planning to the project deadline and reduces schedule ambiguity.
+	- Clarifies accountability by mapping deliverables to team members/roles.
+
+#### 3) Converted TODO Into Weekly SCRUM Sprint Board
+- Reworked TODO content into 6 weekly sprints:
+	- Sprint 1: Scope lock
+	- Sprint 2: Data + DB reliability
+	- Sprint 3: API + AI quality
+	- Sprint 4: Security + frontend integration
+	- Sprint 5: QA + docs + demo readiness (targeting Apr 13 completion)
+	- Sprint 6: Final presentation polish
+- Added per-sprint sections: `To Do`, `In Progress`, `Done`, plus sprint goals and owners.
+- Added reusable standup template for weekly execution cadence.
+- Why this was needed:
+	- Enables lightweight sprint/standup workflow directly in repository docs.
+	- Improves day-to-day progress visibility and blocker tracking.
+
+#### 4) Status Legend Applied for Faster Tracking
+- Added explicit legend in `docs/TODO.md`:
+	- `🔴 Blocked`
+	- `🟡 In Progress / Planned`
+	- `🟢 Done`
+- Applied status icons to milestone lines, sprint task lines, and standup template entries.
+- Why this was needed:
+	- Makes progress state readable at a glance during team check-ins.
+	- Standardizes how task state is communicated across contributors.
+
+#### 5) Evidence-Based Completion Updates Applied
+- Reviewed repository artifacts before marking tasks complete (API routes, tests, migrations/docs, scheduler/prompts presence).
+- Marked completed only where direct evidence existed, including:
+	- DB setup/verification checklist documented in `README.md`.
+	- Alerts/Summaries/Users API endpoints implemented and routed.
+	- API schema/test coverage present for core route groups.
+	- Pagination/filter defaults implemented for alerts endpoint.
+- Why this was needed:
+	- Prevents over-reporting progress.
+	- Keeps sprint tracking auditable and trustworthy.
+
+#### 6) Full Backend Test Verification Executed and Reflected in TODO
+- Ran full backend test suite from `backend/` using project venv Python.
+- Result: `78 passed` in `0.94s`.
+- Updated TODO Sprint 5 QA item to complete with dated verification note.
+- Why this was needed:
+	- Confirms current backend cohesion before marking QA status.
+	- Ensures tracker state reflects actual executable system health.
+
+### Commands / Verification Used
+- Full backend suite:
+	- `python -m pytest -q`
+	- Result: `78 passed in 0.94s`
+- Repo evidence checks included file and pattern validation across:
+	- `backend/api/*.py`
+	- `backend/tests/test_api_*.py`
+	- `backend/db/migrations/*.sql`
+	- `backend/config/sources.yaml`
+	- `docs/ARCHITECTURE.md`, `docs/DATA_MODEL.md`, `docs/PROJECT_DESCRIPTION.md`
+
+### Decisions Made
+- Use a weekly SCRUM board format (vs objective-only checklist) for easier standup tracking.
+- Apply status legend globally to milestones, sprint tasks, and standup sections.
+- Mark tasks complete only with repository/test evidence; leave ambiguous items unmarked.
+- Treat Apr 13 as implementation/docs freeze target and Apr 14–Apr 20 as polish-only window.
+
+### Outcome
+- `docs/TODO.md` is now a sprint-operational board with owners, dates, status legend, and current completion state.
+- Progress tracking now reflects both planning intent and verified implementation reality.
+- Backend test status is explicitly captured and synchronized with sprint QA progress.
+
+### Next Steps
+- Continue moving active sprint tasks from `To Do` to `In Progress`/`Done` during weekly standups.
+- Re-run `pytest` at each sprint checkpoint and update corresponding QA/milestone lines.
+- Keep completion updates evidence-based (code/tests/docs) to maintain planning accuracy.
+
+
+---
+
+
+## Rebecca Gautreaux Log — 2026-03-10
+
+### Session Focus
+- Run end-to-end backend validation to confirm compatibility of changes from merged PR #14 with `main`.
+- Verify all backend tests pass without errors in the active project environment.
+- Validate scheduled job behavior is successful and effective at runtime (not just unit-tested).
+
+### Major Developments Completed
+
+#### 1) Full Backend Regression Validation Executed
+- Ran full backend pytest suite using project virtual environment interpreter (`.venv-2`) after resolving environment mismatch.
+- Verified complete backend test pass:
+	- `78 passed`
+- Why this was needed:
+	- Confirms cross-module cohesion across API, DB, models, scrapers, scheduler, and retention paths.
+	- Provides concrete compatibility evidence for PR #14 against current codebase behavior.
+
+#### 2) Python Environment Execution Path Corrected
+- Identified and resolved a tooling/runtime mismatch where commands initially used Windows Store Python shim instead of project venv.
+- Standardized test/runtime execution on:
+	- `c:/Users/Rebecca/OneDrive/Documents/GitHub/Team6-SeniorProject/.venv-2/Scripts/python.exe`
+- Why this was needed:
+	- Prevents false negatives from missing dependencies in non-project interpreters.
+	- Ensures verification is representative of the intended team environment.
+
+#### 3) Retention + Scheduler Behavior Re-validated
+- Re-ran retention/scheduler-focused tests:
+	- `backend/tests/test_retention.py` -> `3 passed`
+- Confirmed scheduler retention registration logic remains correct when retention is enabled (nightly + weekly job IDs asserted in tests).
+- Why this was needed:
+	- Confirms the cleanup scheduling additions introduced in Session 4 remain stable under current branch state.
+	- Reduces risk of silent scheduler regressions after merge integration.
+
+#### 4) Live Runtime Smoke Test Completed (Startup + Scheduler + API)
+- Started application with Uvicorn and validated full startup lifecycle:
+	- DB initialization completed.
+	- APScheduler started successfully.
+	- Scraper jobs registered (`nws`, `airnow`, `epa`, `api_usgs_earthquakes`).
+- Verified real scheduled execution:
+	- `NWSScraper.run` executed successfully from scheduler-triggered job.
+- Verified API service responsiveness:
+	- `GET /` returned `200` with running status payload.
+- Why this was needed:
+	- Proves scheduled job path is operational in real runtime conditions, not only in mocked/unit contexts.
+	- Confirms backend startup wiring (`main.py` lifespan + scheduler registration) works end-to-end.
+
+### Commands / Verification Used
+- Full backend suite (executed via in-process pytest for reliable output capture):
+	- `python -m pytest -q`
+	- Result: `78 passed`
+- Retention-specific suite:
+	- `python -m pytest -q tests/test_retention.py -vv`
+	- Result: `3 passed`
+- Runtime startup smoke:
+	- `python -m uvicorn main:app --host 127.0.0.1 --port 8001`
+	- Verified root endpoint:
+		- `Invoke-RestMethod -Uri "http://127.0.0.1:8001/"`
+	- Result: startup complete, scheduler active, endpoint healthy.
+
+### Issues / Blockers
+- Initial test attempts failed due to interpreter mismatch (`python3.13.exe` shim vs project venv interpreter).
+- Terminal output intermittently failed to return pytest summary; mitigated by running pytest via Python snippet execution to capture deterministic results.
+- Optional scraper (`firms`) was skipped at runtime because `NASA_FIRMS_MAP_KEY` was not set; this was expected and non-blocking.
+
+### Decisions Made
+- Use project venv interpreter for all validation commands to ensure consistency.
+- Treat scheduler effectiveness as requiring both test evidence and live runtime proof.
+- Keep optional source credential gaps (`firms`) as informational unless required for target validation scope.
+
+### Outcome
+- End-to-end verification for Session 6 is successful.
+- Backend regression coverage is fully passing (`78 passed`).
+- Scheduled job path is verified effective via both automated tests and live execution logs.
+- PR #14 compatibility with mainline backend behavior is supported by passing tests and runtime smoke evidence.
+
+### Next Steps
+- If enabling full source coverage in runtime smoke checks, set `NASA_FIRMS_MAP_KEY` and re-run Uvicorn smoke to include `firms`.
+- Execute one operational retention dry run in MariaDB with:
+	- `RETENTION_ENABLED=true`
+	- `RETENTION_DRY_RUN=true`
+- Review `cleanup_runs` records before enabling non-dry-run deletes.
+

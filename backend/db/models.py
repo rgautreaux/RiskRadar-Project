@@ -77,3 +77,81 @@ class ScrapeLog(Base):
     duration_ms = Column(Integer)
     started_at = Column(Text, nullable=False)
     completed_at = Column(Text, nullable=False, default=_now)
+
+
+class AlertArchive(Base):
+    __tablename__ = "alerts_archive"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    original_id = Column(Integer, nullable=False, unique=True)
+    source = Column(Text, nullable=False)
+    source_id = Column(Text)
+    alert_type = Column(Text, nullable=False)
+    severity = Column(Text, nullable=False)
+    title = Column(Text, nullable=False)
+    description = Column(Text)
+    raw_data = Column(Text)
+    latitude = Column(Float)
+    longitude = Column(Float)
+    location_name = Column(Text)
+    event_start = Column(Text)
+    event_end = Column(Text)
+    fetched_at = Column(Text, nullable=False)
+    created_at = Column(Text, nullable=False)
+    updated_at = Column(Text, nullable=False)
+    archived_at = Column(Text, nullable=False, default=_now)
+    cleanup_run_id = Column(Integer)
+
+
+class SummaryArchive(Base):
+    __tablename__ = "summaries_archive"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    original_id = Column(Integer, nullable=False, unique=True)
+    title = Column(Text, nullable=False)
+    content = Column(Text, nullable=False)
+    summary_type = Column(Text, nullable=False)
+    alert_ids = Column(Text)
+    region = Column(Text)
+    generated_at = Column(Text, nullable=False)
+    model_used = Column(Text)
+    token_count = Column(Integer)
+    created_at = Column(Text, nullable=False)
+    archived_at = Column(Text, nullable=False, default=_now)
+    cleanup_run_id = Column(Integer)
+
+
+class ScrapeLogArchive(Base):
+    __tablename__ = "scrape_log_archive"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    original_id = Column(Integer, nullable=False, unique=True)
+    source = Column(Text, nullable=False)
+    status = Column(Text, nullable=False)
+    alerts_fetched = Column(Integer, default=0)
+    alerts_new = Column(Integer, default=0)
+    error_message = Column(Text)
+    duration_ms = Column(Integer)
+    started_at = Column(Text, nullable=False)
+    completed_at = Column(Text, nullable=False)
+    archived_at = Column(Text, nullable=False, default=_now)
+    cleanup_run_id = Column(Integer)
+
+
+class CleanupRun(Base):
+    __tablename__ = "cleanup_runs"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    table_name = Column(Text, nullable=False)
+    schedule_kind = Column(Text, nullable=False)
+    cutoff_at = Column(Text, nullable=False)
+    rows_eligible = Column(Integer, nullable=False, default=0)
+    rows_archived = Column(Integer, nullable=False, default=0)
+    rows_deleted = Column(Integer, nullable=False, default=0)
+    storage_bytes_estimated = Column(Integer, nullable=False, default=0)
+    duration_ms = Column(Integer, nullable=False, default=0)
+    dry_run = Column(Integer, nullable=False, default=1)
+    status = Column(Text, nullable=False, default="success")
+    error_message = Column(Text)
+    started_at = Column(Text, nullable=False, default=_now)
+    completed_at = Column(Text, nullable=False, default=_now)
