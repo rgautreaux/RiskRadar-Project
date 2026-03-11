@@ -83,23 +83,24 @@ api_sources:
   # Environmental type -> Environemtal, social, and governance (ESG) indicators
   # Usage -> Monitoring ESG indicators worldwide, such as CO2 emissions per capita, deforestation rates, etc.
   - name: "world_bank_esg"
-    enabled: false
+    enabled: true
     alert_type: "environmental"
-    url: "https://api.worldbank.org/v2/country/all/indicator/EN.ATM.CO2E.PC?format=json&per_page=32500&mrv=1"
+    url: "https://api.worldbank.org/v2/en/indicator/EN.ATM.CO2E.PC"
     method: "GET"
-    interval_minutes: 30
+    interval_minutes: 1440  # Updated annually, so daily checks are sufficient
     request:
-      params: {}
+      params: 
+        format: "json"
       headers: {}
     auth:
       type: "none"
     response:
       format: "json"
-      items_path: "[1]"
+      items_path: "1"  # World Bank returns data in a nested array
     field_mapping:
-      source_id: "countryiso3code"
-      title: "indicator.value"
-      description: "indicator.id"
+      source_id: "country.id"
+      title: "country.value"
+      description: null
       latitude: null
       longitude: null
       location_name: "country.value"
@@ -110,125 +111,29 @@ api_sources:
       type: "threshold"
       field: "value"
       thresholds:
-        - gte: 10.0
-          value: "critical"
+        - gte: 15.0
+          value: "critical"   # Very high CO2 emissions per capita
         - gte: 5.0
-          value: "high"
+          value: "high"       # High emissions
         - gte: 1.0
-          value: "moderate"
+          value: "moderate"   # Moderate emissions
         - default: "low"
 
-    # Our World in Data API — no API key required
-    # Environmental type -> Natural disasters and climate impacts
-    # Usage -> Monitoring natural disasters worldwide, including floods, storms, droughts, etc.
-  - name: "emdat_natural_disasters"
-    enabled: false
-    alert_type: "environmental"
-    url: "https://api.emdat.be/"
-    method: "POST"
-    interval_minutes: 30
-    request:
-      headers:
-        Content-Type: "application/json"
-      body:
-        query: |
-          query natural_disasters {
-            api_version
-            public_emdat(filters: {
-              classif: ["nat-*"]
-              include_hist: false
-            }, cursor: {
-              limit: -1
-            }) {
-              total_available
-              data {
-                disno
-                classif_key
-                location
-                start_year
-                start_month
-                start_day
-                end_year
-                end_month
-                end_day
-                total_deaths
-                total_affected
-                total_dam
-              }
-            }
-          }
-    auth:
-      type: "api_key"
-      header: "Authorization"
-      value: "${EMDAT_API_KEY}"
-    response:
-      format: "json"
-      items_path: "data.public_emdat.data"
-    field_mapping:
-      source_id: "disno"
-      title: "classif_key"
-      description: "location"
-      latitude: null
-      longitude: null
-      location_name: "location"
-      event_start: "start_year"
-      event_end: "end_year"
-      raw_data: "__full_item__"
-    severity:
-      type: "mapping"
-      field: "total_deaths"
-      map:
-        "10000+": "critical"
-        "1000-9999": "high"
-        "100-999": "moderate"
-        "0-99": "low"
-      default: "low"
+  # Our World in Data API — no API key required
+  # Environmental type -> Natural disasters and climate impacts
+  # Usage -> Monitoring natural disasters worldwide, including floods, storms, droughts, etc.
+
 
   # C02 Earth - no API key required
   # Environmental type -> CO2 levels at Mauna Loa Observatory
   # Usage -> C02 monitoring
-  - name: "noaa_mauna_loa_co2"
-    enabled: false
-    alert_type: "environmental"
-    url: "https://gml.noaa.gov/webdata/ccgg/trends/co2/co2_weekly_mlo.csv"
-    method: "GET"
-    interval_minutes: 1440  # daily — data updates weekly
-    request:
-      params: {}
-      headers: {}
-    auth:
-      type: "none"
-    response:
-      format: "csv"
-      items_path: null
-      skip_rows: 51        # file has 51 comment lines starting with "#" before headers
-    field_mapping:
-      source_id: null
-      title: null
-      description: null
-      latitude: null
-      longitude: null
-      location_name: null
-      event_start: "date"           # YYYY-MM-DD derived from year/month/day columns
-      event_end: null
-      raw_data: "__full_item__"
-    severity:
-      type: "threshold"
-      field: "average"              # CO2 ppm value
-      thresholds:
-        - gte: 425.0
-          value: "critical"
-        - gte: 420.0
-          value: "high"
-        - gte: 415.0
-          value: "moderate"
-        - default: "low"
+  
   
   # OpenAQ API — no API key required
   # Environmental type -> Air quality measurements worldwide
   # Usage -> Monitoring air quality (PM2.5, PM10, etc.) in different cities globally.
   - name: "openaq_air_quality"
-    enabled: false
+    enabled: false  # can enable if we want to monitor global air quality levels
     alert_type: "environmental"
     url: "https://api.openaq.org/v3/parameters/2/latest"
     method: "GET"
@@ -237,12 +142,10 @@ api_sources:
       params:
         limit: 1000
         page: 1
-      headers:
-        X-API-Key: "${OPENAQ_API_KEY}"
     auth:
-      type: "api_key"
-      header: "X-API-Key"
-      env_var: "OPENAQ_API_KEY"
+      type: "header"
+      env_var: "OpenAQ_API_KEY"
+      header_name: "X-API-Key"
     response:
       format: "json"
       items_path: "results"
@@ -276,7 +179,7 @@ api_sources:
     alert_type: "environmental"
     url: "https://api.gbif.org/v1/occurrence/search"
     method: "GET"
-    interval_minutes: 60 # Not updated frequently, so we can check less often
+    interval_minutes: 1440  # Not updated frequently, so we can check less often
     request:
       params:
         hasCoordinate: true

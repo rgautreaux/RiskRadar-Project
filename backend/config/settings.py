@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     AIRNOW_API_KEY: str = ""
     NASA_FIRMS_MAP_KEY: str = ""
     FIRECRAWL_API_KEY: str = ""
+    OpenAQ_API_KEY: str = ""
 
     # LLM
     LLM_API_KEY: str = ""

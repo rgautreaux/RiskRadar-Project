@@ -1,5 +1,5 @@
 # Environment variables
-backend/.env
+# backend/.env
 
 # Temporary files
 backend/__pycache__/
