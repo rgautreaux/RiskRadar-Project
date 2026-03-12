@@ -29,6 +29,14 @@ Week-by-week sprint board for tracking delivery to the goal of having most imple
 - [ ] 🟡 **Apr 13:** Core implementation + docs freeze complete
 - [ ] 🟡 **Apr 20:** Final presentation polish complete
 
+## Current Verification Snapshot (Mar 12, 2026)
+
+- Backend pytest run (local venv): **78 collected, 52 passed, 26 errors**
+- Current blocker for full green test run: missing `passlib` module in active environment
+- Newly documented in `README.md` this week:
+  - full backend test suite explanation and run guide
+  - scheduled data cleanup (retention) architecture + operations notes
+
 ---
 
 ## Sprint 1 — Scope Lock
@@ -60,9 +68,9 @@ Week-by-week sprint board for tracking delivery to the goal of having most imple
 
 ### To Do
 - [ ] 🟡 Audit sources in `backend/config/sources.yaml`
-- [ ] 🟡 Verify scraper normalization for required `alerts` fields
-- [ ] 🟡 Validate dedup behavior on (`source`, `source_id`)
-- [ ] 🟡 Confirm MariaDB schema alignment with ORM models
+- [x] 🟢 Verify scraper normalization for required `alerts` fields (covered by `backend/tests/test_scrapers.py` and `backend/tests/test_scraper_db_integration.py`)
+- [x] 🟢 Validate dedup behavior on (`source`, `source_id`) (covered by `backend/tests/test_models.py` + scraper integration tests)
+- [x] 🟢 Confirm MariaDB schema alignment with ORM models (`backend/db/migrations/2026-03-03_mariadb_scraper_alignment.sql` + migration notes)
 - [ ] 🟡 Run and verify SQL migrations in `backend/db/migrations/`
 - [x] 🟢 Add a repeatable local DB setup/verification checklist (documented in `README.md` MariaDB setup + quick verify section)
 
@@ -107,10 +115,10 @@ Week-by-week sprint board for tracking delivery to the goal of having most imple
 ### To Do
 - [ ] 🟡 Finalize minimum personal data policy (zip-only where possible)
 - [ ] 🟡 Confirm secrets handling (`.env`, no secrets in repo)
-- [ ] 🟡 Review authentication/password storage flow
+- [x] 🟢 Review authentication/password storage flow (`backend/auth/security.py` + user API tests)
 - [ ] 🟡 Validate least-privilege DB/user access assumptions
 - [ ] 🟡 Confirm API contract compatibility with frontend screens
-- [ ] 🟡 Validate user preference update flow end-to-end
+- [x] 🟢 Validate user preference update flow end-to-end (`backend/tests/test_api_users.py` preference update coverage)
 - [ ] 🟡 Verify push/device token handling lifecycle
 - [ ] 🟡 Define MVP UI states (loading, empty, error, success)
 
@@ -129,12 +137,12 @@ Week-by-week sprint board for tracking delivery to the goal of having most imple
 **Owners:** All
 
 ### To Do
-- [x] 🟢 Keep backend tests green in `backend/tests/` (verified: 78 passed on Mar 9, 2026)
+- [ ] 🟡 Keep backend tests green in `backend/tests/` (Mar 12 status: 52 passed, 26 errors due to missing `passlib` in local environment)
 - [ ] 🟡 Add tests for uncovered critical paths
 - [ ] 🟡 Add regression checklist for scraper + DB + summary flow
-- [ ] 🟡 Validate scheduler startup/shutdown behavior
+- [x] 🟢 Validate scheduler startup/shutdown behavior baseline (`backend/tests/test_retention.py` verifies retention job registration and scheduler start)
 - [ ] 🟡 Track known issues with severity and owner
-- [ ] 🟡 Update `README.md` architecture and quick-start accuracy
+- [x] 🟢 Update `README.md` architecture and quick-start accuracy (tests and retention cleanup sections updated Mar 12)
 - [ ] 🟡 Reconcile docs (`ARCHITECTURE.md`, `DATA_MODEL.md`, `PROJECT_DESCRIPTION.md`)
 - [ ] 🟡 Prepare executive-level narrative + final demo script
 - [ ] 🟡 Run end-to-end dry run by Apr 10
