@@ -2,11 +2,11 @@
 
 ## Purpose
 
-This document defines the implementation plan for styling the Expo React Native mobile app so it matches the RiskRadar wireframe direction shown in `RiskRadar_MobileApp_Wireframe.png`, uses the existing icon assets in `/wireframe_icons`, and remains efficient, maintainable, and clean at runtime.
+This document is the implementation checklist for restyling the Expo React Native mobile app to match `RiskRadar_MobileApp_Wireframe.png` using the existing `/wireframe_icons` assets.
 
 ## Primary Goal
 
-Make the current mobile app visually consistent with RiskRadar branding and wireframe intent while keeping the codebase simple enough to iterate on during the remaining project timeline.
+Replace the Expo starter UI with a branded, wireframe-accurate RiskRadar mobile interface that is simple to maintain and safe to extend.
 
 ## Success Criteria
 
@@ -55,54 +55,58 @@ The following asset directory already contains usable RiskRadar wireframe imager
 - `/wireframe_icons/RiskRadar_LocalFIre_Icon.png`
 - `/wireframe_icons/RiskRadar_GlobalFire_Icon.png`
 
-## Asset Strategy
+## Locked Implementation Defaults
 
-Expo static asset imports are most reliable when the files live inside the app project. Before UI implementation starts, copy the wireframe icons into a mobile-owned asset directory such as:
+Use these defaults during implementation unless the team explicitly decides otherwise:
 
-- `frontend/RiskRadar/assets/icons/`
+- Asset root: `frontend/RiskRadar/assets/icons/`
+- Branding assets: `frontend/RiskRadar/assets/icons/branding/`
+- Navigation assets: `frontend/RiskRadar/assets/icons/navigation/`
+- Hazard assets: `frontend/RiskRadar/assets/icons/hazards/`
+- Wireframe reference image: `frontend/RiskRadar/assets/images/wireframes/`
+- Primary tab names: `Home` and `Alerts`
+- Primary screen pattern: standard `ScrollView`, not parallax
+- Primary visual mode: light mode only for phase 1
+- Icon strategy: static local PNG assets for branded icons; vector icons only for utility actions
+- Header component owner: `components/brand-header.tsx`
+- Card component owner: `components/risk-card.tsx`
+- Hazard badge/chip owner: `components/hazard-chip.tsx`
 
-Recommended organization:
-
-- `frontend/RiskRadar/assets/icons/branding/`
-- `frontend/RiskRadar/assets/icons/navigation/`
-- `frontend/RiskRadar/assets/icons/hazards/`
-- `frontend/RiskRadar/assets/images/wireframes/`
-
-This avoids path issues and keeps the mobile app self-contained.
+These defaults reduce implementation drift and keep the mobile app self-contained.
 
 ## Asset Mapping Table
 
-Use the following table as the default source-of-truth mapping when moving assets into the mobile app and wiring them into screens/components.
+Use this table as the exact default mapping for asset placement and first consumer location.
 
-| Wireframe Asset File | Intended App Location | UI Purpose |
-| --- | --- | --- |
-| `RiskRadar_MobileApp_Wireframe.png` | `assets/images/wireframes/` | Design reference only; not rendered in the production UI. |
-| `RiskRadar_ALERT_Logo.png` | `components/brand-header.tsx` or `app/(tabs)/index.tsx` header | Alert-state logo treatment for high-risk or warning-focused header states. |
-| `RiskRadar_STND_Logo.png` | `components/brand-header.tsx` or `app/(tabs)/index.tsx` header | Default RiskRadar logo treatment for the primary home header. |
-| `RiskRadar_ALERT_HomeBttn.png` | `app/(tabs)/_layout.tsx` | Active or alert-state home tab icon. |
-| `RiskRadar_STND_HomeBttn.png` | `app/(tabs)/_layout.tsx` | Default or inactive home tab icon. |
-| `RiskRadar_ALERT_NotifIcon.png` | `components/brand-header.tsx` or notification action button | Alert-state notification icon for urgent notification states. |
-| `RiskRadar_STND_NotifIcon.png` | `components/brand-header.tsx` or notification action button | Default notification icon in the top header/action area. |
-| `RiskRadar_ALERT_NotifWindow.png` | `app/modal.tsx` or future notifications screen | Alert-state notification panel or notification modal visual. |
-| `RiskRadar_STND_NotifWIndow.png` | `app/modal.tsx` or future notifications screen | Standard notification panel or modal visual. |
-| `RiskRadar_ALERT_Text.png` | `components/brand-header.tsx` or alert banner | Alert-state branded text lockup when showing warning emphasis. |
-| `RiskRadar_STND_Text.png` | `components/brand-header.tsx` | Standard branded text lockup for the main app header. |
-| `RiskRadar_DataHeader_Format.png` | `components/section-header.tsx` or top summary block | Visual reference for structured data-header layout in cards or summary sections. |
-| `RiskRadar_Weather_Icon.png` | `components/risk-card.tsx` on home screen | Weather summary card icon. |
-| `RiskRadar_AirQuality_Icon.png` | `components/risk-card.tsx` on home screen | Air quality summary card icon. |
-| `RiskRadar_Pollen_Icon.png` | `components/risk-card.tsx` on home screen | Pollen summary card icon. |
-| `RiskRadar_Pollution_Icon.png` | `components/risk-card.tsx` on home screen | Pollution or contaminants summary card icon. |
-| `RiskRadar_Local_Icon.png` | `app/(tabs)/index.tsx` location/context header | Local conditions indicator in the dashboard header or summary strip. |
-| `RiskRadar_DEST_Global_Icon.png` | `app/(tabs)/explore.tsx` or hazard scope toggle | Global destination or global-scope indicator if used in browsing/explore views. |
-| `RiskRadar_GEN_Global_Icon.png` | `app/(tabs)/explore.tsx` or hazard scope toggle | Generic global-scope icon for explore/filter context. |
-| `RiskRadar_LocalEQ_Icon.png` | `components/hazard-chip.tsx` or local alerts section | Local earthquake hazard icon. |
-| `RiskRadar_GlobalEQ_Icon.png` | `components/hazard-chip.tsx` or explore/global alerts section | Global earthquake hazard icon. |
-| `RiskRadar_LocalFlood_Icon.png` | `components/hazard-chip.tsx` or local alerts section | Local flood hazard icon. |
-| `RiskRadar_GlobalFlood_Icon.png` | `components/hazard-chip.tsx` or explore/global alerts section | Global flood hazard icon. |
-| `RiskRadar_LocalWindEvent_Icon.png` | `components/hazard-chip.tsx` or local alerts section | Local wind-event hazard icon. |
-| `RiskRadar_GlobalWindEvent_Icon.png` | `components/hazard-chip.tsx` or explore/global alerts section | Global wind-event hazard icon. |
-| `RiskRadar_LocalFIre_Icon.png` | `components/hazard-chip.tsx` or local alerts section | Local fire hazard icon. |
-| `RiskRadar_GlobalFire_Icon.png` | `components/hazard-chip.tsx` or explore/global alerts section | Global fire hazard icon. |
+| Wireframe Asset File | Target Asset Path | First Consumer File | UI Purpose |
+| --- | --- | --- | --- |
+| `RiskRadar_MobileApp_Wireframe.png` | `assets/images/wireframes/RiskRadar_MobileApp_Wireframe.png` | None | Design reference only. |
+| `RiskRadar_ALERT_Logo.png` | `assets/icons/branding/RiskRadar_ALERT_Logo.png` | `components/brand-header.tsx` | Alert-state header logo. |
+| `RiskRadar_STND_Logo.png` | `assets/icons/branding/RiskRadar_STND_Logo.png` | `components/brand-header.tsx` | Default header logo. |
+| `RiskRadar_ALERT_HomeBttn.png` | `assets/icons/navigation/RiskRadar_ALERT_HomeBttn.png` | `app/(tabs)/_layout.tsx` | Active home tab icon. |
+| `RiskRadar_STND_HomeBttn.png` | `assets/icons/navigation/RiskRadar_STND_HomeBttn.png` | `app/(tabs)/_layout.tsx` | Inactive home tab icon. |
+| `RiskRadar_ALERT_NotifIcon.png` | `assets/icons/navigation/RiskRadar_ALERT_NotifIcon.png` | `components/brand-header.tsx` | Alert-state notification button. |
+| `RiskRadar_STND_NotifIcon.png` | `assets/icons/navigation/RiskRadar_STND_NotifIcon.png` | `components/brand-header.tsx` | Default notification button. |
+| `RiskRadar_ALERT_NotifWindow.png` | `assets/icons/navigation/RiskRadar_ALERT_NotifWindow.png` | `app/modal.tsx` | Alert-state notification panel art. |
+| `RiskRadar_STND_NotifWIndow.png` | `assets/icons/navigation/RiskRadar_STND_NotifWIndow.png` | `app/modal.tsx` | Default notification panel art. |
+| `RiskRadar_ALERT_Text.png` | `assets/icons/branding/RiskRadar_ALERT_Text.png` | `components/brand-header.tsx` | Alert-state branded text. |
+| `RiskRadar_STND_Text.png` | `assets/icons/branding/RiskRadar_STND_Text.png` | `components/brand-header.tsx` | Default branded text. |
+| `RiskRadar_DataHeader_Format.png` | `assets/icons/branding/RiskRadar_DataHeader_Format.png` | `components/section-header.tsx` | Reference for section header structure. |
+| `RiskRadar_Weather_Icon.png` | `assets/icons/hazards/RiskRadar_Weather_Icon.png` | `components/risk-card.tsx` | Weather card icon. |
+| `RiskRadar_AirQuality_Icon.png` | `assets/icons/hazards/RiskRadar_AirQuality_Icon.png` | `components/risk-card.tsx` | Air quality card icon. |
+| `RiskRadar_Pollen_Icon.png` | `assets/icons/hazards/RiskRadar_Pollen_Icon.png` | `components/risk-card.tsx` | Pollen card icon. |
+| `RiskRadar_Pollution_Icon.png` | `assets/icons/hazards/RiskRadar_Pollution_Icon.png` | `components/risk-card.tsx` | Pollution card icon. |
+| `RiskRadar_Local_Icon.png` | `assets/icons/navigation/RiskRadar_Local_Icon.png` | `components/brand-header.tsx` | Local scope indicator. |
+| `RiskRadar_DEST_Global_Icon.png` | `assets/icons/navigation/RiskRadar_DEST_Global_Icon.png` | `app/(tabs)/explore.tsx` | Global destination/scope indicator. |
+| `RiskRadar_GEN_Global_Icon.png` | `assets/icons/navigation/RiskRadar_GEN_Global_Icon.png` | `app/(tabs)/explore.tsx` | Generic global scope indicator. |
+| `RiskRadar_LocalEQ_Icon.png` | `assets/icons/hazards/RiskRadar_LocalEQ_Icon.png` | `components/hazard-chip.tsx` | Local earthquake icon. |
+| `RiskRadar_GlobalEQ_Icon.png` | `assets/icons/hazards/RiskRadar_GlobalEQ_Icon.png` | `components/hazard-chip.tsx` | Global earthquake icon. |
+| `RiskRadar_LocalFlood_Icon.png` | `assets/icons/hazards/RiskRadar_LocalFlood_Icon.png` | `components/hazard-chip.tsx` | Local flood icon. |
+| `RiskRadar_GlobalFlood_Icon.png` | `assets/icons/hazards/RiskRadar_GlobalFlood_Icon.png` | `components/hazard-chip.tsx` | Global flood icon. |
+| `RiskRadar_LocalWindEvent_Icon.png` | `assets/icons/hazards/RiskRadar_LocalWindEvent_Icon.png` | `components/hazard-chip.tsx` | Local wind event icon. |
+| `RiskRadar_GlobalWindEvent_Icon.png` | `assets/icons/hazards/RiskRadar_GlobalWindEvent_Icon.png` | `components/hazard-chip.tsx` | Global wind event icon. |
+| `RiskRadar_LocalFIre_Icon.png` | `assets/icons/hazards/RiskRadar_LocalFIre_Icon.png` | `components/hazard-chip.tsx` | Local fire icon. |
+| `RiskRadar_GlobalFire_Icon.png` | `assets/icons/hazards/RiskRadar_GlobalFire_Icon.png` | `components/hazard-chip.tsx` | Global fire icon. |
 
 ## Styling Direction
 
@@ -114,24 +118,31 @@ The wireframe should drive a visual system with these characteristics:
 - Rounded cards, intentional icon usage, and clean spacing between modules.
 - Typography that feels operational and trustworthy rather than playful or default.
 
-## Recommended Brand System
+## Locked Brand System
 
-These values should be finalized during implementation, but the plan should assume a branded token set like the following:
+Use these values as the first-pass token set in `frontend/RiskRadar/constants/theme.ts`.
 
-- Primary: deep risk blue
-- Secondary: light atmospheric blue
-- Accent: alert orange or warning amber
-- Surface: off-white or pale blue-gray
-- Border: cool gray-blue
-- Text primary: dark slate
-- Text secondary: muted slate
-- Success, warning, and danger semantic colors for alert states
+- Primary: `#0B5FA5`
+- Primary dark: `#083B73`
+- Secondary: `#D9ECFB`
+- Accent warning: `#F59E0B`
+- Accent danger: `#D64545`
+- Surface: `#F6FAFD`
+- Surface muted: `#EAF2F8`
+- Border: `#C7D8E6`
+- Text primary: `#16324A`
+- Text secondary: `#5B748A`
+- Success: `#2E8B57`
+- White: `#FFFFFF`
 
-Typography direction:
+Typography defaults:
 
-- Use a clean sans-serif stack that feels structured and readable.
-- Keep titles bold and condensed in spacing.
-- Use a smaller, restrained metadata size for timestamps, severity labels, and hazard summaries.
+- Base family: existing platform sans stack
+- Screen title: `32/36`, bold
+- Section title: `20/24`, semibold
+- Card title: `16/20`, semibold
+- Body: `15/22`, regular
+- Meta: `12/16`, medium
 
 ## File-by-File Implementation Checklist
 
@@ -144,9 +155,9 @@ Purpose:
 Checklist:
 
 - [ ] Create `assets/icons/branding/`, `assets/icons/navigation/`, and `assets/icons/hazards/`.
-- [ ] Copy the relevant files from `/wireframe_icons` into those folders.
-- [ ] Keep file names consistent with the original asset names where practical.
-- [ ] Add the wireframe image to `assets/images/wireframes/` for design reference if needed.
+- [ ] Copy each file according to the Asset Mapping Table above.
+- [ ] Keep the original file names unchanged.
+- [ ] Add the wireframe image to `assets/images/wireframes/`.
 
 ### 2. `frontend/RiskRadar/constants/theme.ts`
 
@@ -161,8 +172,8 @@ Checklist:
 - [ ] Add spacing tokens such as `xs`, `sm`, `md`, `lg`, `xl`.
 - [ ] Add radius tokens for cards, pills, and buttons.
 - [ ] Expand typography tokens for title, subtitle, section label, card heading, body, and meta text.
-- [ ] Keep light mode as the primary target unless the team specifically wants branded dark mode.
-- [ ] Remove generic starter comments that no longer describe the project.
+- [ ] Set light mode as the only required branded mode for phase 1.
+- [ ] Remove Expo starter comments.
 
 ### 3. `frontend/RiskRadar/app/_layout.tsx`
 
@@ -175,7 +186,7 @@ Checklist:
 - [ ] Replace the default React Navigation theme with a custom RiskRadar navigation theme.
 - [ ] Align background colors with the new token system.
 - [ ] Set status bar styling to match the new screen header treatment.
-- [ ] Keep layout minimal and push most styling decisions into shared constants.
+- [ ] Keep layout minimal and push colors into `theme.ts`.
 
 ### 4. `frontend/RiskRadar/app/(tabs)/_layout.tsx`
 
@@ -186,10 +197,10 @@ Purpose:
 Checklist:
 
 - [ ] Restyle the tab bar background, height, padding, and active state.
-- [ ] Replace generic icons with RiskRadar navigation assets where appropriate.
-- [ ] If image tabs are not practical, map icons to the closest branded visual treatment and label color system.
+- [ ] Replace generic icons with `RiskRadar_STND_HomeBttn.png` and `RiskRadar_ALERT_HomeBttn.png` for the Home tab.
+- [ ] Rename `Explore` to `Alerts` unless the team rejects that information model.
+- [ ] Use a temporary vector icon only for the non-home tab if no wireframe asset fits.
 - [ ] Ensure the selected tab is visually obvious and consistent with the wireframe.
-- [ ] Consider renaming tabs if the wireframe uses different information architecture than `Home` and `Explore`.
 
 ### 5. `frontend/RiskRadar/app/(tabs)/index.tsx`
 
@@ -205,8 +216,8 @@ Checklist:
 - [ ] Add wireframe-style data cards for weather, air quality, pollen, and hazard alerts.
 - [ ] Use hazard icons from the wireframe asset set instead of placeholder illustrations.
 - [ ] Ensure card spacing and hierarchy visually match the mobile wireframe.
-- [ ] Keep screen composition scrollable but visually segmented.
-- [ ] Prepare components so real API data can replace placeholder content later without redesign.
+- [ ] Use a standard `ScrollView` layout, not `ParallaxScrollView`.
+- [ ] Structure placeholder data to match eventual API-backed cards.
 
 ### 6. `frontend/RiskRadar/app/(tabs)/explore.tsx`
 
@@ -217,10 +228,10 @@ Purpose:
 Checklist:
 
 - [ ] Remove all starter educational content and collapsible docs sections.
-- [ ] Convert the screen into a useful branded surface such as alerts feed, hazard explorer, or category browser.
+- [ ] Convert the screen into an alerts-focused list view.
 - [ ] Use iconography and card patterns shared with the home screen.
 - [ ] Maintain visual consistency with home while allowing a distinct secondary purpose.
-- [ ] Ensure the screen works as a realistic extension of the wireframe rather than a leftover placeholder page.
+- [ ] Remove all leftover Expo starter UI.
 
 ### 7. `frontend/RiskRadar/app/modal.tsx`
 
@@ -230,7 +241,7 @@ Purpose:
 
 Checklist:
 
-- [ ] Replace generic modal text with RiskRadar-relevant content.
+- [ ] Replace generic modal text with a notification details surface.
 - [ ] Apply branded spacing, type, and link/button treatment.
 - [ ] Ensure modal visuals match the home and tab screens.
 
@@ -242,7 +253,7 @@ Purpose:
 
 Checklist:
 
-- [ ] Expand `type` variants to include more UI-specific options like `hero`, `sectionTitle`, `cardTitle`, `eyebrow`, and `meta`.
+- [ ] Expand `type` variants to `hero`, `sectionTitle`, `cardTitle`, `eyebrow`, and `meta`.
 - [ ] Connect text styles directly to the typography tokens in `theme.ts`.
 - [ ] Remove hard-coded starter link colors and swap them for branded link/action colors.
 - [ ] Keep the component simple enough to avoid text-style duplication across screens.
@@ -267,10 +278,9 @@ Purpose:
 
 Checklist:
 
-- [ ] Evaluate whether parallax behavior matches the wireframe.
-- [ ] If it does not match, replace it with a simpler `ScrollView`-based layout.
-- [ ] If retained, restyle the header and remove all Expo-starter visual assumptions.
-- [ ] Avoid decorative animation that conflicts with the wireframe’s more functional design.
+- [ ] Do not use this component for phase 1 screen rebuilds.
+- [ ] Replace current usage in `app/(tabs)/index.tsx` and `app/(tabs)/explore.tsx` with `ScrollView`.
+- [ ] Leave the file in place only if removing it would create unnecessary churn.
 
 ### 11. `frontend/RiskRadar/components/ui/icon-symbol.tsx`
 
@@ -290,7 +300,7 @@ Purpose:
 
 - Introduce reusable branded UI primitives instead of repeating layout and styling screen by screen.
 
-Recommended new components:
+Required new components:
 
 - `section-header.tsx`
 - `risk-card.tsx`
@@ -300,9 +310,9 @@ Recommended new components:
 
 Checklist:
 
-- [ ] Create reusable card and section components before building too many one-off styles into screen files.
+- [ ] Create these components before final screen styling.
 - [ ] Keep props tied to display intent rather than temporary placeholder copy.
-- [ ] Use the wireframe as the source for spacing and composition decisions.
+- [ ] Match spacing and composition to the wireframe first, then simplify if needed.
 
 ### 13. `frontend/RiskRadar/app.json`
 
@@ -318,26 +328,26 @@ Checklist:
 
 ## Suggested Implementation Order
 
-### Phase 1: Design System Foundation
+### Phase 1: Foundation
 
 - [ ] Copy assets into the mobile app.
 - [ ] Rebuild `constants/theme.ts` with real brand tokens.
 - [ ] Update `themed-text.tsx` and `themed-view.tsx`.
 - [ ] Decide whether `parallax-scroll-view.tsx` stays or is replaced.
 
-### Phase 2: Navigation and App Shell
+### Phase 2: Shell
 
 - [ ] Restyle `app/_layout.tsx`.
 - [ ] Restyle `app/(tabs)/_layout.tsx`.
 - [ ] Update `app.json` shell branding.
 
-### Phase 3: Core Screen Reconstruction
+### Phase 3: Screens
 
 - [ ] Rebuild `app/(tabs)/index.tsx`.
 - [ ] Rebuild `app/(tabs)/explore.tsx`.
 - [ ] Update `app/modal.tsx`.
 
-### Phase 4: Component Extraction and Polish
+### Phase 4: Polish
 
 - [ ] Extract reusable branded components.
 - [ ] Normalize spacing, icon sizing, and card hierarchy.
@@ -380,4 +390,15 @@ This styling task should be considered complete when all of the following are tr
 
 ## Recommended Next Action
 
-Start with `frontend/RiskRadar/constants/theme.ts`, `frontend/RiskRadar/app/(tabs)/_layout.tsx`, and `frontend/RiskRadar/app/(tabs)/index.tsx` first. Those three files will define most of the visible branding impact and make the rest of the screens easier to finish consistently.
+Implement in this order:
+
+1. `frontend/RiskRadar/constants/theme.ts`
+2. `frontend/RiskRadar/components/themed-text.tsx`
+3. `frontend/RiskRadar/components/brand-header.tsx`
+4. `frontend/RiskRadar/components/risk-card.tsx`
+5. `frontend/RiskRadar/app/(tabs)/_layout.tsx`
+6. `frontend/RiskRadar/app/(tabs)/index.tsx`
+7. `frontend/RiskRadar/app/(tabs)/explore.tsx`
+8. `frontend/RiskRadar/app/modal.tsx`
+
+This order minimizes rework and front-loads the highest-visibility branding changes.

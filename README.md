@@ -484,16 +484,65 @@ See existing scrapers (nws, airnow, epa) for examples.
 ```bash
 cd backend
 source ../.venv/bin/activate
-pip install pytest pytest-mock
+pip install -r requirements.txt
 
 # Run all tests
 python -m pytest -v
 
 # Run specific test file
 python -m pytest tests/test_api_alerts.py -v
+
+# Run one specific test function
+python -m pytest tests/test_retention.py::test_retention_archives_and_deletes_in_batches -v
 ```
 
 Tests use an in-memory SQLite database and mock all external calls. No API keys needed.
+
+### What the pytest suite covers (and why)
+
+Pytest is used to prevent regressions across the full backend lifecycle: API behavior, ORM rules, scraper normalization, deduplication, scheduler wiring, and retention cleanup.
+
+| File | What it tests | Why it exists |
+|------|---------------|---------------|
+| `backend/tests/conftest.py` | Shared fixtures (`db_session`, `test_client`, sample data) using in-memory SQLite + `TestClient` dependency overrides | Keeps tests isolated from production DB and scheduler side-effects so runs stay deterministic and fast |
+| `backend/tests/test_models.py` | ORM constraints and persistence for `Alert`, `Summary`, `User`, `ScrapeLog` | Catches schema/constraint regressions early (especially unique keys and nullable behavior) |
+| `backend/tests/test_api_alerts.py` | `/api/v1/alerts`, `/alerts/stats`, `/alerts/{id}` filtering, pagination, empty states, 404 behavior | Protects API contract expected by web/mobile clients |
+| `backend/tests/test_api_summaries.py` | summary listing/latest endpoints and `/summaries/generate` with mocked LLM call | Verifies summary endpoints work without requiring live LLM access |
+| `backend/tests/test_api_users.py` | registration and preference update endpoints, duplicate email handling, password hashing path | Ensures account and preference flows remain stable |
+| `backend/tests/test_scrapers.py` | severity-mapping helpers, generic scraper field extraction/template logic, `BaseScraper.run()` dedup + log writes | Validates core normalization and dedup logic used by all sources |
+| `backend/tests/test_registry.py` | YAML source loading, enabled/disabled source handling, legacy scraper registration | Confirms dynamic source configuration works and fails safely |
+| `backend/tests/test_retention.py` | retention dry-run behavior, archive+delete batching, scheduler registration of nightly/weekly cleanup jobs | Protects long-term DB hygiene and cleanup automation correctness |
+| `backend/tests/test_scraper_db_integration.py` | end-to-end scraper -> DB path with mocked HTTP responses for NWS/EPA/USGS | Proves real scraper classes persist alerts and scrape logs correctly |
+
+### Additional non-pytest validation script
+
+`backend/test_scrape_and_summarize.py` is a manual integration check script (not auto-discovered by `pytest` because it is outside `backend/tests/`).
+
+It is useful for quickly validating:
+
+- database initialization
+- scraper execution against free/public sources
+- end-to-end summary generation path
+
+Run it with:
+
+```bash
+cd backend
+python test_scrape_and_summarize.py
+```
+
+### Helpful pytest commands
+
+```bash
+# Quiet output + short tracebacks (aligned with pytest.ini defaults)
+python -m pytest -q
+
+# Run only API tests
+python -m pytest tests/test_api_alerts.py tests/test_api_summaries.py tests/test_api_users.py -v
+
+# Run only scraper + retention tests
+python -m pytest tests/test_scrapers.py tests/test_scraper_db_integration.py tests/test_retention.py -v
+```
 
 ### Troubleshooting DB-Scraper
 
@@ -512,6 +561,9 @@ What common failures usually mean:
 - `ModuleNotFoundError: pymysql`
   - MariaDB driver is missing in environment; install backend requirements.
 
+- `ModuleNotFoundError: passlib`
+  - Authentication dependency is missing in environment; run `pip install -r backend/requirements.txt`.
+
 - assertion failures on alert counts
   - Dedup key conflict or schema mismatch (`alerts` not aligned with model fields).
 
@@ -520,6 +572,74 @@ What common failures usually mean:
 
 - failures in live scrape script but test passes
   - external API/auth/network issue (integration test mocks external HTTP).
+
+---
+
+## Data Cleanup Scheduled Job (Retention)
+
+RiskRadar includes a scheduled database retention job that archives old records and removes them from high-churn operational tables.
+
+### What it is
+
+- A background APScheduler job registered in `backend/scrapers/scheduler.py`
+- Cleanup logic implemented in `backend/db/retention.py`
+- Automatically started with the app lifecycle in `backend/main.py`
+
+### What it does
+
+When `RETENTION_ENABLED=true`, the scheduler registers two cron jobs:
+
+- `retention_nightly` (daily at `RETENTION_NIGHTLY_HOUR_UTC:00` UTC)
+  - cleans `scrape_log` records older than `RETENTION_SCRAPE_LOG_DAYS`
+- `retention_weekly` (weekly on `RETENTION_WEEKLY_DAY_UTC` at `RETENTION_WEEKLY_HOUR_UTC:00` UTC)
+  - cleans `alerts`, `summaries`, and `scrape_log` records based on retention-day settings
+
+For each table, cleanup creates a `cleanup_run` record that tracks:
+
+- rows eligible
+- rows archived
+- rows deleted
+- estimated bytes affected
+- duration and status
+
+Records are copied to archive tables (`*_archive`) before deletion when not in dry-run mode.
+
+### Why it helps this project
+
+- prevents unbounded growth of alerts/log tables from continuous scraping
+- keeps query performance stable for dashboard and API endpoints
+- preserves historical traceability in archive tables for audits/debugging
+- supports safe rollout via dry-run mode before live deletion
+
+### Safety controls and configuration
+
+Retention behavior is controlled entirely by environment variables:
+
+- `RETENTION_ENABLED` (default `false`)
+- `RETENTION_DRY_RUN` (default `true`)
+- `RETENTION_BATCH_SIZE`
+- `RETENTION_MAX_ROWS_PER_RUN`
+- `RETENTION_ALERTS_DAYS`
+- `RETENTION_SUMMARIES_DAYS`
+- `RETENTION_SCRAPE_LOG_DAYS`
+- `RETENTION_NIGHTLY_HOUR_UTC`
+- `RETENTION_WEEKLY_DAY_UTC`
+- `RETENTION_WEEKLY_HOUR_UTC`
+
+Recommended rollout:
+
+1. Enable with dry-run first (`RETENTION_ENABLED=true`, `RETENTION_DRY_RUN=true`).
+2. Observe `cleanup_run` metrics for expected row counts.
+3. Switch to live mode (`RETENTION_DRY_RUN=false`) after validation.
+
+### Manual execution (ad-hoc validation)
+
+You can run cleanup manually from the backend directory:
+
+```bash
+python -c "from db.retention import run_retention_cleanup; run_retention_cleanup('nightly')"
+python -c "from db.retention import run_retention_cleanup; run_retention_cleanup('weekly')"
+```
 
 
 # MariaDB Migration Notes
@@ -604,6 +724,16 @@ Expected results:
 | `NASA_FIRMS_MAP_KEY` | For FIRMS | NASA FIRMS MAP key |
 | `FIRECRAWL_API_KEY` | For web scraping | Firecrawl API key |
 | `SCRAPE_INTERVAL_MINUTES` | No | Default interval (30) |
+| `RETENTION_ENABLED` | No | Enables scheduled retention cleanup jobs when `true` |
+| `RETENTION_DRY_RUN` | No | If `true`, records eligible rows without deleting data |
+| `RETENTION_BATCH_SIZE` | No | Number of rows processed per cleanup batch |
+| `RETENTION_MAX_ROWS_PER_RUN` | No | Maximum rows processed in a single cleanup run |
+| `RETENTION_ALERTS_DAYS` | No | Retention window for `alerts` table |
+| `RETENTION_SUMMARIES_DAYS` | No | Retention window for `summaries` table |
+| `RETENTION_SCRAPE_LOG_DAYS` | No | Retention window for `scrape_log` table |
+| `RETENTION_NIGHTLY_HOUR_UTC` | No | UTC hour used by nightly retention job |
+| `RETENTION_WEEKLY_DAY_UTC` | No | UTC day-of-week for weekly retention job (e.g., `sun`) |
+| `RETENTION_WEEKLY_HOUR_UTC` | No | UTC hour used by weekly retention job |
 | `DEFAULT_ZIP_CODE` | No | Default location ZIP (90001) |
 | `DEFAULT_LAT` | No | Default latitude (34.0522) |
 | `DEFAULT_LON` | No | Default longitude (-118.2437) |
