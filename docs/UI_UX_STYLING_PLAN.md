@@ -18,7 +18,11 @@ Replace the Expo starter UI with a branded, wireframe-accurate RiskRadar mobile 
 
 ## Current Frontend Baseline
 
-The current mobile frontend is located in `frontend/RiskRadar` and is still close to the Expo starter template.
+The current mobile frontend is located in `frontend/RiskRadar`.
+
+As of Mar 12, 2026, the app is no longer a pure Expo starter at the shell level: RiskRadar assets are in place, the theme token file has been rebuilt, the root navigation theme is branded, the tab bar has been restyled, and `app.json` has been aligned with the new palette.
+
+The main screen layer is still incomplete: `app/(tabs)/index.tsx`, `app/(tabs)/explore.tsx`, and `app/modal.tsx` still contain Expo starter content, `components/themed-text.tsx` and `components/themed-view.tsx` are still using starter-style abstractions, `components/parallax-scroll-view.tsx` is still the active pattern on both tab screens, and the planned branded UI primitives have not been created yet.
 
 Key current entry points:
 
@@ -144,6 +148,12 @@ Typography defaults:
 - Body: `15/22`, regular
 - Meta: `12/16`, medium
 
+## Current Status Snapshot
+
+- Done: wireframe assets copied into `frontend/RiskRadar/assets/`, branded tokens implemented in `frontend/RiskRadar/constants/theme.ts`, app shell theming updated in `frontend/RiskRadar/app/_layout.tsx`, branded tab bar applied in `frontend/RiskRadar/app/(tabs)/_layout.tsx`, and Expo app metadata updated in `frontend/RiskRadar/app.json`.
+- Verified: `npm run lint` completed successfully in `frontend/RiskRadar` on Mar 12, 2026.
+- Still pending: replace Expo starter screen content in `index.tsx`, `explore.tsx`, and `modal.tsx`; update `themed-text.tsx` and `themed-view.tsx`; stop using `parallax-scroll-view.tsx` for the phase 1 screens; and create the planned reusable branded components.
+
 ## File-by-File Implementation Checklist
 
 ### 1. `frontend/RiskRadar/assets/icons/`
@@ -267,8 +277,8 @@ Purpose:
 Checklist:
 
 - [ ] Ensure background token usage supports screen, card, and muted surface layers.
-- [ ] Keep it lightweight and reusable for containers and content blocks.
-- [ ] Avoid pushing card-specific styling into this file if a separate card component would be cleaner.
+- [x] Keep it lightweight and reusable for containers and content blocks.
+- [x] Avoid pushing card-specific styling into this file if a separate card component would be cleaner.
 
 ### 10. `frontend/RiskRadar/components/parallax-scroll-view.tsx`
 
@@ -368,8 +378,8 @@ To keep the app efficient and stable while making it wireframe-accurate:
 
 After implementation, run the following checks:
 
-- [ ] `npm install` in `frontend/RiskRadar` if dependencies are not already present.
-- [ ] `npm run lint`
+- [x] `npm install` in `frontend/RiskRadar` if dependencies are not already present.
+- [x] `npm run lint`
 - [ ] `npm run start`
 - [ ] Verify the app loads without runtime errors.
 - [ ] Verify the home and secondary tab screens render cleanly.
@@ -392,13 +402,12 @@ This styling task should be considered complete when all of the following are tr
 
 Implement in this order:
 
-1. `frontend/RiskRadar/constants/theme.ts`
-2. `frontend/RiskRadar/components/themed-text.tsx`
-3. `frontend/RiskRadar/components/brand-header.tsx`
-4. `frontend/RiskRadar/components/risk-card.tsx`
-5. `frontend/RiskRadar/app/(tabs)/_layout.tsx`
-6. `frontend/RiskRadar/app/(tabs)/index.tsx`
-7. `frontend/RiskRadar/app/(tabs)/explore.tsx`
-8. `frontend/RiskRadar/app/modal.tsx`
+1. `frontend/RiskRadar/components/themed-text.tsx` and `frontend/RiskRadar/components/themed-view.tsx`
+2. `frontend/RiskRadar/components/brand-header.tsx` and `frontend/RiskRadar/components/section-header.tsx`
+3. `frontend/RiskRadar/components/risk-card.tsx`, `frontend/RiskRadar/components/hazard-chip.tsx`, and `frontend/RiskRadar/components/tab-bar-icon.tsx`
+4. `frontend/RiskRadar/app/(tabs)/index.tsx`
+5. `frontend/RiskRadar/app/(tabs)/explore.tsx`
+6. `frontend/RiskRadar/app/modal.tsx`
+7. `frontend/RiskRadar/components/parallax-scroll-view.tsx`
 
-This order minimizes rework and front-loads the highest-visibility branding changes.
+This order minimizes rework by finishing the shared primitives before replacing the remaining Expo starter screens.
