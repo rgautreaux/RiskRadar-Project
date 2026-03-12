@@ -154,10 +154,10 @@ Purpose:
 
 Checklist:
 
-- [ ] Create `assets/icons/branding/`, `assets/icons/navigation/`, and `assets/icons/hazards/`.
-- [ ] Copy each file according to the Asset Mapping Table above.
-- [ ] Keep the original file names unchanged.
-- [ ] Add the wireframe image to `assets/images/wireframes/`.
+- [x] Create `assets/icons/branding/`, `assets/icons/navigation/`, and `assets/icons/hazards/`.
+- [x] Copy each file according to the Asset Mapping Table above.
+- [x] Keep the original file names unchanged.
+- [x] Add the wireframe image to `assets/images/wireframes/`.
 
 ### 2. `frontend/RiskRadar/constants/theme.ts`
 
@@ -167,13 +167,13 @@ Purpose:
 
 Checklist:
 
-- [ ] Replace default Expo colors with a full RiskRadar brand palette.
-- [ ] Add semantic tokens for `surface`, `surfaceMuted`, `border`, `danger`, `warning`, `success`, and `shadow`.
-- [ ] Add spacing tokens such as `xs`, `sm`, `md`, `lg`, `xl`.
-- [ ] Add radius tokens for cards, pills, and buttons.
-- [ ] Expand typography tokens for title, subtitle, section label, card heading, body, and meta text.
-- [ ] Set light mode as the only required branded mode for phase 1.
-- [ ] Remove Expo starter comments.
+- [x] Replace default Expo colors with a full RiskRadar brand palette.
+- [x] Add semantic tokens for `surface`, `surfaceMuted`, `border`, `danger`, `warning`, `success`, and `shadow`.
+- [x] Add spacing tokens such as `xs`, `sm`, `md`, `lg`, `xl`.
+- [x] Add radius tokens for cards, pills, and buttons.
+- [x] Expand typography tokens for title, subtitle, section label, card heading, body, and meta text.
+- [x] Set light mode as the only required branded mode for phase 1.
+- [x] Remove Expo starter comments.
 
 ### 3. `frontend/RiskRadar/app/_layout.tsx`
 
@@ -330,8 +330,8 @@ Checklist:
 
 ### Phase 1: Foundation
 
-- [ ] Copy assets into the mobile app.
-- [ ] Rebuild `constants/theme.ts` with real brand tokens.
+- [x] Copy assets into the mobile app.
+- [x] Rebuild `constants/theme.ts` with real brand tokens.
 - [ ] Update `themed-text.tsx` and `themed-view.tsx`.
 - [ ] Decide whether `parallax-scroll-view.tsx` stays or is replaced.
 
