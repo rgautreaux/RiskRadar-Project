@@ -7,8 +7,6 @@ These schemas validate request bodies and shape response payloads
 for the /api/v1/users/* endpoints.
 """
 
-from pydantic import BaseModel
-
 from typing import Optional
 
 # --- Request schemas -------------------------------------------------------
@@ -59,13 +57,8 @@ class UserOut(BaseModel):
     created_at: str
     model_config = ConfigDict(from_attributes=True)
 
-    class Config:
-        from_attributes = True
-
 class NotificationSettingsOut(BaseModel):
     """Response for GET /users/notifications."""
     notify_severity: Optional[str] = None
     device_token: Optional[str] = None
-
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

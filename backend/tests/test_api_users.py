@@ -1,6 +1,11 @@
 """Tests for user API endpoints."""
 
-import hashlib
+from auth.security import create_access_token, verify_password
+
+
+def _auth_headers(user_id: int) -> dict[str, str]:
+    token = create_access_token(data={"sub": str(user_id)})
+    return {"Authorization": f"Bearer {token}"}
 
 
 class TestRegisterUser:
@@ -36,8 +41,8 @@ class TestRegisterUser:
             "password": "mypassword",
         })
         user = db_session.query(User).filter(User.email == "carol@test.com").first()
-        expected_hash = hashlib.sha256("mypassword".encode()).hexdigest()
-        assert user.password_hash == expected_hash
+        assert user.password_hash != "mypassword"
+        assert verify_password("mypassword", user.password_hash)
 
     def test_duplicate_email_rejected(self, test_client, sample_user):
         resp = test_client.post("/api/v1/users/register", json={
@@ -53,18 +58,18 @@ class TestUpdatePreferences:
     def test_update_zip_code(self, test_client, sample_user):
         resp = test_client.put(f"/api/v1/users/{sample_user.id}/preferences", json={
             "zip_code": "10001",
-        })
+        }, headers=_auth_headers(sample_user.id))
         assert resp.status_code == 200
         assert resp.json()["zip_code"] == "10001"
 
     def test_update_alert_types(self, test_client, sample_user):
         resp = test_client.put(f"/api/v1/users/{sample_user.id}/preferences", json={
             "alert_types": ["weather", "earthquake"],
-        })
+        }, headers=_auth_headers(sample_user.id))
         assert resp.status_code == 200
 
-    def test_update_not_found(self, test_client):
+    def test_update_forbidden_for_other_user(self, test_client, sample_user):
         resp = test_client.put("/api/v1/users/9999/preferences", json={
             "zip_code": "00000",
-        })
-        assert resp.status_code == 404
+        }, headers=_auth_headers(sample_user.id))
+        assert resp.status_code == 403
