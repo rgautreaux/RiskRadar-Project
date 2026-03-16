@@ -31,12 +31,12 @@ class RetentionSpec:
     retention_days: int
 
 
-def _now_iso() -> str:
-    return datetime.now(timezone.utc).isoformat()
+def _now_utc() -> datetime:
+    return datetime.now(timezone.utc)
 
 
-def _cutoff_iso(retention_days: int) -> str:
-    return (datetime.now(timezone.utc) - timedelta(days=retention_days)).isoformat()
+def _cutoff_utc(retention_days: int) -> datetime:
+    return datetime.now(timezone.utc) - timedelta(days=retention_days)
 
 
 def _estimate_row_bytes(rows: list[Any]) -> int:
@@ -56,7 +56,7 @@ def _build_archive_row(row: Any, archive_model: Any, cleanup_run_id: int) -> Any
     }
     payload["original_id"] = row.id
     payload["cleanup_run_id"] = cleanup_run_id
-    payload["archived_at"] = _now_iso()
+    payload["archived_at"] = _now_utc()
     return archive_model(**payload)
 
 
@@ -98,9 +98,9 @@ def _table_specs_for_schedule(schedule_kind: str) -> list[RetentionSpec]:
 
 
 def _run_table_cleanup(db: Session, spec: RetentionSpec, schedule_kind: str) -> CleanupRun:
-    started_at = _now_iso()
+    started_at = _now_utc()
     start_time = datetime.now(timezone.utc)
-    cutoff_at = _cutoff_iso(spec.retention_days)
+    cutoff_at = _cutoff_utc(spec.retention_days)
     batch_size = max(1, settings.RETENTION_BATCH_SIZE)
     max_rows = max(batch_size, settings.RETENTION_MAX_ROWS_PER_RUN)
 
@@ -158,7 +158,7 @@ def _run_table_cleanup(db: Session, spec: RetentionSpec, schedule_kind: str) -> 
         run_record.rows_deleted = rows_deleted
         run_record.storage_bytes_estimated = bytes_estimated
 
-    completed_at = _now_iso()
+    completed_at = _now_utc()
     run_record.completed_at = completed_at
     run_record.duration_ms = int((datetime.now(timezone.utc) - start_time).total_seconds() * 1000)
     return run_record
@@ -195,12 +195,12 @@ def run_retention_cleanup(schedule_kind: str = "weekly") -> list[CleanupRun]:
                 error_record = CleanupRun(
                     table_name=spec.table_name,
                     schedule_kind=schedule_kind,
-                    cutoff_at=_cutoff_iso(spec.retention_days),
+                    cutoff_at=_cutoff_utc(spec.retention_days),
                     dry_run=1 if settings.RETENTION_DRY_RUN else 0,
                     status="failed",
                     error_message=str(exc),
-                    started_at=_now_iso(),
-                    completed_at=_now_iso(),
+                    started_at=_now_utc(),
+                    completed_at=_now_utc(),
                 )
                 db.add(error_record)
                 db.commit()
