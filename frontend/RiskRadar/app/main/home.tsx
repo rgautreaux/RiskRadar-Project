@@ -80,7 +80,10 @@ export default function Home() {
         </View>
 
         {/* Placeholder: Weather Summary */}
-        <View style={styles.card}>
+        <TouchableOpacity 
+          style={styles.card}
+          onPress={() => router.push({ pathname: '/main/weather-report', params: { zipCode: zipCode || 'Unknown Location' } })}
+        >
           <View style={styles.cardHeader}>
             <View style={styles.cardIconBox}>
               <Ionicons name="partly-sunny" size={24} color="#F59E0B" />
@@ -90,13 +93,13 @@ export default function Home() {
           
           <View style={styles.placeholderBox}>
             <Text style={styles.placeholderText}>
-              Awaiting Zip Code...
+              {zipCode.length === 5 ? `Results for ${zipCode}` : 'Awaiting Zip Code...'}
             </Text>
             <Text style={styles.placeholderSubtext}>
-              Weather reports will appear here once connected.
+              {zipCode.length === 5 ? 'Tap to view full weather summary.' : 'Enter a zip code and tap here.'}
             </Text>
           </View>
-        </View>
+        </TouchableOpacity>
 
         {/* Placeholder: Risk Summary */}
         <View style={styles.card}>
