@@ -12,7 +12,7 @@ Replace the Expo starter UI with a branded, wireframe-accurate RiskRadar mobile 
 
 - Main mobile screens visibly match the structure and branding direction of the wireframe.
 - Colors, typography, spacing, and iconography are centralized in reusable theme tokens.
-- Light Mode and Dark Mode are both implemented through the same token system with no screen-level hard-coded color fallbacks.
+- Light Mode and Dark Mode are both implemented through the same token system with no screen-level hard-coded color fallbacks. (Phase 1: token palette defined in `theme.ts`; full component-level dark surface hardening is Phase 2.)
 - Navigation elements use RiskRadar-branded visuals instead of Expo starter defaults.
 - Screens render cleanly on both Android and iOS-sized layouts without overflow or broken alignment.
 - The app starts, navigates, and lints without introducing runtime or TypeScript issues.
@@ -317,7 +317,7 @@ Typography defaults:
 - Done in current baseline: wireframe assets copied into `frontend/RiskRadar/assets/`, branded tokens implemented in `frontend/RiskRadar/constants/theme.ts`, app shell theming updated in `frontend/RiskRadar/app/_layout.tsx`, branded tab bar applied in `frontend/RiskRadar/app/(tabs)/_layout.tsx`, and Expo app metadata updated in `frontend/RiskRadar/app.json`.
 - Done in Ben branch (to be integrated): `app/auth/login.tsx`, `app/auth/registration.tsx`, and `app/main/home.tsx` provide usable UX flow and content structure for onboarding and location-risk search.
 - Verified: `npm run lint` completed successfully in `frontend/RiskRadar` on Mar 12, 2026.
-- Still pending: implement full dark token map in `theme.ts`; replace Expo starter screen content in `index.tsx`, `explore.tsx`, and `modal.tsx`; update `themed-text.tsx` and `themed-view.tsx`; stop using `parallax-scroll-view.tsx` for phase 1 screens; create reusable branded components; and reconcile Ben's auth/main flow into the current routing shell.
+- Still pending: replace Expo starter screen content in `index.tsx`, `explore.tsx`, and `modal.tsx`; update `themed-text.tsx` and `themed-view.tsx`; stop using `parallax-scroll-view.tsx` for phase 1 screens; create reusable branded components; and reconcile Ben's auth/main flow into the current routing shell. Component-level dark surface hardening (contrast validation per screen) remains a Phase 2 task.
 - Risk to resolve: home tab icon state mapping in `app/(tabs)/_layout.tsx` must be validated against active/inactive asset intent before final polish.
 
 ## File-by-File Implementation Checklist
@@ -348,9 +348,9 @@ Checklist:
 - [x] Add spacing tokens such as `xs`, `sm`, `md`, `lg`, `xl`.
 - [x] Add radius tokens for cards, pills, and buttons.
 - [x] Expand typography tokens for title, subtitle, section label, card heading, body, and meta text.
-- [ ] Add a dedicated dark palette (do not mirror `light` values) using the locked Dark Mode token set.
-- [ ] Ensure `Colors.dark` contains semantic keys matching `Colors.light` one-to-one.
-- [ ] Ensure navigation, card, border, and status colors are readable in dark mode.
+- [x] Add a dedicated dark palette (do not mirror `light` values) using the locked Dark Mode token set.
+- [x] Ensure `Colors.dark` contains semantic keys matching `Colors.light` one-to-one.
+- [x] Ensure navigation, card, border, and status colors are readable in dark mode.
 - [x] Remove Expo starter comments.
 
 ### 3. `frontend/RiskRadar/app/_layout.tsx`
@@ -363,7 +363,7 @@ Checklist:
 
 - [x] Replace the default React Navigation theme with a custom RiskRadar navigation theme.
 - [x] Align background colors with the new token system.
-- [ ] Set status bar styling dynamically for Light Mode and Dark Mode.
+- [x] Set status bar styling dynamically for Light Mode and Dark Mode.
 - [x] Keep layout minimal and push colors into `theme.ts`.
 
 ### 4. `frontend/RiskRadar/app/(tabs)/_layout.tsx`
@@ -380,7 +380,7 @@ Checklist:
 - [x] Use a temporary vector icon only for the non-home tab if no wireframe asset fits.
 - [x] Ensure the selected tab is visually obvious and consistent with the wireframe.
 - [ ] Validate `RiskRadar_ALERT_HomeBttn.png` and `RiskRadar_STND_HomeBttn.png` focused-state mapping matches wireframe intent.
-- [ ] Ensure tab bar surfaces, labels, and icon contrast pass readability in both light and dark modes.
+- [x] Ensure tab bar surfaces, labels, and icon contrast pass readability in both light and dark modes.
 
 ### 5. `frontend/RiskRadar/app/(tabs)/index.tsx`
 

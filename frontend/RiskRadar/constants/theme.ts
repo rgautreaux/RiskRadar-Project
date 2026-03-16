@@ -66,11 +66,32 @@ const lightColors = {
   white: BrandPalette.white,
 };
 
+const darkColors = {
+  text: '#E6F2FF',
+  textSecondary: '#A9C0D6',
+  background: '#0E1B2A',
+  tint: '#5FA8E6',
+  icon: '#5FA8E6',
+  tabIconDefault: '#A9C0D6',
+  tabIconSelected: '#5FA8E6',
+  surface: '#0E1B2A',
+  surfaceMuted: '#16293B',
+  border: '#2F4A63',
+  danger: '#FF6B6B',
+  warning: '#F8B84E',
+  success: '#4FBF8A',
+  shadow: 'rgba(0, 0, 0, 0.40)',
+  card: '#16293B',
+  link: '#5FA8E6',
+  primary: '#5FA8E6',
+  primaryDark: '#1B4F8A',
+  secondary: '#1C2E40',
+  white: '#FFFFFF',
+};
+
 export const Colors = {
   light: lightColors,
-  // TODO: Replace with a dedicated dark palette in a future phase.
-  // dark intentionally mirrors lightColors for Phase 1 (light mode only).
-  dark: lightColors,
+  dark: darkColors,
 };
 
 export const Fonts = fontFamilies;

@@ -7,7 +7,7 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "riskradar",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
@@ -36,7 +36,7 @@
           "resizeMode": "contain",
           "backgroundColor": "#F6FAFD",
           "dark": {
-            "backgroundColor": "#F6FAFD"
+            "backgroundColor": "#0E1B2A"
           }
         }
       ]
