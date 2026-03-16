@@ -101,6 +101,73 @@ Use this checklist during merge work. Do not merge by directory-wide preference;
 - If a Ben file conflicts with existing route groups, keep route groups from current branch and port only component-level UI logic.
 - If uncertain during conflict resolution, prefer preserving compile-safe navigation flow over visual polish in that commit, then polish in next commit.
 
+### PR-Ready Parallel Task List (Grouped by Owner)
+
+Use the following PR split so work can proceed in parallel with minimal file overlap.
+
+#### Shared (do first)
+
+- [ ] PR S1: Lock base architecture contract.
+- Scope: `frontend/RiskRadar/constants/theme.ts`, `frontend/RiskRadar/app/_layout.tsx`, `frontend/RiskRadar/app/(tabs)/_layout.tsx`, and this plan file.
+- Deliverable: Team agreement on keep/port decisions, route ownership, and icon focused-state expectation.
+- Conflict guard: No feature code changes in this PR; documentation + tiny config-only updates.
+
+- [ ] PR S2: Create new reusable component files and export contracts only.
+- Scope: `frontend/RiskRadar/components/brand-header.tsx`, `frontend/RiskRadar/components/section-header.tsx`, `frontend/RiskRadar/components/risk-card.tsx`, `frontend/RiskRadar/components/hazard-chip.tsx`, `frontend/RiskRadar/components/tab-bar-icon.tsx`.
+- Deliverable: Typed props, placeholder render bodies, and naming conventions agreed.
+- Conflict guard: No screen wiring yet, so Ben and Rebecca can branch from this safely.
+
+#### Rebecca Owner Track
+
+- [ ] PR R1: Foundation primitives and tab-shell stabilization.
+- Scope: `frontend/RiskRadar/components/themed-text.tsx`, `frontend/RiskRadar/components/themed-view.tsx`, `frontend/RiskRadar/app/(tabs)/_layout.tsx`.
+- Deliverable: Token-driven text/view variants and validated home icon active/inactive mapping.
+- Conflict guard: Do not edit `app/auth/*` in this PR.
+
+- [ ] PR R2: Alerts and modal rebuild on branded architecture.
+- Scope: `frontend/RiskRadar/app/(tabs)/explore.tsx`, `frontend/RiskRadar/app/modal.tsx`.
+- Deliverable: No Expo starter content, no parallax usage, shared branded component consumption.
+- Conflict guard: Avoid edits to `app/(tabs)/index.tsx` while Ben track is active.
+
+- [ ] PR R3: Parallax deprecation cleanup.
+- Scope: `frontend/RiskRadar/components/parallax-scroll-view.tsx` and any remaining references.
+- Deliverable: Either fully unused + retained temporarily, or removed after zero-consumer confirmation.
+- Conflict guard: Merge only after R2 and B2 to avoid accidental reintroduction.
+
+#### Ben Owner Track
+
+- [ ] PR B1: Auth route integration (ported and restyled).
+- Scope: `frontend/RiskRadar/app/auth/login.tsx`, `frontend/RiskRadar/app/auth/registration.tsx`, and minimal route registration changes in `frontend/RiskRadar/app/_layout.tsx` if required.
+- Deliverable: Ben onboarding UX ported into branded tokens/components with current route groups.
+- Conflict guard: No edits to themed primitives and no tab-screen rewrites in this PR.
+
+- [ ] PR B2: Home screen flow integration from Ben intent.
+- Scope: `frontend/RiskRadar/app/(tabs)/index.tsx`.
+- Deliverable: Wireframe-aligned home dashboard that includes Ben's useful interaction patterns (guest context, zip input intent, risk placeholders) without older route architecture.
+- Conflict guard: Do not modify `explore.tsx` or `modal.tsx` in this PR.
+
+#### Shared Finalization Track
+
+- [ ] PR S3: Cross-track integration and QA gate.
+- Scope: merge fallout only across `app/(tabs)/index.tsx`, `app/(tabs)/explore.tsx`, `app/modal.tsx`, `app/auth/*`, `components/*`.
+- Deliverable: Lint clean, startup verified, no dead-end routes, no starter copy, and no hard-coded off-brand color constants.
+- Conflict guard: Only bugfix and integration edits; no new feature additions.
+
+### Merge Queue (Recommended Order)
+
+1. PR S1
+2. PR S2
+3. PR R1 and PR B1 in parallel
+4. PR R2 and PR B2 in parallel
+5. PR R3
+6. PR S3
+
+### File Ownership Guardrail (While Parallel Work Is Active)
+
+- Ben owns changes in `frontend/RiskRadar/app/auth/*` and primary edits in `frontend/RiskRadar/app/(tabs)/index.tsx`.
+- Rebecca owns changes in `frontend/RiskRadar/app/(tabs)/explore.tsx`, `frontend/RiskRadar/app/modal.tsx`, `frontend/RiskRadar/components/themed-text.tsx`, and `frontend/RiskRadar/components/themed-view.tsx`.
+- Shared-only files (`constants/theme.ts`, `app/_layout.tsx`, `app/(tabs)/_layout.tsx`) require a quick sync approval before merge if both tracks need edits.
+
 ## Available Branding Assets
 
 The following asset directory already contains usable RiskRadar wireframe imagery and iconography:
