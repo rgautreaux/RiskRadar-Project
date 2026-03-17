@@ -981,3 +981,74 @@ For work branches in team projects, periodic syncs (weekly or bi-weekly) prevent
 ### Next Steps
 - If desired, optionally standardize hyphen/encoding artifacts in both docs files for style consistency.
 - If desired, add commit hashes for these documentation updates once committed.
+
+---
+
+## Rebecca Gautreaux Log - 2026-03-16 (Post-Merge Verification Follow-up)
+
+### Session Focus
+- Run post-merge verification after integrating `troubleshooting-and-testing-branch` into `main`.
+- Validate backend and frontend health on merged `main` state.
+- Update transcript and group progress records again per user request.
+
+### Major Developments Completed
+
+#### 1) Verified Merged Main Baseline in Clean Merge Clone
+- Confirmed clean/recent `main` state in temporary merge clone:
+  - `git rev-parse --abbrev-ref HEAD` -> `main`
+  - `git pull origin main` -> already up to date
+- Why this was needed:
+  - Ensures verification runs against the actual merged `main` state.
+
+#### 2) Backend Post-Merge Regression Check Passed
+- Ran full backend suite in merged-main clone:
+  - `python -m pytest -q`
+- Result: `78 passed in 2.39s`.
+- Why this was needed:
+  - Confirms backend integration remains stable after merge/conflict resolution.
+
+#### 3) Frontend Lint Verification Exposed Remaining Issues
+- Initial lint run failed due missing local frontend binaries in clean clone (`expo` not found).
+- Installed dependencies and reran lint:
+  - `npm.cmd install`
+  - `npm.cmd run lint`
+- Final result: 10 lint errors (`import/no-unresolved`) for alias imports such as:
+  - `@/hooks/use-color-scheme`
+  - `@/components/haptic-tab`
+  - `@/components/ui/icon-symbol`
+- Impacted files include tab/app/auth/main screens and layout files.
+- Why this was needed:
+  - Provides an accurate post-merge frontend quality signal and concrete follow-up targets.
+
+#### 4) Documentation Updated Again (Per Explicit Request)
+- Appended new session block to `docs/REBECCA-TRANSCRIPT.md` capturing:
+  - exact user command
+  - executed verification steps
+  - resulting outcomes
+- Appended this follow-up entry to `docs/GROUP_PROGRESS_LOG`.
+- Why this was needed:
+  - Keeps project records aligned with the latest merge verification cycle.
+
+### Commands / Verification Used
+- Main baseline:
+  - `git rev-parse --abbrev-ref HEAD`
+  - `git pull origin main`
+  - `git status --short`
+- Backend verification:
+  - `python -m pytest -q`
+- Frontend verification:
+  - `npm.cmd run lint`
+  - `npm.cmd install`
+  - `npm.cmd run lint`
+
+### Issues / Blockers
+- Frontend lint currently fails on merged main due unresolved `@/...` module alias imports in multiple files.
+
+### Outcome
+- Backend post-merge verification is green (`78 passed`).
+- Frontend lint remains red (10 unresolved-import errors) and needs follow-up alias/config or file-path fixes.
+- Transcript and progress log were updated again as requested.
+
+### Next Steps
+- Resolve path-alias import configuration or update import paths in failing frontend files.
+- Re-run `npm.cmd run lint` after alias fixes to confirm frontend post-merge health.
