@@ -12,7 +12,7 @@ Replace the Expo starter UI with a branded, wireframe-accurate RiskRadar mobile 
 
 - Main mobile screens visibly match the structure and branding direction of the wireframe.
 - Colors, typography, spacing, and iconography are centralized in reusable theme tokens.
-- Light Mode and Dark Mode are both implemented through the same token system with no screen-level hard-coded color fallbacks. (Phase 1: token palette defined in `theme.ts`; full component-level dark surface hardening is Phase 2.)
+- Light Mode and Dark Mode tokens are both defined in `theme.ts` through the same semantic token system with no screen-level hard-coded color fallbacks. (Phase 1: `app.json` sets `userInterfaceStyle` to `"light"` — the UI is intentionally light-only for Phase 1. Phase 2 removes the `userInterfaceStyle` lock from `app.json` and hardens component-level contrast for dark surfaces.)
 - Navigation elements use RiskRadar-branded visuals instead of Expo starter defaults.
 - Screens render cleanly on both Android and iOS-sized layouts without overflow or broken alignment.
 - The app starts, navigates, and lints without introducing runtime or TypeScript issues.
