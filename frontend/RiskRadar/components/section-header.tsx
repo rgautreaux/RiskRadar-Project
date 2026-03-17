@@ -51,8 +51,9 @@ export function SectionHeader({
             styles.title,
             {
               color: palette.text,
-              fontFamily: Typography.sans.bold,
+              fontFamily: Fonts.sans,
               fontSize: 18,
+              fontWeight: '700',
             },
             titleStyle,
           ]}
@@ -65,8 +66,9 @@ export function SectionHeader({
               styles.subtitle,
               {
                 color: palette.textSecondary,
-                fontFamily: Typography.sans.regular,
+                fontFamily: Fonts.sans,
                 fontSize: 14,
+                fontWeight: '400',
               },
             ]}
           >

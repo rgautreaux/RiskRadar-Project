@@ -69,7 +69,8 @@ export function HazardChip({
           styles.label,
           {
             color: chipText,
-            fontFamily: Typography.sans.semibold,
+            fontFamily: Fonts.sans,
+            fontWeight: '600',
           },
         ]}
       >

@@ -103,7 +103,8 @@ export function RiskCard({
           styles.title,
           {
             color: palette.text,
-            fontFamily: Typography.sans.bold,
+            fontFamily: Fonts.sans,
+            fontWeight: '700',
           },
         ]}
       >
@@ -117,7 +118,8 @@ export function RiskCard({
             styles.description,
             {
               color: palette.textSecondary,
-              fontFamily: Typography.sans.regular,
+              fontFamily: Fonts.sans,
+              fontWeight: '400',
             },
           ]}
         >
