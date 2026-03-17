@@ -1,10 +1,11 @@
 import { Tabs } from 'expo-router';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import React from 'react';
 import { Image, StyleSheet } from 'react-native';
 
 import { HapticTab } from '@/components/haptic-tab';
+import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors, Radius, Spacing } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 const homeTabIcon = {
   inactive: require('@/assets/icons/navigation/RiskRadar_ALERT_HomeBttn.png'),
@@ -22,17 +23,25 @@ function HomeTabIcon({ focused }: { focused: boolean }) {
 }
 
 export default function TabLayout() {
+  const scheme = useColorScheme() ?? 'light';
+  const palette = Colors[scheme];
+
+  const tabBarStyle = [
+    styles.tabBar,
+    { backgroundColor: palette.card, borderTopColor: palette.border },
+  ];
+
   return (
     <Tabs
       screenOptions={{
-        sceneStyle: { backgroundColor: Colors.light.background },
+        sceneStyle: { backgroundColor: palette.background },
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarShowLabel: true,
-        tabBarActiveTintColor: Colors.light.primary,
-        tabBarInactiveTintColor: Colors.light.textSecondary,
-        tabBarActiveBackgroundColor: Colors.light.secondary,
-        tabBarStyle: styles.tabBar,
+        tabBarActiveTintColor: palette.primary,
+        tabBarInactiveTintColor: palette.textSecondary,
+        tabBarActiveBackgroundColor: palette.secondary,
+        tabBarStyle,
         tabBarItemStyle: styles.tabBarItem,
         tabBarLabelStyle: styles.tabBarLabel,
       }}>
@@ -47,13 +56,7 @@ export default function TabLayout() {
         name="explore"
         options={{
           title: 'Alerts',
-          tabBarIcon: ({ color, focused }) => (
-            <MaterialIcons
-              size={24}
-              name={focused ? 'notifications-active' : 'notifications-none'}
-              color={color}
-            />
-          ),
+          tabBarIcon: ({ color }) => <IconSymbol size={24} name="bell.fill" color={color} />,
         }}
       />
     </Tabs>
@@ -63,8 +66,6 @@ export default function TabLayout() {
 const styles = StyleSheet.create({
   tabBar: {
     height: 86,
-    backgroundColor: Colors.light.white,
-    borderTopColor: Colors.light.border,
     borderTopWidth: 1,
     paddingTop: Spacing.sm,
     paddingBottom: Spacing.md,

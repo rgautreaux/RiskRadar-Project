@@ -972,3 +972,153 @@ For work branches in team projects, periodic syncs (weekly or bi-weekly) prevent
 - Rebuild `app/(tabs)/index.tsx`, `app/(tabs)/explore.tsx`, and `app/modal.tsx` to replace remaining Expo starter UI.
 - Add reusable branded components (`brand-header`, `risk-card`, `hazard-chip`, `section-header`, `tab-bar-icon`) before final styling polish.
 
+
+---
+
+## Rebecca Gautreaux Log - 2026-03-16
+
+### Session Focus
+- Finalize PR #28 merge-conflict remediation work into a cleaner commit narrative.
+- Validate branch state, verify prior merge-fix commits, and document this session comprehensively.
+- Update transcript and progress-log artifacts with session-specific evidence.
+
+### Major Developments Completed
+
+#### 1) Verified Branch State Before Additional Commit Actions
+- Confirmed repository working tree was clean using `git status --short`.
+- Why this was needed:
+  - Ensured no hidden/stale changes were left before processing the new request.
+  - Established whether new commit splitting was still required.
+
+#### 2) Confirmed Existing Split Commit History
+- Reviewed recent commit history with `git log --oneline -n 8`.
+- Confirmed two top commits already present on the active branch:
+  - `6dba9cf` (Merge Commit Fixes)
+  - `2f370e7` (Merge Conflict Fixes)
+- Why this was needed:
+  - Verified that conflict-resolution work had already been executed in two commits.
+  - Avoided unnecessary history rewrite operations on an already-clean branch.
+
+#### 3) Re-validated Frontend Files Mentioned in Session State
+- Read and confirmed current content of:
+  - `frontend/RiskRadar/app/auth/login.tsx`
+  - `frontend/RiskRadar/app/auth/registration.tsx`
+  - `frontend/RiskRadar/app/main/home.tsx`
+  - `frontend/RiskRadar/app/main/weather-report.tsx`
+- Why this was needed:
+  - The session context noted recent edits by user/automation in these files.
+  - Ensured the files were readable and coherent before documenting final outcomes.
+
+#### 4) Transcript Updated With This Session Command and Resulting Dialogue
+- Appended a new Session 5 section to `docs/REBECCA-TRANSCRIPT.md`.
+- Included:
+  - The exact user command text.
+  - The assistant dialogue/action trail for this request path.
+  - Command checks and observed branch state outcomes.
+- Why this was needed:
+  - Preserves session continuity in project records.
+  - Satisfies explicit user requirement to capture this command and dialogue.
+
+#### 5) Group Progress Log Updated With Full Session Summary
+- Added this dated log entry to `docs/GROUP_PROGRESS_LOG`.
+- Included session focus, major developments, rationale, and evidence-backed outcomes.
+- Why this was needed:
+  - Keeps team-facing progress documentation aligned with actual terminal/editor actions.
+  - Provides a concise operational narrative for this specific session.
+
+### Commands / Verification Used
+- Repository state:
+  - `git status --short`
+- Commit history verification:
+  - `git log --oneline -n 8`
+- Documentation formatting context checks:
+  - `Get-Content docs/REBECCA-TRANSCRIPT.md -Tail 80`
+  - `Get-Content docs/GROUP_PROGRESS_LOG -Tail 120`
+
+### Issues / Blockers
+- No active code or test blocker in this request path.
+- The branch was already clean with two merge-fix commits in place before documentation updates.
+
+### Decisions Made
+- Do not rewrite/reset/cherry-pick existing branch history since requested split commits were already present.
+- Apply documentation updates directly and preserve chronological evidence of this command/request.
+
+### Outcome
+- Session command was executed as requested by verifying split-commit state and proceeding with documentation updates.
+- `docs/REBECCA-TRANSCRIPT.md` now includes a Session 5 entry with the command and resulting dialogue/action log.
+- `docs/GROUP_PROGRESS_LOG` now includes a complete dated summary of all developments/actions in this session.
+
+### Next Steps
+- If desired, optionally standardize hyphen/encoding artifacts in both docs files for style consistency.
+- If desired, add commit hashes for these documentation updates once committed.
+
+---
+
+## Rebecca Gautreaux Log - 2026-03-16 (Post-Merge Verification Follow-up)
+
+### Session Focus
+- Run post-merge verification after integrating `troubleshooting-and-testing-branch` into `main`.
+- Validate backend and frontend health on merged `main` state.
+- Update transcript and group progress records again per user request.
+
+### Major Developments Completed
+
+#### 1) Verified Merged Main Baseline in Clean Merge Clone
+- Confirmed clean/recent `main` state in temporary merge clone:
+  - `git rev-parse --abbrev-ref HEAD` -> `main`
+  - `git pull origin main` -> already up to date
+- Why this was needed:
+  - Ensures verification runs against the actual merged `main` state.
+
+#### 2) Backend Post-Merge Regression Check Passed
+- Ran full backend suite in merged-main clone:
+  - `python -m pytest -q`
+- Result: `78 passed in 2.39s`.
+- Why this was needed:
+  - Confirms backend integration remains stable after merge/conflict resolution.
+
+#### 3) Frontend Lint Verification Exposed Remaining Issues
+- Initial lint run failed due missing local frontend binaries in clean clone (`expo` not found).
+- Installed dependencies and reran lint:
+  - `npm.cmd install`
+  - `npm.cmd run lint`
+- Final result: 10 lint errors (`import/no-unresolved`) for alias imports such as:
+  - `@/hooks/use-color-scheme`
+  - `@/components/haptic-tab`
+  - `@/components/ui/icon-symbol`
+- Impacted files include tab/app/auth/main screens and layout files.
+- Why this was needed:
+  - Provides an accurate post-merge frontend quality signal and concrete follow-up targets.
+
+#### 4) Documentation Updated Again (Per Explicit Request)
+- Appended new session block to `docs/REBECCA-TRANSCRIPT.md` capturing:
+  - exact user command
+  - executed verification steps
+  - resulting outcomes
+- Appended this follow-up entry to `docs/GROUP_PROGRESS_LOG`.
+- Why this was needed:
+  - Keeps project records aligned with the latest merge verification cycle.
+
+### Commands / Verification Used
+- Main baseline:
+  - `git rev-parse --abbrev-ref HEAD`
+  - `git pull origin main`
+  - `git status --short`
+- Backend verification:
+  - `python -m pytest -q`
+- Frontend verification:
+  - `npm.cmd run lint`
+  - `npm.cmd install`
+  - `npm.cmd run lint`
+
+### Issues / Blockers
+- Frontend lint currently fails on merged main due unresolved `@/...` module alias imports in multiple files.
+
+### Outcome
+- Backend post-merge verification is green (`78 passed`).
+- Frontend lint remains red (10 unresolved-import errors) and needs follow-up alias/config or file-path fixes.
+- Transcript and progress log were updated again as requested.
+
+### Next Steps
+- Resolve path-alias import configuration or update import paths in failing frontend files.
+- Re-run `npm.cmd run lint` after alias fixes to confirm frontend post-merge health.
