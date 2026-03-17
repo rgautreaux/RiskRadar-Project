@@ -4,8 +4,8 @@ from db.models import Alert, AlertArchive, CleanupRun, ScrapeLog, ScrapeLogArchi
 from db.retention import run_retention_cleanup
 
 
-def _iso_days_ago(days: int) -> str:
-    return (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+def _days_ago(days: int) -> datetime:
+    return datetime.now(timezone.utc) - timedelta(days=days)
 
 
 def test_retention_dry_run_logs_without_deleting(db_session, monkeypatch):
@@ -15,9 +15,9 @@ def test_retention_dry_run_logs_without_deleting(db_session, monkeypatch):
         alert_type="weather",
         severity="high",
         title="Old Alert",
-        created_at=_iso_days_ago(500),
-        fetched_at=_iso_days_ago(500),
-        updated_at=_iso_days_ago(500),
+        created_at=_days_ago(500),
+        fetched_at=_days_ago(500),
+        updated_at=_days_ago(500),
     )
     db_session.add(old_alert)
     db_session.commit()
@@ -55,24 +55,24 @@ def test_retention_archives_and_deletes_in_batches(db_session, monkeypatch):
             status="success",
             alerts_fetched=3,
             alerts_new=2,
-            started_at=_iso_days_ago(130),
-            completed_at=_iso_days_ago(130),
+            started_at=_days_ago(130),
+            completed_at=_days_ago(130),
         ),
         ScrapeLog(
             source="epa",
             status="success",
             alerts_fetched=2,
             alerts_new=1,
-            started_at=_iso_days_ago(131),
-            completed_at=_iso_days_ago(131),
+            started_at=_days_ago(131),
+            completed_at=_days_ago(131),
         ),
         ScrapeLog(
             source="usgs_earthquakes",
             status="success",
             alerts_fetched=1,
             alerts_new=1,
-            started_at=_iso_days_ago(132),
-            completed_at=_iso_days_ago(132),
+            started_at=_days_ago(132),
+            completed_at=_days_ago(132),
         ),
     ]
     db_session.add_all(old_logs)

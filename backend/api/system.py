@@ -72,15 +72,15 @@ def trigger_scrape(
 
     Returns a summary of what each scraper fetched.
     """
-    from scrapers.registry import build_scraper_list
+    from scrapers.registry import load_all_scrapers
 
-    scrapers = build_scraper_list()
+    scrapers = load_all_scrapers()
     results = []
 
     for scraper_info in scrapers:
-        scraper = scraper_info["factory"]()
+        scraper = scraper_info["scraper"]
         try:
-            count = scraper.run(db)
+            count = scraper.run()
             results.append({
                 "source": scraper_info["id"],
                 "status": "success",

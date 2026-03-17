@@ -83,7 +83,7 @@ def test_client(db_session):
 # Sample data fixtures
 # ---------------------------------------------------------------------------
 
-NOW = datetime.now(timezone.utc).isoformat()
+NOW = datetime.now(timezone.utc)
 
 
 @pytest.fixture

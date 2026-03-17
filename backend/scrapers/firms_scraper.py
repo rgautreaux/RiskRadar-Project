@@ -1,10 +1,9 @@
-"""NASA FIRMS — active fire / hotspot data.
+"""NASA FIRMS - active fire / hotspot data.
 
 API docs: https://firms.modaps.eosdis.nasa.gov/api/
 Requires a MAP_KEY (free registration).
 """
 
-import json
 import httpx
 
 from config.settings import settings
@@ -78,7 +77,7 @@ class FIRMSScraper(BaseScraper):
                 f"on {acq_date} {acq_time}. Brightness: {brightness}K, "
                 f"Confidence: {confidence}."
             ),
-            "raw_data": json.dumps(raw),
+            "raw_data": raw,
             "latitude": float(lat) if lat else None,
             "longitude": float(lon) if lon else None,
             "location_name": f"({lat}, {lon})",

@@ -267,7 +267,7 @@ class TestBaseScraperRun:
 
             def normalize(self, raw):
                 from datetime import datetime, timezone
-                now = datetime.now(timezone.utc).isoformat()
+                now = datetime.now(timezone.utc)
                 return {
                     "source": self.source_name,
                     "source_id": f"fake_{raw['id']}",
@@ -275,7 +275,7 @@ class TestBaseScraperRun:
                     "severity": "low",
                     "title": f"Fake alert {raw['id']}",
                     "description": "",
-                    "raw_data": "{}",
+                    "raw_data": {},
                     "latitude": None,
                     "longitude": None,
                     "location_name": "",

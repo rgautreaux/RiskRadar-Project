@@ -157,7 +157,7 @@ class WebScraper(BaseScraper):
             "severity": raw.get("severity", "moderate"),
             "title": raw.get("title", f"{self.source_name} alert"),
             "description": raw.get("description", ""),
-            "raw_data": json.dumps(raw),
+            "raw_data": raw,
             "latitude": _safe_float(raw.get("latitude")),
             "longitude": _safe_float(raw.get("longitude")),
             "location_name": raw.get("location_name", ""),

@@ -6,7 +6,6 @@ Inherits BaseScraper so run(), dedup, and ScrapeLog work unchanged.
 
 import csv
 import io
-import json
 import logging
 import os
 from datetime import date, timedelta
@@ -132,7 +131,7 @@ class GenericAPIScraper(BaseScraper):
             if path_or_val is None:
                 return None
             if path_or_val == "__full_item__":
-                return json.dumps(raw)
+                return raw
             try:
                 return _extract_path(raw, path_or_val)
             except (KeyError, IndexError, TypeError):

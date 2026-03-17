@@ -17,16 +17,27 @@ Replace the Expo starter UI with a branded, wireframe-accurate RiskRadar mobile 
 - Screens render cleanly on both Android and iOS-sized layouts without overflow or broken alignment.
 - The app starts, navigates, and lints without introducing runtime or TypeScript issues.
 
+## Planning Sync Snapshot (Mar 17, 2026)
+
+- Primary planning docs in active use are `docs/TODO.md` (sprint/stage board) and this plan (`docs/UI_UX_STYLING_PLAN.md`).
+- There is currently no separate `STAGES` file under `docs/`; stage tracking is represented by sprint phases in `docs/TODO.md`.
+- The "Precise Screen-by-Screen Wiring Checklist" section in this plan is the current source of truth for route-level implementation order and acceptance criteria.
+
 ## Current Frontend Baseline
 
 The current mobile frontend is located in `frontend/RiskRadar`.
 
-As of Mar 16, 2026, a branch audit confirms two major UI/UX streams that must be merged intentionally:
+As of Mar 17, 2026, a branch audit confirms two major UI/UX streams that must be merged intentionally:
 
 - Branded shell and token system work (assets, `theme.ts`, `app/_layout.tsx`, `app/(tabs)/_layout.tsx`, and `app.json`) is present in Rebecca-aligned branches and is the strongest wireframe foundation.
 - Ben's branch contains meaningful auth and onboarding UI prototypes (`app/auth/login.tsx`, `app/auth/registration.tsx`, and `app/main/home.tsx`) but uses an older route architecture and does not include the current branded shell/token files.
 
-The current branch still has Expo starter content on the main tab screens (`app/(tabs)/index.tsx`, `app/(tabs)/explore.tsx`, and `app/modal.tsx`), starter-style themed primitives (`components/themed-text.tsx`, `components/themed-view.tsx`), and active `parallax-scroll-view` usage on tab screens.
+The current branch has a mixed completion state:
+
+- Shell + branding foundations are implemented (`constants/theme.ts`, `app/_layout.tsx`, `app/(tabs)/_layout.tsx`, `app.json`, wireframe assets).
+- `app/(tabs)/index.tsx` still needs full wireframe-accurate dashboard implementation.
+- `app/(tabs)/explore.tsx` and `app/modal.tsx` are rebuilt from starter state but still require final asset wiring/polish for full wireframe fidelity.
+- Shared reusable components created as contracts still need full production wiring on target screens.
 
 Key current entry points:
 
@@ -108,32 +119,37 @@ Use the following PR split so work can proceed in parallel with minimal file ove
 
 #### Shared (do first)
 
-- [ ] PR S1: Lock base architecture contract.
+- [x] PR S1: Lock base architecture contract.
 - Scope: `frontend/RiskRadar/constants/theme.ts`, `frontend/RiskRadar/app/_layout.tsx`, `frontend/RiskRadar/app/(tabs)/_layout.tsx`, and this plan file.
 - Deliverable: Team agreement on keep/port decisions, route ownership, and icon focused-state expectation.
 - Conflict guard: No feature code changes in this PR; documentation + tiny config-only updates.
+- **Status (Mar 17, 2026):** Base files validated — all three frozen architecture files are correctly structured with branded theme tokens, tab routing, and root stack navigation. No changes were needed. `hooks/use-color-scheme.ts` created as missing dependency.
 
-- [ ] PR S2: Create new reusable component files and export contracts only.
+- [x] PR S2: Create new reusable component files and export contracts only.
 - Scope: `frontend/RiskRadar/components/brand-header.tsx`, `frontend/RiskRadar/components/section-header.tsx`, `frontend/RiskRadar/components/risk-card.tsx`, `frontend/RiskRadar/components/hazard-chip.tsx`, `frontend/RiskRadar/components/tab-bar-icon.tsx`.
 - Deliverable: Typed props, placeholder render bodies, and naming conventions agreed.
 - Conflict guard: No screen wiring yet, so Ben, Rebecca, and Celeste can branch from this safely.
+- **Status (Mar 17, 2026):** All 5 component skeleton files created with TypeScript props interfaces, JSDoc, and token-bound placeholder render bodies. 
 
 #### Rebecca Owner Track
 
-- [ ] PR R1: Foundation primitives and tab-shell stabilization.
+- [x] PR R1: Foundation primitives and tab-shell stabilization.
 - Scope: `frontend/RiskRadar/components/themed-text.tsx`, `frontend/RiskRadar/components/themed-view.tsx`, `frontend/RiskRadar/app/(tabs)/_layout.tsx`.
 - Deliverable: Token-driven text/view variants and validated home icon active/inactive mapping.
 - Conflict guard: Do not edit `app/auth/*` in this PR.
+- **Status (Mar 17, 2026):** COMPLETED. Created `themed-text.tsx` with 8 text variants (hero, title, subtitle, sectionTitle, cardTitle, eyebrow, body, meta) bound to typography tokens. Created `themed-view.tsx` with semantic surface modes (background, card, surfaceMuted) and optional elevation/padding. Fixed home tab icon mapping in `_layout.tsx` to show alert (red) for focused state and standard (green) for unfocused state.
 
-- [ ] PR R2: Alerts and modal rebuild on branded architecture.
+- [x] PR R2: Alerts and modal rebuild on branded architecture.
 - Scope: `frontend/RiskRadar/app/(tabs)/explore.tsx`, `frontend/RiskRadar/app/modal.tsx`.
 - Deliverable: No Expo starter content, no parallax usage, shared branded component consumption.
 - Conflict guard: Avoid edits to `app/(tabs)/index.tsx` while Ben track is active.
+- **Status (Mar 17, 2026):** COMPLETED. Rebuilt `explore.tsx` as wireframe-accurate Alerts list screen with AlertCard components showing severity-based coloring (critical=red, warning=yellow, info=blue). Created `modal.tsx` as branded notification details panel with alert header, description, recommendations, and action button. Both use ThemedView and ThemedText for consistent styling.
 
-- [ ] PR R3: Parallax deprecation cleanup.
+- [x] PR R3: Parallax deprecation cleanup.
 - Scope: `frontend/RiskRadar/components/parallax-scroll-view.tsx` and any remaining references.
 - Deliverable: Either fully unused + retained temporarily, or removed after zero-consumer confirmation.
 - Conflict guard: Merge only after R2 and B2 to avoid accidental reintroduction.
+- **Status (Mar 17, 2026):** COMPLETED. Verified that `parallax-scroll-view.tsx` component does not exist in current codebase and no usage remains. All screens use standard ScrollView or View layouts.
 
 #### Celeste Owner Track
 
@@ -316,9 +332,9 @@ Typography defaults:
 
 - Done in current baseline: wireframe assets copied into `frontend/RiskRadar/assets/`, branded tokens implemented in `frontend/RiskRadar/constants/theme.ts`, app shell theming updated in `frontend/RiskRadar/app/_layout.tsx`, branded tab bar applied in `frontend/RiskRadar/app/(tabs)/_layout.tsx`, and Expo app metadata updated in `frontend/RiskRadar/app.json`.
 - Done in Ben branch (to be integrated): `app/auth/login.tsx`, `app/auth/registration.tsx`, and `app/main/home.tsx` provide usable UX flow and content structure for onboarding and location-risk search.
-- Verified: `npm run lint` completed successfully in `frontend/RiskRadar` on Mar 12, 2026.
-- Still pending: replace Expo starter screen content in `index.tsx`, `explore.tsx`, and `modal.tsx`; update `themed-text.tsx` and `themed-view.tsx`; stop using `parallax-scroll-view.tsx` for phase 1 screens; create reusable branded components; and reconcile Ben's auth/main flow into the current routing shell. Component-level dark surface hardening (contrast validation per screen) remains a Phase 2 task.
-- Risk to resolve: home tab icon state mapping in `app/(tabs)/_layout.tsx` must be validated against active/inactive asset intent before final polish.
+- Verified: lint/startup and backend test validations have been run in recent sessions; maintain re-validation after each wiring chunk.
+- Still pending: full wireframe-accurate Home route rebuild, final Alerts/Modal icon-asset wiring, shared component production wiring (C1/C2), and Ben auth/main flow reconciliation into current shell.
+- Resolved risk: Home tab icon state mapping was corrected so standard icon appears on Home and alert variant appears in Alerts-route context.
 
 ## File-by-File Implementation Checklist
 
@@ -533,6 +549,145 @@ Checklist:
 - [ ] Merge `app/main/home.tsx` user flow concepts into the final wireframe-aligned Home/Alerts information model.
 - [ ] Ensure auth and guest navigation target current route groups without breaking `(tabs)` behavior.
 - [ ] Remove hard-coded non-brand purple values (`#4F46E5` family) during integration.
+
+## Precise Screen-by-Screen Wiring Checklist
+
+Use this section as the exact route wiring sequence for wireframe fidelity. Complete each screen block fully before moving to the next.
+
+### A. Root Navigation Shell (`frontend/RiskRadar/app/_layout.tsx`)
+
+- [ ] Confirm stack order and route groups include `(tabs)`, `auth/*`, `main/*`, and `modal` without broken back navigation.
+- [ ] Keep `ThemeProvider` bound to semantic tokens from `constants/theme.ts` only.
+- [ ] Ensure status bar style flips correctly for light and dark schemes.
+- [ ] Verify no screen-level hard-coded hex colors are introduced in this file.
+
+Exit criteria:
+
+- [ ] App launches to tab shell with no navigation warnings.
+- [ ] Auth screens and modal can be reached and dismissed cleanly.
+
+### B. Tab Shell (`frontend/RiskRadar/app/(tabs)/_layout.tsx`)
+
+- [ ] Keep Home tab icon wired to local assets: `assets/icons/navigation/RiskRadar_STND_HomeBttn.png` and `assets/icons/navigation/RiskRadar_ALERT_HomeBttn.png`.
+- [ ] Keep Alerts tab label and ensure icon strategy is finalized: branded PNG via `components/tab-bar-icon.tsx` or temporary vector fallback.
+- [ ] Set tab bar dimensions, paddings, and label styles to match wireframe proportions.
+- [ ] Confirm focused/unfocused Home icon mapping against design intent and document the final mapping in code comments.
+
+Exit criteria:
+
+- [ ] Tab bar looks branded on both iOS and Android sizes.
+- [ ] Home and Alerts tabs are visually distinct in active/inactive states.
+
+### C. Home Dashboard Route (`frontend/RiskRadar/app/(tabs)/index.tsx`)
+
+Header wiring:
+
+- [ ] Render `components/brand-header.tsx` at the top of the screen.
+- [ ] Wire `isAlert` state from placeholder risk status (temporary boolean until API integration).
+- [ ] Wire notification tap to `router.push('/modal')`.
+
+Summary/context wiring:
+
+- [ ] Add location/scope summary row under header (local vs global scope placeholder).
+- [ ] Add high-priority risk banner/card using semantic `danger`/`warning` tokens only.
+
+Primary card stack wiring:
+
+- [ ] Render reusable `components/risk-card.tsx` instances for Weather, Air Quality, Pollen, and Pollution.
+- [ ] Use hazard assets, not vector placeholders:
+	- [ ] `assets/icons/hazards/RiskRadar_Weather_Icon.png`
+	- [ ] `assets/icons/hazards/RiskRadar_AirQuality_Icon.png`
+	- [ ] `assets/icons/hazards/RiskRadar_Pollen_Icon.png`
+	- [ ] `assets/icons/hazards/RiskRadar_Pollution_Icon.png`
+- [ ] Use `ScrollView` (no parallax component).
+- [ ] Keep placeholder data shape aligned with expected API fields (title, value, severity, timestamp, trend).
+
+Exit criteria:
+
+- [ ] No Expo starter content remains on Home.
+- [ ] Home visually matches wireframe hierarchy: branded header -> context -> risk cards.
+
+### D. Alerts Route (`frontend/RiskRadar/app/(tabs)/explore.tsx`)
+
+Header and scope wiring:
+
+- [ ] Replace plain text header with `components/section-header.tsx` using Alerts title and count.
+- [ ] Add scope indicator assets near header as required:
+	- [ ] `assets/icons/navigation/RiskRadar_GEN_Global_Icon.png`
+	- [ ] `assets/icons/navigation/RiskRadar_DEST_Global_Icon.png`
+
+List wiring:
+
+- [ ] Render alert rows/cards using reusable `risk-card` or dedicated alert-card pattern (single shared component style system).
+- [ ] Replace icon placeholders with real hazard icons based on alert type/severity mapping.
+- [ ] Add optional `components/hazard-chip.tsx` row for affected hazard categories.
+- [ ] Keep severity color usage strictly tokenized (`danger`, `warning`, `primary`).
+
+Exit criteria:
+
+- [ ] Alerts list contains no placeholder geometry-only icons.
+- [ ] Header, card spacing, and typography align with Home screen system.
+
+### E. Modal Route (`frontend/RiskRadar/app/modal.tsx`)
+
+- [ ] Replace placeholder notification panel visuals with real notification panel art:
+	- [ ] `assets/icons/navigation/RiskRadar_ALERT_NotifWindow.png`
+	- [ ] `assets/icons/navigation/RiskRadar_STND_NotifWIndow.png`
+- [ ] Use branded heading/body/meta text variants from `components/themed-text.tsx`.
+- [ ] Keep CTA button style consistent with primary action buttons used on Home.
+- [ ] Ensure close, dismiss, and Android back behaviors all return to previous route.
+
+Exit criteria:
+
+- [ ] Modal reads as a branded RiskRadar detail sheet, not a starter modal.
+- [ ] No generic placeholder icon blocks remain.
+
+### F. Login Route (`frontend/RiskRadar/app/auth/login.tsx`)
+
+- [ ] Port Ben flow structure while preserving current route shell.
+- [ ] Replace hard-coded color values with `Colors[scheme]` semantic tokens.
+- [ ] Reuse branded button/input spacing conventions from Home and shared components.
+- [ ] Add brand header treatment (full `brand-header` or compact variant).
+- [ ] Ensure successful login routes to `(tabs)` target without dead-end intermediate routes.
+
+Exit criteria:
+
+- [ ] Login styling matches app brand and wireframe tone.
+- [ ] No purple legacy palette remains.
+
+### G. Registration Route (`frontend/RiskRadar/app/auth/registration.tsx`)
+
+- [ ] Port Ben registration UX content and validation layout.
+- [ ] Reuse the same tokenized input/button styles as Login.
+- [ ] Keep typography and spacing aligned with Home + Login.
+- [ ] Ensure submit/back navigation respects auth route group and returns correctly.
+
+Exit criteria:
+
+- [ ] Registration looks consistent with the branded shell.
+- [ ] Route transitions to/from Login and Tabs are stable.
+
+### H. Shared Component Wiring Prerequisites (`frontend/RiskRadar/components/`)
+
+- [ ] `brand-header.tsx`: finish production implementation and wire logo/text/notification assets.
+- [ ] `section-header.tsx`: support title + subtitle/count + optional right-side icon/action.
+- [ ] `risk-card.tsx`: support icon, title, value/description, severity badge, timestamp.
+- [ ] `hazard-chip.tsx`: support icon + label + local/global variant style.
+- [ ] `tab-bar-icon.tsx`: centralize PNG tab icon logic where feasible to avoid per-screen drift.
+
+Exit criteria:
+
+- [ ] All screen routes consume shared components instead of duplicating card/header markup.
+
+### I. Screen-by-Screen QA Gate (Run After A-H)
+
+- [ ] Home route: all four primary hazard cards use wireframe PNG icons.
+- [ ] Alerts route: list icons and chips use wireframe PNG assets; no square placeholders.
+- [ ] Modal route: notification window art appears in correct state (alert/standard).
+- [ ] Login/Registration: tokenized colors only; no off-brand hard-coded values.
+- [ ] Tab bar: active/inactive states are obvious and match documented mapping.
+- [ ] Light and dark modes both render legible text and surface contrast.
+- [ ] `npm run lint` and `npm run start` both pass after wiring completion.
 
 ## Suggested Implementation Order
 

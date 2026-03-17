@@ -1,10 +1,9 @@
-"""NOAA National Weather Service — active weather alerts.
+"""NOAA National Weather Service - active weather alerts.
 
 API docs: https://www.weather.gov/documentation/services-web-api
 No API key required, but a User-Agent header is mandatory.
 """
 
-import json
 import httpx
 
 from config.settings import settings
@@ -74,7 +73,7 @@ class NWSScraper(BaseScraper):
             "severity": SEVERITY_MAP.get(props.get("severity", "Unknown"), "moderate"),
             "title": props.get("headline", props.get("event", "Weather Alert")),
             "description": props.get("description", ""),
-            "raw_data": json.dumps(props),
+            "raw_data": props,
             "latitude": lat,
             "longitude": lon,
             "location_name": props.get("areaDesc", ""),

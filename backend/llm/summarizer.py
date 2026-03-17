@@ -57,7 +57,7 @@ class Summarizer:
         raise RuntimeError(f"Unknown LLM provider: {settings.LLM_PROVIDER}")
 
     def generate_daily_digest(self, db: Session, since_hours: int = 24) -> Summary | None:
-        cutoff = (datetime.now(timezone.utc) - timedelta(hours=since_hours)).isoformat()
+        cutoff = datetime.now(timezone.utc) - timedelta(hours=since_hours)
         alerts = db.query(Alert).filter(Alert.fetched_at >= cutoff).all()
 
         if not alerts:

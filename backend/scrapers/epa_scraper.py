@@ -1,10 +1,9 @@
-"""EPA Envirofacts — Toxics Release Inventory (TRI) facility data.
+"""EPA Envirofacts - Toxics Release Inventory (TRI) facility data.
 
 API docs: https://www.epa.gov/enviro/envirofacts-data-service-api
 No API key required.
 """
 
-import json
 import httpx
 
 from config.settings import settings
@@ -39,7 +38,7 @@ class EPAScraper(BaseScraper):
             "severity": "moderate",
             "title": f"TRI Facility: {name}",
             "description": f"EPA-tracked toxic release facility: {name} in {city}, {county} County, {state}.",
-            "raw_data": json.dumps(raw),
+            "raw_data": raw,
             "latitude": float(lat) if lat else None,
             "longitude": float(lon) if lon else None,
             "location_name": f"{city}, {state}" if city else state,

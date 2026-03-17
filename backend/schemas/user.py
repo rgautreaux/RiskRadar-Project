@@ -8,6 +8,7 @@ for the /api/v1/users/* endpoints.
 """
 
 from typing import Optional
+from datetime import datetime
 
 # --- Request schemas -------------------------------------------------------
 
@@ -54,7 +55,7 @@ class UserOut(BaseModel):
     longitude: Optional[float] = None
     alert_types: Optional[str] = None
     notify_severity: Optional[str] = None
-    created_at: str
+    created_at: datetime
     model_config = ConfigDict(from_attributes=True)
 
 class NotificationSettingsOut(BaseModel):

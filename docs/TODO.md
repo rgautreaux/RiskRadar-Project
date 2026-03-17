@@ -29,13 +29,13 @@ Week-by-week sprint board for tracking delivery to the goal of having most imple
 - [ ] 🟡 **Apr 13:** Core implementation + docs freeze complete
 - [ ] 🟡 **Apr 20:** Final presentation polish complete
 
-## Current Verification Snapshot (Mar 12, 2026)
+## Current Verification Snapshot (Mar 17, 2026)
 
-- Backend pytest run (local venv): **78 collected, 78 passed, 0 failed, 0 errors**
-- Dependency and compatibility fixes applied: installed backend requirements, pinned `bcrypt==4.0.1`, and aligned user API tests with JWT+bcrypt behavior
-- Mobile Expo app shell progress: wireframe assets, brand tokens, branded root layout, branded tab layout, and `app.json` shell theming are implemented in `frontend/RiskRadar`
-- Mobile frontend validation: `npm.cmd run lint` completed successfully in `frontend/RiskRadar`
-- Mobile frontend remaining gap: `app/(tabs)/index.tsx`, `app/(tabs)/explore.tsx`, and `app/modal.tsx` still contain Expo starter content and still need the full RiskRadar screen rebuild
+- Backend pytest status remains green in recent verification sessions, including the latest documented backend run with system-endpoint additions.
+- Mobile Expo app shell progress remains implemented: wireframe assets, brand tokens, branded root layout, branded tab layout, and `app.json` shell theming in `frontend/RiskRadar`.
+- Mobile frontend lint baseline remains passing in recent documented runs.
+- Mobile frontend remaining gap is now primarily wireframe-accurate screen wiring and shared component wiring (not shell setup).
+- Stage tracking source of truth: this sprint board plus `docs/UI_UX_STYLING_PLAN.md` (no separate `STAGES` file currently exists in `docs/`).
 - Newly documented in `README.md` this week:
   - full backend test suite explanation and run guide
   - scheduled data cleanup (retention) architecture + operations notes
@@ -120,7 +120,7 @@ Week-by-week sprint board for tracking delivery to the goal of having most imple
 - [ ] 🟡 Confirm API contract compatibility with frontend screens
 - [ ] 🟡 Verify push/device token handling lifecycle
 - [ ] 🟡 Define MVP UI states (loading, empty, error, success)
-- [ ] 🟡 Replace Expo starter Home, Alerts, and modal screens in `frontend/RiskRadar/app/`
+- [ ] 🟡 Complete wireframe-accurate Home/Alerts/Modal screen wiring in `frontend/RiskRadar/app/` (shared components + hazard/notification assets + final spacing/typography alignment)
 - [ ] 🟡 Create reusable branded mobile UI primitives (`brand-header`, `section-header`, `risk-card`, `hazard-chip`, `tab-bar-icon`)
 
 ### In Progress
@@ -132,6 +132,8 @@ Week-by-week sprint board for tracking delivery to the goal of having most imple
 - [x] 🟢 Import RiskRadar wireframe assets into the Expo app (`frontend/RiskRadar/assets/icons/` and `frontend/RiskRadar/assets/images/wireframes/`)
 - [x] 🟢 Establish branded mobile theme tokens and shell styling (`frontend/RiskRadar/constants/theme.ts`, `frontend/RiskRadar/app/_layout.tsx`, `frontend/RiskRadar/app/(tabs)/_layout.tsx`, `frontend/RiskRadar/app.json`)
 - [x] 🟢 Validate the current mobile frontend lint baseline (`frontend/RiskRadar`, `npm.cmd run lint`)
+- [x] 🟢 Add a precise route-by-route mobile wiring checklist to execution planning (`docs/UI_UX_STYLING_PLAN.md`, "Precise Screen-by-Screen Wiring Checklist")
+- [x] 🟢 Correct Home tab icon placement behavior (Standard icon on Home route, Alert icon on Alerts route context)
 
 ---
 

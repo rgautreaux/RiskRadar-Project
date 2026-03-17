@@ -1,4 +1,3 @@
-import json
 import logging
 import time
 from abc import ABC, abstractmethod
@@ -28,11 +27,11 @@ class BaseScraper(ABC):
         started = datetime.now(timezone.utc)
         start_ms = time.monotonic_ns() // 1_000_000
         session = SessionLocal()
-        log = ScrapeLog(source=self.source_name, started_at=started.isoformat(), status="success")
+        log = ScrapeLog(source=self.source_name, started_at=started, status="success")
+        new_count = 0
 
         try:
             raw_items = self.fetch_raw_data()
-            new_count = 0
 
             for item in raw_items:
                 try:
@@ -65,7 +64,9 @@ class BaseScraper(ABC):
         finally:
             elapsed = time.monotonic_ns() // 1_000_000 - start_ms
             log.duration_ms = elapsed
-            log.completed_at = datetime.now(timezone.utc).isoformat()
+            log.completed_at = datetime.now(timezone.utc)
             session.add(log)
             session.commit()
             session.close()
+
+        return new_count
