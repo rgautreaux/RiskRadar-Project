@@ -14,6 +14,7 @@ pyyaml>=6.0
 
 # --- Authentication (NEW — gap analysis items 2.2 & 2.3) ---
 passlib[bcrypt]>=1.7.4     # bcrypt password hashing (replaces SHA-256)
+bcrypt==4.0.1              # passlib compatibility (avoids bcrypt 5.x runtime issue)
 python-jose[cryptography]>=3.3.0  # JWT token creation & verification
 
 # --- HTTP Client ---

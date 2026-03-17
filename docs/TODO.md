@@ -29,6 +29,17 @@ Week-by-week sprint board for tracking delivery to the goal of having most imple
 - [ ] 🟡 **Apr 13:** Core implementation + docs freeze complete
 - [ ] 🟡 **Apr 20:** Final presentation polish complete
 
+## Current Verification Snapshot (Mar 12, 2026)
+
+- Backend pytest run (local venv): **78 collected, 78 passed, 0 failed, 0 errors**
+- Dependency and compatibility fixes applied: installed backend requirements, pinned `bcrypt==4.0.1`, and aligned user API tests with JWT+bcrypt behavior
+- Mobile Expo app shell progress: wireframe assets, brand tokens, branded root layout, branded tab layout, and `app.json` shell theming are implemented in `frontend/RiskRadar`
+- Mobile frontend validation: `npm.cmd run lint` completed successfully in `frontend/RiskRadar`
+- Mobile frontend remaining gap: `app/(tabs)/index.tsx`, `app/(tabs)/explore.tsx`, and `app/modal.tsx` still contain Expo starter content and still need the full RiskRadar screen rebuild
+- Newly documented in `README.md` this week:
+  - full backend test suite explanation and run guide
+  - scheduled data cleanup (retention) architecture + operations notes
+
 ---
 
 ## Sprint 1 — Scope Lock
@@ -60,17 +71,16 @@ Week-by-week sprint board for tracking delivery to the goal of having most imple
 
 ### To Do
 - [ ] 🟡 Audit sources in `backend/config/sources.yaml`
-- [ ] 🟡 Verify scraper normalization for required `alerts` fields
-- [ ] 🟡 Validate dedup behavior on (`source`, `source_id`)
-- [ ] 🟡 Confirm MariaDB schema alignment with ORM models
 - [ ] 🟡 Run and verify SQL migrations in `backend/db/migrations/`
-- [x] 🟢 Add a repeatable local DB setup/verification checklist (documented in `README.md` MariaDB setup + quick verify section)
 
 ### In Progress
 - [ ] 🟡 Move active tasks here
 
 ### Done
-- [ ] 🟢 Move completed tasks here
+- [x] 🟢 Verify scraper normalization for required `alerts` fields (covered by `backend/tests/test_scrapers.py` and `backend/tests/test_scraper_db_integration.py`)
+- [x] 🟢 Validate dedup behavior on (`source`, `source_id`) (covered by `backend/tests/test_models.py` + scraper integration tests)
+- [x] 🟢 Confirm MariaDB schema alignment with ORM models (`backend/db/migrations/2026-03-03_mariadb_scraper_alignment.sql` + migration notes)
+- [x] 🟢 Add a repeatable local DB setup/verification checklist (documented in `README.md` MariaDB setup + quick verify section)
 
 ---
 
@@ -81,10 +91,7 @@ Week-by-week sprint board for tracking delivery to the goal of having most imple
 **Owners:** Qui, Max
 
 ### To Do
-- [x] 🟢 Validate required Alerts, Summaries, and Users endpoints (`backend/api/alerts.py`, `backend/api/summaries.py`, `backend/api/users.py`, `backend/api/router.py`)
-- [x] 🟢 Ensure request/response schemas are accurate and documented (`backend/schemas/*.py` + `backend/tests/test_api_alerts.py`, `backend/tests/test_api_summaries.py`, `backend/tests/test_api_users.py`)
 - [ ] 🟡 Add/verify input validation and edge-case error handling
-- [x] 🟢 Confirm pagination/filter defaults and behavior (implemented in `backend/api/alerts.py` query parameters)
 - [ ] 🟡 Define summary quality rubric (clarity, actionability, factual consistency)
 - [ ] 🟡 Review and tune prompts in `backend/llm/prompts.py`
 - [ ] 🟡 Add fallback behavior for LLM/API failures
@@ -94,7 +101,9 @@ Week-by-week sprint board for tracking delivery to the goal of having most imple
 - [ ] 🟡 Move active tasks here
 
 ### Done
-- [ ] 🟢 Move completed tasks here
+- [x] 🟢 Validate required Alerts, Summaries, and Users endpoints (`backend/api/alerts.py`, `backend/api/summaries.py`, `backend/api/users.py`, `backend/api/router.py`)
+- [x] 🟢 Ensure request/response schemas are accurate and documented (`backend/schemas/*.py` + `backend/tests/test_api_alerts.py`, `backend/tests/test_api_summaries.py`, `backend/tests/test_api_users.py`)
+- [x] 🟢 Confirm pagination/filter defaults and behavior (implemented in `backend/api/alerts.py` query parameters)
 
 ---
 
@@ -107,18 +116,22 @@ Week-by-week sprint board for tracking delivery to the goal of having most imple
 ### To Do
 - [ ] 🟡 Finalize minimum personal data policy (zip-only where possible)
 - [ ] 🟡 Confirm secrets handling (`.env`, no secrets in repo)
-- [ ] 🟡 Review authentication/password storage flow
 - [ ] 🟡 Validate least-privilege DB/user access assumptions
 - [ ] 🟡 Confirm API contract compatibility with frontend screens
-- [ ] 🟡 Validate user preference update flow end-to-end
 - [ ] 🟡 Verify push/device token handling lifecycle
 - [ ] 🟡 Define MVP UI states (loading, empty, error, success)
+- [ ] 🟡 Replace Expo starter Home, Alerts, and modal screens in `frontend/RiskRadar/app/`
+- [ ] 🟡 Create reusable branded mobile UI primitives (`brand-header`, `section-header`, `risk-card`, `hazard-chip`, `tab-bar-icon`)
 
 ### In Progress
-- [ ] 🟡 Move active tasks here
+- [ ] 🟡 Continue the mobile UI restyle from shell branding into screen-level implementation (`frontend/RiskRadar`)
 
 ### Done
-- [ ] 🟢 Move completed tasks here
+- [x] 🟢 Review authentication/password storage flow (`backend/auth/security.py` + user API tests)
+- [x] 🟢 Validate user preference update flow end-to-end (`backend/tests/test_api_users.py` preference update coverage)
+- [x] 🟢 Import RiskRadar wireframe assets into the Expo app (`frontend/RiskRadar/assets/icons/` and `frontend/RiskRadar/assets/images/wireframes/`)
+- [x] 🟢 Establish branded mobile theme tokens and shell styling (`frontend/RiskRadar/constants/theme.ts`, `frontend/RiskRadar/app/_layout.tsx`, `frontend/RiskRadar/app/(tabs)/_layout.tsx`, `frontend/RiskRadar/app.json`)
+- [x] 🟢 Validate the current mobile frontend lint baseline (`frontend/RiskRadar`, `npm.cmd run lint`)
 
 ---
 
@@ -129,12 +142,9 @@ Week-by-week sprint board for tracking delivery to the goal of having most imple
 **Owners:** All
 
 ### To Do
-- [x] 🟢 Keep backend tests green in `backend/tests/` (verified: 78 passed on Mar 9, 2026)
 - [ ] 🟡 Add tests for uncovered critical paths
 - [ ] 🟡 Add regression checklist for scraper + DB + summary flow
-- [ ] 🟡 Validate scheduler startup/shutdown behavior
 - [ ] 🟡 Track known issues with severity and owner
-- [ ] 🟡 Update `README.md` architecture and quick-start accuracy
 - [ ] 🟡 Reconcile docs (`ARCHITECTURE.md`, `DATA_MODEL.md`, `PROJECT_DESCRIPTION.md`)
 - [ ] 🟡 Prepare executive-level narrative + final demo script
 - [ ] 🟡 Run end-to-end dry run by Apr 10
@@ -144,7 +154,9 @@ Week-by-week sprint board for tracking delivery to the goal of having most imple
 - [ ] 🟡 Move active tasks here
 
 ### Done
-- [ ] 🟢 Move completed tasks here
+- [x] 🟢 Keep backend tests green in `backend/tests/` (verified Mar 12: 78 collected, 78 passed)
+- [x] 🟢 Validate scheduler startup/shutdown behavior baseline (`backend/tests/test_retention.py` verifies retention job registration and scheduler start)
+- [x] 🟢 Update `README.md` architecture and quick-start accuracy (tests and retention cleanup sections updated Mar 12)
 
 ---
 
