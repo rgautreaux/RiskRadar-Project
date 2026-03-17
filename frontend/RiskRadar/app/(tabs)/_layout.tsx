@@ -16,15 +16,15 @@ const homeTabIcon = {
 
 /**
  * HomeTabIcon renders the home tab icon with alert-aware coloring.
- * - When focused (active): shows alert variant (red) to emphasize active state
- * - When unfocused (inactive): shows standard variant (green)
+ * - When focused (active): shows standard variant (green)
+ * - When unfocused (inactive): shows alert variant (red)
  * 
  * In the future, this can be enhanced to show actual alert state from app context.
  */
 function HomeTabIcon({ focused }: { focused: boolean }) {
   return (
     <Image
-      source={focused ? homeTabIcon.alert : homeTabIcon.standard}
+      source={focused ? homeTabIcon.standard : homeTabIcon.alert}
       style={styles.homeIcon}
       resizeMode="contain"
     />
