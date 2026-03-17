@@ -8,14 +8,23 @@ import { Colors, Radius, Spacing } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 const homeTabIcon = {
-  inactive: require('@/assets/icons/navigation/RiskRadar_ALERT_HomeBttn.png'),
-  active: require('@/assets/icons/navigation/RiskRadar_STND_HomeBttn.png'),
+  // Standard (non-alert) state: green colors
+  standard: require('@/assets/icons/navigation/RiskRadar_STND_HomeBttn.png'),
+  // Alert state: red colors
+  alert: require('@/assets/icons/navigation/RiskRadar_ALERT_HomeBttn.png'),
 };
 
+/**
+ * HomeTabIcon renders the home tab icon with alert-aware coloring.
+ * - When focused (active): shows alert variant (red) to emphasize active state
+ * - When unfocused (inactive): shows standard variant (green)
+ * 
+ * In the future, this can be enhanced to show actual alert state from app context.
+ */
 function HomeTabIcon({ focused }: { focused: boolean }) {
   return (
     <Image
-      source={focused ? homeTabIcon.active : homeTabIcon.inactive}
+      source={focused ? homeTabIcon.alert : homeTabIcon.standard}
       style={styles.homeIcon}
       resizeMode="contain"
     />

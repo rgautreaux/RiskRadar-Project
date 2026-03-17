@@ -1,18 +1,19 @@
 import React from 'react';
 import { 
-  Text, 
-  View, 
   StyleSheet, 
   TouchableOpacity, 
   SafeAreaView,
+  View,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
 
-import { Colors } from '@/constants/theme';
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { Colors, Spacing, Radius, Shadows } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
-export default function MainScreen() {
+export default function HomeScreen() {
   const router = useRouter();
   const scheme = useColorScheme() ?? 'light';
   const palette = Colors[scheme];
@@ -30,62 +31,94 @@ export default function MainScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.card }]}>
-      <View style={styles.container}>
-        
-        {/* Main Icon & Branding */}
-        <View style={styles.heroContainer}>
-          <View style={styles.iconWrapper}>
-            <View style={[styles.iconBackground, { backgroundColor: palette.secondary }]}>
-              <Ionicons name="radio-outline" size={64} color={palette.primary} />
+    <ThemedView surface="card" style={styles.safeArea}>
+      <SafeAreaView style={styles.safeAreaContainer}>
+        <View style={styles.container}>
+          
+          {/* Main Hero Branding Section */}
+          <View style={styles.heroContainer}>
+            <View style={styles.iconWrapper}>
+              <View style={[styles.iconBackground, { backgroundColor: palette.secondary }]}>
+                <Ionicons name="radio-outline" size={64} color={palette.primary} />
+              </View>
+              <View style={[styles.pulseRing, { borderColor: palette.secondary }]} />
             </View>
-            <View style={[styles.pulseRing, { borderColor: palette.secondary }]} />
-          </View>
-          <Text style={[styles.title, { color: palette.text }]}>Risk<Text style={{ color: palette.primary }}>Radar</Text></Text>
-          <Text style={[styles.subtitle, { color: palette.textSecondary }]}>Stay aware. Stay prepared.</Text>
-        </View>
-
-        {/* Action Buttons */}
-        <View style={styles.actionContainer}>
-          <TouchableOpacity 
-            style={[styles.primaryButton, { backgroundColor: palette.primary, shadowColor: palette.primary }]} 
-            onPress={handleLogin}
-            activeOpacity={0.8}
-          >
-            <Ionicons name="log-in-outline" size={20} color={palette.white} style={styles.buttonIcon} />
-            <Text style={styles.primaryButtonText}>Log In</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={[styles.secondaryButton, { backgroundColor: palette.secondary }]}
-            onPress={handleCreateAccount}
-            activeOpacity={0.6}
-          >
-            <Ionicons name="person-add-outline" size={20} color={palette.primary} style={styles.buttonIcon} />
-            <Text style={[styles.secondaryButtonText, { color: palette.primary }]}>Create Account</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Footer / Guest Mode */}
-        <View style={styles.footerContainer}>
-          <View style={styles.dividerContainer}>
-            <View style={[styles.divider, { backgroundColor: palette.border }]} />
-            <Text style={[styles.dividerText, { color: palette.textSecondary }]}>OR</Text>
-            <View style={[styles.divider, { backgroundColor: palette.border }]} />
+            <ThemedText type="hero" style={styles.title}>
+              Risk<ThemedText type="hero" lightColor={palette.primary} darkColor={palette.primary}>Radar</ThemedText>
+            </ThemedText>
+            <ThemedText 
+              type="body" 
+              lightColor={palette.textSecondary}
+              darkColor={palette.textSecondary}
+              style={styles.subtitle}
+            >
+              Stay aware. Stay prepared.
+            </ThemedText>
           </View>
 
-          <TouchableOpacity 
-            style={styles.guestButton} 
-            onPress={handleGuest}
-            activeOpacity={0.6}
-          >
-            <Text style={[styles.guestText, { color: palette.textSecondary }]}>Continue as Guest</Text>
-            <Ionicons name="arrow-forward" size={16} color={palette.textSecondary} style={styles.guestIcon} />
-          </TouchableOpacity>
-        </View>
+          {/* Action Buttons */}
+          <View style={styles.actionContainer}>
+            <TouchableOpacity 
+              style={[styles.primaryButton, { backgroundColor: palette.primary, shadowColor: palette.primary }]} 
+              onPress={handleLogin}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="log-in-outline" size={20} color={palette.white} style={styles.buttonIcon} />
+              <ThemedText type="cardTitle" lightColor={palette.white} darkColor={palette.white}>
+                Log In
+              </ThemedText>
+            </TouchableOpacity>
 
-      </View>
-    </SafeAreaView>
+            <TouchableOpacity 
+              style={[styles.secondaryButton, { backgroundColor: palette.secondary }]}
+              onPress={handleCreateAccount}
+              activeOpacity={0.6}
+            >
+              <Ionicons name="person-add-outline" size={20} color={palette.primary} style={styles.buttonIcon} />
+              <ThemedText 
+                type="cardTitle" 
+                lightColor={palette.primary}
+                darkColor={palette.primary}
+              >
+                Create Account
+              </ThemedText>
+            </TouchableOpacity>
+          </View>
+
+          {/* Footer / Guest Mode */}
+          <View style={styles.footerContainer}>
+            <View style={styles.dividerContainer}>
+              <View style={[styles.divider, { backgroundColor: palette.border }]} />
+              <ThemedText 
+                type="eyebrow" 
+                lightColor={palette.textSecondary}
+                darkColor={palette.textSecondary}
+                style={styles.dividerText}
+              >
+                OR
+              </ThemedText>
+              <View style={[styles.divider, { backgroundColor: palette.border }]} />
+            </View>
+
+            <TouchableOpacity 
+              style={styles.guestButton} 
+              onPress={handleGuest}
+              activeOpacity={0.6}
+            >
+              <ThemedText 
+                type="body"
+                lightColor={palette.textSecondary}
+                darkColor={palette.textSecondary}
+              >
+                Continue as Guest
+              </ThemedText>
+              <Ionicons name="arrow-forward" size={16} color={palette.textSecondary} style={styles.guestIcon} />
+            </TouchableOpacity>
+          </View>
+
+        </View>
+      </SafeAreaView>
+    </ThemedView>
   );
 }
 
@@ -93,11 +126,14 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
+  safeAreaContainer: {
+    flex: 1,
+  },
   container: {
     flex: 1,
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 24,
+    paddingHorizontal: Spacing.md,
     paddingTop: 60,
     paddingBottom: 40,
   },
@@ -108,7 +144,7 @@ const styles = StyleSheet.create({
   iconWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 32,
+    marginBottom: Spacing.xl,
     position: 'relative',
   },
   iconBackground: {
@@ -128,54 +164,36 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   title: {
-    fontSize: 42,
-    fontWeight: "800",
-    marginBottom: 12,
+    marginBottom: Spacing.sm,
     letterSpacing: -1,
   },
   subtitle: {
-    fontSize: 18,
     textAlign: "center",
-    fontWeight: "500",
   },
   actionContainer: {
     width: '100%',
-    paddingHorizontal: 12,
+    paddingHorizontal: Spacing.sm,
   },
   primaryButton: {
     flexDirection: 'row',
     width: "100%",
     height: 56,
-    borderRadius: 16,
+    borderRadius: Radius.button,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 16,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4.65,
-    elevation: 8,
+    marginBottom: Spacing.md,
+    ...Shadows.card,
   },
   buttonIcon: {
-    marginRight: 8,
-  },
-  primaryButtonText: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "700",
-    letterSpacing: 0.5,
+    marginRight: Spacing.sm,
   },
   secondaryButton: {
     flexDirection: 'row',
     width: "100%",
     height: 56,
-    borderRadius: 16,
+    borderRadius: Radius.button,
     justifyContent: "center",
     alignItems: "center",
-  },
-  secondaryButtonText: {
-    fontSize: 16,
-    fontWeight: "700",
-    letterSpacing: 0.5,
   },
   footerContainer: {
     width: '100%',
@@ -185,29 +203,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     width: '80%',
-    marginBottom: 24,
+    marginBottom: Spacing.lg,
   },
   divider: {
     flex: 1,
     height: 1,
   },
   dividerText: {
-    paddingHorizontal: 16,
-    fontSize: 12,
-    fontWeight: '600',
+    paddingHorizontal: Spacing.md,
   },
   guestButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-  },
-  guestText: {
-    fontSize: 15,
-    fontWeight: "600",
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
   },
   guestIcon: {
-    marginLeft: 4,
+    marginLeft: Spacing.xs,
     marginTop: 2,
   },
 });
