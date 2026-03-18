@@ -66,3 +66,17 @@
 - Complete wireframe-accurate screen wiring for Home/Alerts/Modal with shared component production wiring.
 - Reconcile Ben auth/main UX flow into current branded route shell.
 - Continue end-to-end validation after each major frontend integration chunk.
+
+## Additional Developments Since Last Update (Mar 18, 2026)
+
+### Planning and Execution Integrity
+- Synchronized planning docs so status markers reflect completed Rebecca-track deliverables while keeping unresolved cross-team tasks open.
+- Confirmed stage tracking remains intentionally centralized in `docs/TODO.md` and `docs/UI_UX_STYLING_PLAN.md` (no separate `STAGES` file in `docs/`).
+
+### UI/UX Ownership Criteria Formalized
+- Added `Signature UX Details` section to `docs/UI_UX_STYLING_PLAN.md` with measurable SD1-SD10 checklist items.
+- Linked signature-detail completion into implementation phases, verification checklist, and definition-of-done gates.
+
+### Documentation Consistency Improvements
+- Reconciled mismatched checklist states in `docs/UI_UX_STYLING_PLAN.md` to match already-documented completed PR outcomes (R1/R2/R3) without over-marking pending polish.
+- Added explicit progress notes that distinguish "core rebuild complete" versus "final wiring/polish pending" for Alerts and Modal routes.
