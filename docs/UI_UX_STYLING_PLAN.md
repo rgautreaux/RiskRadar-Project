@@ -10,12 +10,17 @@ Replace the Expo starter UI with a branded, wireframe-accurate RiskRadar mobile 
 
 ## Success Criteria
 
-- Main mobile screens visibly match the structure and branding direction of the wireframe.
-- Colors, typography, spacing, and iconography are centralized in reusable theme tokens.
-- Light Mode and Dark Mode tokens are both defined in `theme.ts` through the same semantic token system with no screen-level hard-coded color fallbacks. (Phase 1: `app.json` sets `userInterfaceStyle` to `"light"` — the UI is intentionally light-only for Phase 1. Phase 2 removes the `userInterfaceStyle` lock from `app.json` and hardens component-level contrast for dark surfaces.)
-- Navigation elements use RiskRadar-branded visuals instead of Expo starter defaults.
-- Screens render cleanly on both Android and iOS-sized layouts without overflow or broken alignment.
-- The app starts, navigates, and lints without introducing runtime or TypeScript issues.
+Main mobile screens visibly match the structure and branding direction of the wireframe.
+Colors, typography, spacing, and iconography are centralized in reusable theme tokens.
+App defaults to Light Mode on startup, with a visible toggle for users to switch between Light and Dark Mode. Remove hard lock in app.json; implement toggle in dashboard header or settings.
+All theme tokens and styling logic support both modes, with no screen-level hard-coded color overrides.
+Dashboard is the default landing page at app startup, not Login. Login is accessible from a card/tab/button on the Dashboard.
+Remove the "Latest Summary" tab/page. Add a summary dropdown menu on the Dashboard for summary selection—no separate summary screen.
+Add a Summary Search Bar to the Dashboard. Prompt users for topics of concern and display relevant summaries directly on the Dashboard (Quick Onboarding for info gathering).
+Onboarding is quick and topic-driven via Dashboard search bar and dropdown.
+Navigation elements use RiskRadar-branded visuals instead of Expo starter defaults.
+Screens render cleanly on both Android and iOS-sized layouts without overflow or broken alignment.
+The app starts, navigates, and lints without introducing runtime or TypeScript issues.
 
 ## Planning Sync Snapshot (Mar 18, 2026)
 
