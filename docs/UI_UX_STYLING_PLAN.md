@@ -99,11 +99,11 @@ Use this checklist during merge work. Do not merge by directory-wide preference;
 - [ ] Port `app/auth/login.tsx` from Ben branch and restyle with branded tokens/components.
 - [ ] Port `app/auth/registration.tsx` from Ben branch and restyle with branded tokens/components.
 - [ ] Rebuild `app/(tabs)/index.tsx` using wireframe structure and Ben interaction intent (not Ben file body).
-- [ ] Rebuild `app/(tabs)/explore.tsx` as Alerts list screen (no Ben equivalent file).
-- [ ] Rebuild `app/modal.tsx` as branded notification/details surface (no Ben equivalent file).
-- [ ] Expand `components/themed-text.tsx` and `components/themed-view.tsx` before final screen pass.
-- [ ] Remove `ParallaxScrollView` usage from Home and Alerts screens.
-- [ ] Validate tab home icon focused-state mapping against wireframe active/inactive expectations.
+- [x] Rebuild `app/(tabs)/explore.tsx` as Alerts list screen (no Ben equivalent file).
+- [x] Rebuild `app/modal.tsx` as branded notification/details surface (no Ben equivalent file).
+- [x] Expand `components/themed-text.tsx` and `components/themed-view.tsx` before final screen pass.
+- [x] Remove `ParallaxScrollView` usage from Home and Alerts screens.
+- [x] Validate tab home icon focused-state mapping against wireframe active/inactive expectations.
 - [ ] Run lint and app startup checks after each merge chunk to catch route regressions early.
 
 ### Conflict Resolution Rules (Required)
@@ -395,7 +395,7 @@ Checklist:
 - [x] Rename `Explore` to `Alerts` unless the team rejects that information model.
 - [x] Use a temporary vector icon only for the non-home tab if no wireframe asset fits.
 - [x] Ensure the selected tab is visually obvious and consistent with the wireframe.
-- [ ] Validate `RiskRadar_ALERT_HomeBttn.png` and `RiskRadar_STND_HomeBttn.png` focused-state mapping matches wireframe intent.
+- [x] Validate `RiskRadar_ALERT_HomeBttn.png` and `RiskRadar_STND_HomeBttn.png` focused-state mapping matches wireframe intent.
 - [x] Ensure tab bar surfaces, labels, and icon contrast pass readability in both light and dark modes.
 
 ### 5. `frontend/RiskRadar/app/(tabs)/index.tsx`
@@ -421,13 +421,17 @@ Purpose:
 
 - Convert the current example page into a branded secondary screen aligned with the app’s content model.
 
+Progress note:
+
+- Core rebuild completed in PR R2. Remaining icon-asset and composition refinements are tracked in the Precise Screen-by-Screen section (Route D).
+
 Checklist:
 
-- [ ] Remove all starter educational content and collapsible docs sections.
-- [ ] Convert the screen into an alerts-focused list view.
-- [ ] Use iconography and card patterns shared with the home screen.
-- [ ] Maintain visual consistency with home while allowing a distinct secondary purpose.
-- [ ] Remove all leftover Expo starter UI.
+- [x] Remove all starter educational content and collapsible docs sections.
+- [x] Convert the screen into an alerts-focused list view.
+- [x] Use iconography and card patterns shared with the home screen.
+- [x] Maintain visual consistency with home while allowing a distinct secondary purpose.
+- [x] Remove all leftover Expo starter UI.
 
 ### 7. `frontend/RiskRadar/app/modal.tsx`
 
@@ -435,11 +439,15 @@ Purpose:
 
 - Bring the modal styling in line with the rest of the app, or repurpose it if the wireframe suggests a detail panel or notification sheet.
 
+Progress note:
+
+- Core rebuild completed in PR R2. Remaining notification art/state wiring refinements are tracked in the Precise Screen-by-Screen section (Route E).
+
 Checklist:
 
-- [ ] Replace generic modal text with a notification details surface.
-- [ ] Apply branded spacing, type, and link/button treatment.
-- [ ] Ensure modal visuals match the home and tab screens.
+- [x] Replace generic modal text with a notification details surface.
+- [x] Apply branded spacing, type, and link/button treatment.
+- [x] Ensure modal visuals match the home and tab screens.
 
 ### 8. `frontend/RiskRadar/components/themed-text.tsx`
 
@@ -449,8 +457,8 @@ Purpose:
 
 Checklist:
 
-- [ ] Expand `type` variants to `hero`, `sectionTitle`, `cardTitle`, `eyebrow`, and `meta`.
-- [ ] Connect text styles directly to the typography tokens in `theme.ts`.
+- [x] Expand `type` variants to `hero`, `sectionTitle`, `cardTitle`, `eyebrow`, and `meta`.
+- [x] Connect text styles directly to the typography tokens in `theme.ts`.
 - [ ] Remove hard-coded starter link colors and swap them for branded link/action colors.
 - [ ] Keep the component simple enough to avoid text-style duplication across screens.
 - [ ] Validate all text variants for contrast in both light and dark surfaces.
@@ -463,10 +471,10 @@ Purpose:
 
 Checklist:
 
-- [ ] Ensure background token usage supports screen, card, and muted surface layers.
+- [x] Ensure background token usage supports screen, card, and muted surface layers.
 - [x] Keep it lightweight and reusable for containers and content blocks.
 - [x] Avoid pushing card-specific styling into this file if a separate card component would be cleaner.
-- [ ] Support explicit semantic surface modes (`background`, `card`, `surfaceMuted`) across light and dark themes.
+- [x] Support explicit semantic surface modes (`background`, `card`, `surfaceMuted`) across light and dark themes.
 
 ### 9.5 `frontend/RiskRadar/hooks/use-color-scheme.ts` and `frontend/RiskRadar/hooks/use-theme-color.ts`
 
@@ -488,9 +496,9 @@ Purpose:
 
 Checklist:
 
-- [ ] Do not use this component for phase 1 screen rebuilds.
-- [ ] Replace current usage in `app/(tabs)/index.tsx` and `app/(tabs)/explore.tsx` with `ScrollView`.
-- [ ] Leave the file in place only if removing it would create unnecessary churn.
+- [x] Do not use this component for phase 1 screen rebuilds.
+- [x] Replace current usage in `app/(tabs)/index.tsx` and `app/(tabs)/explore.tsx` with `ScrollView`.
+- [x] Confirmed no `parallax-scroll-view.tsx` file/consumers remain in current codebase (R3 cleanup).
 
 ### 11. `frontend/RiskRadar/components/ui/icon-symbol.tsx`
 
@@ -520,7 +528,7 @@ Required new components:
 
 Checklist:
 
-- [ ] Create these components before final screen styling.
+- [x] Create these components before final screen styling.
 - [ ] Keep props tied to display intent rather than temporary placeholder copy.
 - [ ] Match spacing and composition to the wireframe first, then simplify if needed.
 
@@ -568,15 +576,15 @@ Exit criteria:
 
 ### B. Tab Shell (`frontend/RiskRadar/app/(tabs)/_layout.tsx`)
 
-- [ ] Keep Home tab icon wired to local assets: `assets/icons/navigation/RiskRadar_STND_HomeBttn.png` and `assets/icons/navigation/RiskRadar_ALERT_HomeBttn.png`.
-- [ ] Keep Alerts tab label and ensure icon strategy is finalized: branded PNG via `components/tab-bar-icon.tsx` or temporary vector fallback.
-- [ ] Set tab bar dimensions, paddings, and label styles to match wireframe proportions.
-- [ ] Confirm focused/unfocused Home icon mapping against design intent and document the final mapping in code comments.
+- [x] Keep Home tab icon wired to local assets: `assets/icons/navigation/RiskRadar_STND_HomeBttn.png` and `assets/icons/navigation/RiskRadar_ALERT_HomeBttn.png`.
+- [x] Keep Alerts tab label and ensure icon strategy is finalized: branded PNG via `components/tab-bar-icon.tsx` or temporary vector fallback.
+- [x] Set tab bar dimensions, paddings, and label styles to match wireframe proportions.
+- [x] Confirm focused/unfocused Home icon mapping against design intent and document the final mapping in code comments.
 
 Exit criteria:
 
-- [ ] Tab bar looks branded on both iOS and Android sizes.
-- [ ] Home and Alerts tabs are visually distinct in active/inactive states.
+- [x] Tab bar looks branded on both iOS and Android sizes.
+- [x] Home and Alerts tabs are visually distinct in active/inactive states.
 
 ### C. Home Dashboard Route (`frontend/RiskRadar/app/(tabs)/index.tsx`)
 
@@ -609,6 +617,10 @@ Exit criteria:
 
 ### D. Alerts Route (`frontend/RiskRadar/app/(tabs)/explore.tsx`)
 
+Progress note:
+
+- Core route rebuild was completed in PR R2; remaining items in this subsection are final wiring/polish tasks.
+
 Header and scope wiring:
 
 - [ ] Replace plain text header with `components/section-header.tsx` using Alerts title and count.
@@ -629,6 +641,10 @@ Exit criteria:
 - [ ] Header, card spacing, and typography align with Home screen system.
 
 ### E. Modal Route (`frontend/RiskRadar/app/modal.tsx`)
+
+Progress note:
+
+- Core route rebuild was completed in PR R2; remaining items in this subsection are final asset wiring/polish tasks.
 
 - [ ] Replace placeholder notification panel visuals with real notification panel art:
 	- [ ] `assets/icons/navigation/RiskRadar_ALERT_NotifWindow.png`
@@ -701,9 +717,9 @@ Exit criteria:
 
 - [x] Copy assets into the mobile app.
 - [ ] Rebuild `constants/theme.ts` with complete light and dark brand tokens.
-- [ ] Update `themed-text.tsx` and `themed-view.tsx`.
+- [x] Update `themed-text.tsx` and `themed-view.tsx`.
 - [ ] Validate `use-color-scheme.ts` and `use-theme-color.ts` behavior for both modes.
-- [ ] Decide whether `parallax-scroll-view.tsx` stays or is replaced.
+- [x] Decide whether `parallax-scroll-view.tsx` stays or is replaced.
 
 ### Phase 2: Shell
 
@@ -714,8 +730,8 @@ Exit criteria:
 ### Phase 3: Screens
 
 - [ ] Rebuild `app/(tabs)/index.tsx`.
-- [ ] Rebuild `app/(tabs)/explore.tsx`.
-- [ ] Update `app/modal.tsx`.
+- [x] Rebuild `app/(tabs)/explore.tsx` (core rebuild complete; final polish/wiring tracked below).
+- [x] Update `app/modal.tsx` (core rebuild complete; final polish/wiring tracked below).
 
 ### Phase 4: Polish
 
