@@ -7,6 +7,8 @@ Run from the backend directory:
 import sys
 import logging
 
+from sqlalchemy import text
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(name)s %(levelname)s %(message)s",
@@ -83,9 +85,8 @@ def main():
             summary = summarizer.generate_daily_digest(db, since_hours=24)
             if summary:
                 logger.info(f"Summary generated! (model={summary.model_used}, tokens={summary.token_count})")
-                print()
                 print("--- DAILY DIGEST ---")
-                print(summary.content)
+                print(f"Summary content: {summary.content}")
                 print("--- END ---")
             else:
                 logger.warning("No summary generated (no recent alerts).")

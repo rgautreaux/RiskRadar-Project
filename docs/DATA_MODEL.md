@@ -4,7 +4,7 @@
 
 ## Overview
 
-RiskRadar uses a **MariaDB 10.4** relational database (`riskradar_db`) consisting of **13 tables** organized into four functional groups: **Content**, **Users**, **Alerts & AI**, and **Operations**.
+RiskRadar uses a **MariaDB 10.4** relational database (`riskradar_db`) managed via **SQLAlchemy ORM**, consisting of **13 tables** organized into four functional groups: **Content**, **Users**, **Alerts & AI**, and **Operations**.
 
 ---
 
@@ -147,9 +147,11 @@ Per-user notification configuration.
 | `quiet_start` | `TIME` | Start of quiet hours |
 | `quiet_end` | `TIME` | End of quiet hours |
 
-### `user_preferences` (`user_prefernces`)
+### `user_prefernces`
 
 Junction table linking users to their preferred categories.
+
+> **Note**: Table name contains a typo (`prefernces` instead of `preferences`) in the current schema.
 
 | Column | Type | Description |
 |---|---|---|
@@ -161,10 +163,12 @@ Junction table linking users to their preferred categories.
 
 Tracks which articles a user has read and their progress.
 
+> **Note**: The `articlle_id` column contains a typo (`articlle_id` instead of `article_id`) in the current schema.
+
 | Column | Type | Description |
 |---|---|---|
 | `user_id` | `INT` PK, FK | References `users.user_id` |
-| `article_id` | `INT` PK, FK | References `articles.article_id` |
+| `articlle_id` | `INT` PK, FK | References `articles.article_id` |
 | `read_at` | `TIMESTAMP` | When the user read the article |
 | `progress_pct` | `SMALLINT` | Reading progress percentage (0–100) |
 
@@ -182,12 +186,12 @@ Stores risk alerts generated from or linked to articles.
 | `article_id` | `INT` FK | References `articles.article_id` (unique) |
 | `source` | `TEXT` | Alert source identifier |
 | `source_id` | `TEXT` | External source's ID for this alert |
-| `alert_type` | `TEXT` | Type of alert (e.g., weather, security) |
+| `alert_type` | `TEXT` | Type of alert (e.g., weather, air_quality) |
 | `severity` | `TEXT` | Severity level |
 | `title` | `TEXT` | Alert headline |
 | `description` | `TEXT` | Alert details |
 | `priority` | `VARCHAR(10)` | Priority ranking |
-| `raw_data` | `JSON` | Raw alert payload from the source |
+| `raw_data` | `JSON` | Raw alert payload from the source (validated via `json_valid()`) |
 | `latitude` | `FLOAT` | Event latitude |
 | `longitude` | `FLOAT` | Event longitude |
 | `location_name` | `TEXT` | Human-readable location |
@@ -209,12 +213,16 @@ Stores AI-generated summaries that aggregate multiple alerts.
 | `title` | `TEXT` | Summary title |
 | `content` | `TEXT` | Generated summary text |
 | `summary_type` | `TEXT` | Type of summary |
-| `alert_ids` | `JSON` | Array of alert IDs included in this summary |
-| `region` | `TEXT` | Geographic region covered |
+| `alert_ids` | `JSON` | Array of alert IDs included (validated via `json_valid()`) |
+| `reigon` | `TEXT` | Geographic region covered |
 | `generated_at` | `TEXT` | When the summary was generated |
-| `model_used` | `TEXT` | AI model identifier (e.g., GPT-4) |
+| `model_used` | `TEXT` | AI model identifier (e.g., `gpt-4o-mini`) |
 | `token_count` | `INT` | Number of tokens used for generation |
 | `created_at` | `TEXT` | Record creation time |
+
+> **Note**: The `reigon` column contains a typo (`reigon` instead of `region`) in the current schema.
+
+**Unique constraint**: `alert_ids`
 
 ---
 
@@ -240,6 +248,8 @@ Audit log for each scraping run.
 | `started_at` | `TEXT` | Scrape start time |
 | `completed_at` | `TEXT` | Scrape completion time |
 
+**Unique constraint**: `source`
+
 ---
 
 ## Key Relationships
@@ -253,10 +263,10 @@ Audit log for each scraping run.
 | `articles` | `alerts` | One-to-one | `article_id` |
 | `users` | `device_tokens` | One-to-one | `user_id` |
 | `users` | `notification_settings` | One-to-one | `user_id` |
-| `users` | `user_preferences` | Many-to-many (via junction) | `user_id` |
-| `categories` | `user_preferences` | Many-to-many (via junction) | `category_id` |
+| `users` | `user_prefernces` | Many-to-many (via junction) | `user_id` |
+| `categories` | `user_prefernces` | Many-to-many (via junction) | `category_id` |
 | `users` | `user_reads` | Many-to-many (via junction) | `user_id` |
-| `articles` | `user_reads` | Many-to-many (via junction) | `article_id` |
+| `articles` | `user_reads` | Many-to-many (via junction) | `articlle_id` |
 
 ---
 
@@ -276,3 +286,13 @@ The current schema **does not fully satisfy Third Normal Form (3NF)** due to the
 - **`alerts.latitude`, `alerts.longitude` → `location_name`**: Geographic coordinates determine the location name. This could be extracted to a `locations` table.
 
 ---
+
+## Known Schema Issues
+
+The following typos exist in the current `riskradar_db.sql` and should be addressed in a future migration:
+
+| Table | Column/Name | Issue |
+|---|---|---|
+| `user_prefernces` | (table name) | Misspelled — should be `user_preferences` |
+| `user_reads` | `articlle_id` | Misspelled — should be `article_id` |
+| `summaries` | `reigon` | Misspelled — should be `region` |

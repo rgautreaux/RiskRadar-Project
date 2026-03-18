@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,12 +7,41 @@ import {
   ScrollView,
   TouchableOpacity,
   Platform,
-  StatusBar
+  StatusBar,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { apiFetch } from '@/utils/api';
+
+interface Summary {
+  id: number;
+  title: string;
+  content: string;
+  summary_type: string;
+  region: string | null;
+  generated_at: string;
+  model_used: string | null;
+}
+
+interface AlertItem {
+  id: number;
+  alert_type: string;
+  severity: string;
+  title: string;
+  description: string | null;
+  location_name: string | null;
+}
+
+interface LocationInfo {
+  zip_code: string;
+  city: string;
+  state: string;
+  latitude: number;
+  longitude: number;
+}
 
 export default function WeatherReport() {
   const router = useRouter();
@@ -22,6 +51,44 @@ export default function WeatherReport() {
   const params = useLocalSearchParams();
   const rawZipCode = params.zipCode;
   const zipCode = Array.isArray(rawZipCode) ? rawZipCode[0] : rawZipCode ?? 'Unknown Location';
+
+  const [summary, setSummary] = useState<Summary | null>(null);
+  const [alerts, setAlerts] = useState<AlertItem[]>([]);
+  const [locationInfo, setLocationInfo] = useState<LocationInfo | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const isValidZip = zipCode.length === 5 && /^\d{5}$/.test(zipCode);
+
+        // Fetch location info, on-demand alerts, and latest summary in parallel
+        const promises: Promise<any>[] = [
+          apiFetch<Summary | null>(`/summaries/latest/local?zip_code=${zipCode}`).catch(() => null)
+        ];
+
+        if (isValidZip) {
+          promises.push(
+            apiFetch<LocationInfo>(`/location/info?zip_code=${zipCode}`).catch(() => null),
+            apiFetch<AlertItem[]>(`/location/alerts?zip_code=${zipCode}`).catch(() => []),
+            apiFetch<Summary | null>(`/summaries/generate/local?zip_code=${zipCode}`, { method: 'POST' }).catch(() => null),
+            apiFetch<Summary | null>(`/summaries/latest/local?zip_code=${zipCode}`).catch(() => null)
+          );
+        } else {
+          promises.push(Promise.resolve(null), Promise.resolve([]));
+        }
+
+        const [summaryData, locInfo, alertsData] = await Promise.all(promises);
+        setSummary(summaryData);
+        setLocationInfo(locInfo);
+        setAlerts(alertsData ?? []);
+      } catch {
+        // Backend not reachable
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [zipCode]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -40,50 +107,70 @@ export default function WeatherReport() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Main Weather Info */}
+        {/* Location Header */}
         <View style={styles.mainWeatherCard}>
-          <Text style={styles.locationText}>Location: {zipCode}</Text>
+          <Text style={styles.locationText}>
+            {locationInfo
+              ? `${locationInfo.city}, ${locationInfo.state} ${zipCode}`
+              : `Location: ${zipCode}`}
+          </Text>
           <View style={styles.tempContainer}>
             <Ionicons name="partly-sunny" size={80} color="#F59E0B" />
-            <Text style={styles.temperature}>72°<Text style={styles.tempUnit}>F</Text></Text>
-          </View>
-          <Text style={styles.conditionText}>Partly Cloudy</Text>
-          <Text style={styles.highLowText}>H: 78°  L: 64°</Text>
-        </View>
-
-        {/* Detailed Summary */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Full Summary</Text>
-          <View style={styles.summaryCard}>
-            <Text style={styles.summaryText}>
-              Today will be mostly partly cloudy with a high near 78°F. Winds are expected to be light and variable throughout the day. Moving into the evening, temperatures will drop to around 64°F with increasing cloud cover. No precipitation is expected for the next 48 hours.
-            </Text>
           </View>
         </View>
 
-        {/* Extended Details */}
-        <View style={styles.detailsGrid}>
-          <View style={styles.detailCard}>
-            <Ionicons name="water-outline" size={24} color="#3B82F6" />
-            <Text style={styles.detailValue}>45%</Text>
-            <Text style={styles.detailLabel}>Humidity</Text>
-          </View>
-          <View style={styles.detailCard}>
-            <Ionicons name="leaf-outline" size={24} color="#10B981" />
-            <Text style={styles.detailValue}>5 mph</Text>
-            <Text style={styles.detailLabel}>Wind</Text>
-          </View>
-          <View style={styles.detailCard}>
-            <Ionicons name="eye-outline" size={24} color="#8B5CF6" />
-            <Text style={styles.detailValue}>10 mi</Text>
-            <Text style={styles.detailLabel}>Visibility</Text>
-          </View>
-          <View style={styles.detailCard}>
-            <Ionicons name="thermometer-outline" size={24} color={palette.danger} />
-            <Text style={styles.detailValue}>74°</Text>
-            <Text style={styles.detailLabel}>Feels Like</Text>
-          </View>
-        </View>
+        {loading ? (
+          <ActivityIndicator size="large" color={palette.primary} style={{ paddingVertical: 40 }} />
+        ) : (
+          <>
+            {/* AI Summary */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>AI Summary</Text>
+              <View style={styles.summaryCard}>
+                {summary ? (
+                  <>
+                    <Text style={styles.summaryHeading}>{summary.title}</Text>
+                    <Text style={styles.summaryText}>{summary.content}</Text>
+                    <Text style={styles.summaryMeta}>
+                      Generated {new Date(summary.generated_at).toLocaleString()}
+                      {summary.model_used ? ` via ${summary.model_used}` : ''}
+                    </Text>
+                  </>
+                ) : (
+                  <Text style={styles.summaryText}>
+                    No summary available yet. The backend generates summaries from active alerts.
+                  </Text>
+                )}
+              </View>
+            </View>
+
+            {/* Active Alerts Summary */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Recent Alerts</Text>
+              {alerts.length > 0 ? (
+                alerts.map((alert) => (
+                  <View key={alert.id} style={styles.alertRow}>
+                    <View style={[styles.severityDot, {
+                      backgroundColor: alert.severity.toLowerCase().includes('critical') || alert.severity.toLowerCase().includes('extreme')
+                        ? palette.danger
+                        : alert.severity.toLowerCase().includes('warning') || alert.severity.toLowerCase().includes('severe')
+                          ? palette.warning
+                          : palette.primary,
+                    }]} />
+                    <View style={styles.alertRowText}>
+                      <Text style={styles.alertTitle}>{alert.title}</Text>
+                      <Text style={styles.alertMeta}>{alert.alert_type} - {alert.severity}</Text>
+                    </View>
+                  </View>
+                ))
+              ) : (
+                <View style={styles.summaryCard}>
+                  <Text style={styles.summaryText}>No active alerts for this area.</Text>
+                </View>
+              )}
+            </View>
+          </>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -136,29 +223,6 @@ function getStyles(palette: typeof Colors.light) {
       alignItems: 'center',
       justifyContent: 'center',
     },
-    temperature: {
-      fontSize: 84,
-      fontWeight: '800',
-      color: palette.text,
-      marginLeft: 16,
-    },
-    tempUnit: {
-      fontSize: 40,
-      fontWeight: '600',
-      color: palette.textSecondary,
-    },
-    conditionText: {
-      fontSize: 24,
-      fontWeight: '600',
-      color: palette.textSecondary,
-      marginTop: 8,
-    },
-    highLowText: {
-      fontSize: 16,
-      fontWeight: '500',
-      color: palette.textSecondary,
-      marginTop: 8,
-    },
     section: {
       marginBottom: 24,
     },
@@ -180,42 +244,51 @@ function getStyles(palette: typeof Colors.light) {
       borderWidth: 1,
       borderColor: palette.border,
     },
+    summaryHeading: {
+      fontSize: 16,
+      fontWeight: '700',
+      color: palette.text,
+      marginBottom: 8,
+    },
     summaryText: {
       fontSize: 16,
       lineHeight: 24,
       color: palette.textSecondary,
     },
-    detailsGrid: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      justifyContent: 'space-between',
-      gap: 16,
+    summaryMeta: {
+      fontSize: 12,
+      color: palette.textSecondary,
+      marginTop: 12,
     },
-    detailCard: {
-      width: '47%',
-      backgroundColor: palette.card,
-      borderRadius: 20,
-      padding: 20,
+    alertRow: {
+      flexDirection: 'row',
       alignItems: 'center',
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.05,
-      shadowRadius: 12,
-      elevation: 4,
+      backgroundColor: palette.card,
+      borderRadius: 16,
+      padding: 16,
+      marginBottom: 10,
       borderWidth: 1,
       borderColor: palette.border,
     },
-    detailValue: {
-      fontSize: 20,
-      fontWeight: '700',
-      color: palette.text,
-      marginTop: 12,
-      marginBottom: 4,
+    severityDot: {
+      width: 12,
+      height: 12,
+      borderRadius: 6,
+      marginRight: 12,
     },
-    detailLabel: {
-      fontSize: 14,
+    alertRowText: {
+      flex: 1,
+    },
+    alertTitle: {
+      fontSize: 15,
+      fontWeight: '600',
+      color: palette.text,
+    },
+    alertMeta: {
+      fontSize: 13,
       color: palette.textSecondary,
-      fontWeight: '500',
+      marginTop: 2,
+      textTransform: 'capitalize',
     },
   });
 }

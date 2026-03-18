@@ -1,7 +1,7 @@
 import React from 'react';
-import { 
-  StyleSheet, 
-  TouchableOpacity, 
+import {
+  StyleSheet,
+  TouchableOpacity,
   SafeAreaView,
   View,
 } from "react-native";
@@ -12,11 +12,13 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Colors, Spacing, Radius, Shadows } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useAuth } from '@/contexts/auth-context';
 
 export default function HomeScreen() {
   const router = useRouter();
   const scheme = useColorScheme() ?? 'light';
   const palette = Colors[scheme];
+  const { isLoggedIn, logout } = useAuth();
 
   const handleLogin = () => {
     router.push("/auth/login");
@@ -29,6 +31,63 @@ export default function HomeScreen() {
   const handleGuest = () => {
     router.push("/main/home");
   };
+
+  const handleLogout = async () => {
+    await logout();
+  };
+
+  // If logged in, go straight to main home
+  if (isLoggedIn) {
+    return (
+      <ThemedView surface="card" style={styles.safeArea}>
+        <SafeAreaView style={styles.safeAreaContainer}>
+          <View style={styles.container}>
+            <View style={styles.heroContainer}>
+              <View style={styles.iconWrapper}>
+                <View style={[styles.iconBackground, { backgroundColor: palette.secondary }]}>
+                  <Ionicons name="radio-outline" size={64} color={palette.primary} />
+                </View>
+                <View style={[styles.pulseRing, { borderColor: palette.secondary }]} />
+              </View>
+              <ThemedText type="hero" style={styles.title}>
+                Risk<ThemedText type="hero" lightColor={palette.primary} darkColor={palette.primary}>Radar</ThemedText>
+              </ThemedText>
+              <ThemedText
+                type="body"
+                lightColor={palette.textSecondary}
+                darkColor={palette.textSecondary}
+                style={styles.subtitle}
+              >
+                Stay aware. Stay prepared.
+              </ThemedText>
+            </View>
+            <View style={styles.actionContainer}>
+              <TouchableOpacity
+                style={[styles.primaryButton, { backgroundColor: palette.primary, shadowColor: palette.primary }]}
+                onPress={() => router.push("/main/home")}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="home-outline" size={20} color={palette.white} style={styles.buttonIcon} />
+                <ThemedText type="cardTitle" lightColor={palette.white} darkColor={palette.white}>
+                  Go to Dashboard
+                </ThemedText>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.secondaryButton, { backgroundColor: palette.secondary }]}
+                onPress={handleLogout}
+                activeOpacity={0.6}
+              >
+                <Ionicons name="log-out-outline" size={20} color={palette.primary} style={styles.buttonIcon} />
+                <ThemedText type="cardTitle" lightColor={palette.primary} darkColor={palette.primary}>
+                  Log Out
+                </ThemedText>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </SafeAreaView>
+      </ThemedView>
+    );
+  }
 
   return (
     <ThemedView surface="card" style={styles.safeArea}>

@@ -1,7 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(\"C:/Users/quihu/OneDrive/Desktop/School work/Team6Project/backend/config/settings.py\":*)"
-    ]
-  }
-}

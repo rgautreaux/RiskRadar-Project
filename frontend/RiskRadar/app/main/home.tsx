@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,29 +8,76 @@ import {
   SafeAreaView,
   ScrollView,
   Platform,
-  StatusBar
+  StatusBar,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useAuth } from '@/contexts/auth-context';
+import { apiFetch } from '@/utils/api';
+import { API_BASE_URL } from '@/constants/api';
+
+interface AlertStats {
+  total: number;
+  by_type: Record<string, number>;
+  by_severity: Record<string, number>;
+}
+
+interface Summary {
+  id: number;
+  title: string;
+  content: string;
+  summary_type: string;
+  region: string | null;
+  generated_at: string;
+}
 
 export default function Home() {
   const router = useRouter();
   const scheme = useColorScheme() ?? 'light';
   const palette = Colors[scheme];
   const styles = getStyles(palette);
-  const [zipCode, setZipCode] = useState('');
+  const { user, isLoggedIn } = useAuth();
+  const [zipCode, setZipCode] = useState(user?.zip_code ?? '');
+  const [stats, setStats] = useState<AlertStats | null>(null);
+  const [summary, setSummary] = useState<Summary | null>(null);
+  const [loadingStats, setLoadingStats] = useState(true);
+  const [loadingSummary, setLoadingSummary] = useState(true);
 
-  // This state will eventually be driven by auth context
-  const [isGuest] = useState(true);
+  useEffect(() => {
+    if (user?.zip_code) setZipCode(user.zip_code);
+  }, [user?.zip_code]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        console.log('Fetching stats from:', API_BASE_URL + '/alerts/stats');
+        const data = await apiFetch<AlertStats>('/alerts/stats');
+        console.log('Stats loaded:', data);
+        setStats(data);
+      } catch (err) { console.error('Stats fetch failed:', err); }
+      finally { setLoadingStats(false); }
+    })();
+
+    (async () => {
+      try {
+        const data = await apiFetch<Summary | null>('/summaries/latest');
+        console.log('Summary loaded:', data);
+        setSummary(data);
+      } catch (err) { console.error('Summary fetch failed:', err); }
+      finally { setLoadingSummary(false); }
+    })();
+  }, []);
 
   const handleSearch = () => {
     if (zipCode.length === 5) {
-      console.log('Fetching reports for Zip Code:', zipCode);
-      // Trigger report generation logic here
+      router.push({ pathname: '/main/weather-report', params: { zipCode } });
     }
   };
+
+  const displayName = isLoggedIn ? (user?.display_name ?? 'User') : 'Guest';
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -39,14 +86,14 @@ export default function Home() {
       {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.greeting}>Welcome, {isGuest ? 'Guest' : 'User'}</Text>
+          <Text style={styles.greeting}>Welcome, {displayName}</Text>
           <Text style={styles.headerSubtitle}>Stay ahead of the weather</Text>
         </View>
         <TouchableOpacity
           style={styles.profileButton}
-          onPress={() => isGuest ? router.replace('/auth/login') : console.log('Profile')}
+          onPress={() => !isLoggedIn ? router.replace('/auth/login') : console.log('Profile')}
         >
-          <Ionicons name={isGuest ? 'log-in-outline' : 'person-circle-outline'} size={28} color={palette.primary} />
+          <Ionicons name={!isLoggedIn ? 'log-in-outline' : 'person-circle-outline'} size={28} color={palette.primary} />
         </TouchableOpacity>
       </View>
 
@@ -55,7 +102,7 @@ export default function Home() {
         <View style={styles.searchSection}>
           <Text style={styles.sectionTitle}>Check Location Risk</Text>
           <Text style={styles.sectionSubtitle}>
-            {isGuest
+            {!isLoggedIn
               ? 'Enter a zip code to see current weather and risk reports.'
               : 'Showing your home location. Enter a different zip code to check another area.'}
           </Text>
@@ -83,7 +130,7 @@ export default function Home() {
           </View>
         </View>
 
-        {/* Placeholder: Weather Summary */}
+        {/* Latest Summary Card */}
         <TouchableOpacity
           style={styles.card}
           onPress={() => router.push({ pathname: '/main/weather-report', params: { zipCode: zipCode || 'Unknown Location' } })}
@@ -92,20 +139,32 @@ export default function Home() {
             <View style={styles.cardIconBox}>
               <Ionicons name="partly-sunny" size={24} color="#F59E0B" />
             </View>
-            <Text style={styles.cardTitle}>Current Conditions</Text>
+            <Text style={styles.cardTitle}>Latest Summary</Text>
           </View>
 
-          <View style={styles.placeholderBox}>
-            <Text style={styles.placeholderText}>
-              {zipCode.length === 5 ? `Results for ${zipCode}` : 'Awaiting Zip Code...'}
-            </Text>
-            <Text style={styles.placeholderSubtext}>
-              {zipCode.length === 5 ? 'Tap to view full weather summary.' : 'Enter a zip code and tap here.'}
-            </Text>
-          </View>
+          {loadingSummary ? (
+            <ActivityIndicator color={palette.primary} style={{ paddingVertical: 24 }} />
+          ) : summary ? (
+            <View style={styles.summaryBox}>
+              <Text style={styles.summaryTitle}>{summary.title}</Text>
+              <Text style={styles.summaryText} numberOfLines={3}>{summary.content}</Text>
+              <Text style={styles.summaryMeta}>
+                Generated {new Date(summary.generated_at).toLocaleDateString()}
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.placeholderBox}>
+              <Text style={styles.placeholderText}>
+                {zipCode.length === 5 ? `Results for ${zipCode}` : 'Awaiting Zip Code...'}
+              </Text>
+              <Text style={styles.placeholderSubtext}>
+                {zipCode.length === 5 ? 'Tap to view full weather summary.' : 'Enter a zip code above.'}
+              </Text>
+            </View>
+          )}
         </TouchableOpacity>
 
-        {/* Placeholder: Risk Summary */}
+        {/* Risk Assessment Card */}
         <View style={styles.card}>
           <View style={styles.cardHeader}>
             <View style={[styles.cardIconBox, { backgroundColor: '#FEE2E2' }]}>
@@ -114,11 +173,27 @@ export default function Home() {
             <Text style={styles.cardTitle}>Risk Assessment</Text>
           </View>
 
-          <View style={styles.placeholderContent}>
-            <View style={styles.skeletonLine} />
-            <View style={[styles.skeletonLine, { width: '80%' }]} />
-            <View style={[styles.skeletonLine, { width: '60%' }]} />
-          </View>
+          {loadingStats ? (
+            <ActivityIndicator color={palette.primary} style={{ paddingVertical: 24 }} />
+          ) : stats ? (
+            <View style={styles.statsContainer}>
+              <View style={styles.statRow}>
+                <Text style={styles.statLabel}>Total Active Alerts</Text>
+                <Text style={styles.statValue}>{stats.total}</Text>
+              </View>
+              {Object.entries(stats.by_severity).map(([severity, count]) => (
+                <View key={severity} style={styles.statRow}>
+                  <Text style={styles.statLabel}>{severity}</Text>
+                  <Text style={styles.statValue}>{count}</Text>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <View style={styles.placeholderContent}>
+              <Text style={styles.placeholderText}>No data available</Text>
+              <Text style={styles.placeholderSubtext}>Make sure the backend is running.</Text>
+            </View>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -259,6 +334,27 @@ function getStyles(palette: typeof Colors.light) {
       fontWeight: '700',
       color: palette.text,
     },
+    summaryBox: {
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: 16,
+      padding: 16,
+    },
+    summaryTitle: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: palette.text,
+      marginBottom: 8,
+    },
+    summaryText: {
+      fontSize: 14,
+      lineHeight: 20,
+      color: palette.textSecondary,
+    },
+    summaryMeta: {
+      fontSize: 12,
+      color: palette.textSecondary,
+      marginTop: 8,
+    },
     placeholderBox: {
       backgroundColor: palette.surfaceMuted,
       borderRadius: 16,
@@ -283,13 +379,29 @@ function getStyles(palette: typeof Colors.light) {
       backgroundColor: palette.surfaceMuted,
       borderRadius: 16,
       padding: 20,
+      alignItems: 'center',
     },
-    skeletonLine: {
-      height: 12,
-      backgroundColor: palette.border,
-      borderRadius: 6,
-      marginBottom: 12,
-      width: '100%',
+    statsContainer: {
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: 16,
+      padding: 16,
+    },
+    statRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingVertical: 8,
+      borderBottomWidth: 1,
+      borderBottomColor: palette.border,
+    },
+    statLabel: {
+      fontSize: 14,
+      color: palette.textSecondary,
+      textTransform: 'capitalize',
+    },
+    statValue: {
+      fontSize: 14,
+      fontWeight: '700',
+      color: palette.text,
     },
   });
 }

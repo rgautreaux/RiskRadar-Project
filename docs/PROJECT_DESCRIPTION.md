@@ -4,35 +4,41 @@
 
 ## APIs
 
-### 1. OpenAI API
+### 1. OpenAI / Anthropic API
 
-**Description**: OpenAI provides a suite of large language model APIs (e.g., GPT-4) that enable natural language understanding, text generation, and code analysis via simple REST calls.
+**Description**: OpenAI provides large language model APIs (e.g., GPT-4o-mini) for natural language understanding and text generation. Anthropic provides the Claude model family as an alternative.
 
-**Usage**: In RiskRadar, it is used for natural language processing, data analysis, and generating insights from collected data—summarizing large datasets, extracting key information, and providing recommendations.
+**Usage**: In RiskRadar, the LLM API generates daily digest summaries and breaking alert analyses from collected environmental alerts. The provider is configurable via `LLM_PROVIDER` environment variable (`openai` or `anthropic`).
 
 ### 2. Firecrawl API
 
 **Description**: Firecrawl is a web scraping and crawling service that turns websites into clean, structured, LLM-ready data without requiring manual selector configuration.
 
-**Usage**: In RiskRadar, it is used to gather real-time data from websites, social media platforms, and other online sources relevant to the chosen problem domain.
+**Usage**: In RiskRadar, it powers the `WebScraper` class, which scrapes arbitrary websites defined in `sources.yaml` and uses an LLM to extract structured alert data from the scraped content.
 
-### 3. RabbitMQ API
+### 3. National Weather Service (NWS) API
 
-**Description**: RabbitMQ is an open-source message broker that implements the Advanced Message Queuing Protocol (AMQP), enabling applications to send, receive, and queue messages between distributed services.
+**Description**: The NOAA National Weather Service API provides weather forecasts, alerts, and observations for the United States.
 
-**Usage**: In RiskRadar, it is used for message queuing and handling asynchronous tasks, managing the flow of data between components so that processing and analysis do not block the main application thread.
+**Usage**: In RiskRadar, the `NWSScraper` fetches active weather alerts and normalizes them into the standard Alert schema.
 
-### 4. Docker Engine API
+### 4. AirNow API
 
-**Description**: The Docker Engine API is a RESTful API that allows programmatic interaction with the Docker daemon to build, run, and manage containers—lightweight, portable units that package an application with all its dependencies.
+**Description**: The EPA AirNow API provides real-time air quality index (AQI) data and forecasts.
 
-**Usage**: In RiskRadar, it is used for containerization and deployment, ensuring the application runs consistently across different platforms and environments.
+**Usage**: In RiskRadar, the `AirNowScraper` fetches air quality observations and maps AQI values to severity levels.
 
-### 5. Antimatter API
+### 5. EPA Envirofacts API
 
-**Description**: Antimatter is a data security platform that provides a control plane for governing how data is accessed, encrypted, and shared across multiple storage systems and clients. It separates data control (policy, access rules, encryption) from the data plane (storage and transport).
+**Description**: The EPA Envirofacts API provides access to environmental data including Toxic Release Inventory (TRI) facility information.
 
-**Usage**: In RiskRadar, it is used to manage data consistently and securely, enforcing access policies independent of the underlying storage infrastructure.
+**Usage**: In RiskRadar, the `EPAScraper` fetches TRI facility data to alert users about nearby pollution sources.
+
+### 6. NASA FIRMS API
+
+**Description**: The NASA Fire Information for Resource Management System (FIRMS) API provides near real-time active fire data from satellite observations.
+
+**Usage**: In RiskRadar, the `FIRMSScraper` fetches active wildfire hotspot data. Requires a `NASA_FIRMS_MAP_KEY`.
 
 ---
 
@@ -40,50 +46,78 @@
 
 ### 1. Python
 
-**Description**: Python is a high-level, general-purpose programming language known for its readability, extensive standard library, and rich ecosystem of third-party packages for web development, data processing, and machine learning.
+**Description**: Python is used as the primary back-end language.
 
-**Usage**: In RiskRadar, it is used as the primary back-end language to handle web scraping orchestration, data processing pipelines, AI-driven summarization of articles and alerts, and interaction with external APIs such as OpenAI and Firecrawl.
+**Usage**: In RiskRadar, Python handles the FastAPI REST server, web scraping orchestration, data processing pipelines, AI-driven summarization, and interaction with external APIs.
 
-### 2. React
+### 2. FastAPI
 
-**Description**: React is an open-source JavaScript library developed by Meta for building user interfaces through reusable, component-based architectures that efficiently update and render in response to data changes.
+**Description**: FastAPI is a modern, high-performance Python web framework for building APIs, with automatic OpenAPI documentation and Pydantic validation.
 
-**Usage**: In RiskRadar, it is used to build the front-end user interface, providing an interactive and responsive dashboard for visualizing risk data, displaying analysis results, and enabling users to interact with the system's features.
+**Usage**: In RiskRadar, FastAPI serves the REST API endpoints for alerts, summaries, and users. It runs on Uvicorn and provides interactive API docs at `/docs`.
 
-### 3. Node.js
-**Description**: Node.js is an open-source, cross-platform JavaScript runtime built on Chrome's V8 engine that allows JavaScript to run outside the browser, powering server-side applications, build tooling, and package management via npm.
+### 3. React Native (Expo)
 
-**Usage**: In RiskRadar, it is used as the runtime environment for the React front end, managing project dependencies through npm, running the development server, and executing the build toolchain that compiles and bundles the front-end application.
+**Description**: React Native is a framework for building native mobile apps using React. Expo provides a managed workflow with pre-configured native modules and streamlined build tooling.
+
+**Usage**: In RiskRadar, it is used to build the cross-platform mobile application from a single TypeScript codebase, targeting both iOS and Android.
+
+### 4. TypeScript
+
+**Description**: TypeScript is a typed superset of JavaScript that compiles to plain JavaScript, providing type safety and better developer tooling.
+
+**Usage**: In RiskRadar, TypeScript is used for the React Native frontend codebase.
+
 ---
 
 ## Database
 
-### MySQL (MariaDB)
+### MySQL (MariaDB) + SQLAlchemy
 
-**Description**: MySQL is an open-source relational database management system that uses Structured Query Language (SQL) for defining, querying, and manipulating data in tabular form with support for indexing, transactions, and referential integrity.
+**Description**: MySQL is an open-source relational database management system. RiskRadar uses MariaDB 10.4, a MySQL-compatible fork, as its primary data store. SQLAlchemy is a Python SQL toolkit and ORM that provides a high-level interface for database operations.
 
-**Usage**: In RiskRadar, it is used (via MariaDB) as the primary data store for the `riskradar_db` database, persisting users, articles, alerts, sources, scrape logs, AI-generated summaries, notification settings, and user preferences across 13 interconnected tables.
+**Usage**: In RiskRadar, MariaDB hosts the `riskradar_db` database, persisting users, articles, alerts, sources, scrape logs, AI-generated summaries, notification settings, and user preferences across 13 interconnected tables. SQLAlchemy manages the ORM models, database sessions, and query building. During local development, phpMyAdmin (via XAMPP) is available for database administration.
 
-For full schema documentation, normalization analysis, and known issues, see [DATA_MODEL.md](DATA_MODEL.md).
+For full schema documentation, see [DATA_MODEL.md](DATA_MODEL.md).
 
 ---
 
-## Infrastructure
+## Key Libraries
 
-### Apache HTTP Server
+### httpx
 
-**Description**: Apache HTTP Server is an open-source, cross-platform web server maintained by the Apache Software Foundation, widely used to serve web content and proxy requests between clients and back-end applications.
+**Description**: httpx is a modern, async-capable HTTP client for Python.
 
-**Usage**: In RiskRadar, it is used (via XAMPP alongside PHP and phpMyAdmin) as the local web server during development, serving the application and providing database administration through phpMyAdmin.
+**Usage**: In RiskRadar, httpx is used by all scrapers to make HTTP requests to external APIs.
+
+### APScheduler
+
+**Description**: APScheduler (Advanced Python Scheduler) is a Python library for scheduling jobs to run at specified intervals.
+
+**Usage**: In RiskRadar, APScheduler runs scrapers on staggered intervals (e.g., every 30 minutes) to avoid API rate limits. Jobs are registered at server startup.
+
+### Pydantic
+
+**Description**: Pydantic provides data validation using Python type annotations.
+
+**Usage**: In RiskRadar, Pydantic defines request/response schemas for the API and loads configuration from environment variables via `BaseSettings`.
+
+---
 
 ## IDEs
-### 1. Android Studio
-**Description**: Android Studio is Google's official integrated development environment (IDE) for Android application development, built on JetBrains' IntelliJ IDEA. It provides code editing, debugging, performance tooling, and a built-in Android Emulator for testing applications on virtual devices.
 
-**Usage**: In RiskRadar, it is used as the development environment for testing the mobile application on Android, providing the Android Emulator for local device simulation and debugging of the Expo-based React Native build.
+### 1. Android Studio
+
+**Description**: Android Studio is Google's official IDE for Android development, providing an emulator for testing mobile applications.
+
+**Usage**: In RiskRadar, it is used for testing the Expo-based React Native build on the Android Emulator.
+
+---
 
 ## CLIs
-### 1. Expo
-**Description**: Expo is an open-source platform and command-line interface for building universal React Native applications. It provides a managed workflow with pre-configured native modules, over-the-air updates, and streamlined build and deployment tooling for iOS and Android.
 
-**Usage**: In RiskRadar, it is used to develop, build, and deploy the cross-platform mobile application from a single React-based codebase, and to manage push notification delivery to user devices via the device tokens stored in the database.
+### 1. Expo CLI
+
+**Description**: Expo is an open-source platform and CLI for building universal React Native applications.
+
+**Usage**: In RiskRadar, it is used to develop, build, and deploy the cross-platform mobile application.

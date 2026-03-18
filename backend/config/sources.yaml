@@ -9,6 +9,8 @@
 api_sources:
 
   # USGS Earthquake API — no API key required
+  # Environmental type -> earthquake
+  # Usage -> Monitoring earthquakes worldwide, with location, magnitude, etc.
   - name: "usgs_earthquakes"
     enabled: true
     alert_type: "earthquake"
@@ -76,6 +78,138 @@ api_sources:
   #       - gte: 5.0
   #         value: "critical"
   #       - default: "low"
+
+  # World Bank Open Data API — no API key required
+  # Environmental type -> Environemtal, social, and governance (ESG) indicators
+  # Usage -> Monitoring ESG indicators worldwide, such as CO2 emissions per capita, deforestation rates, etc.
+  - name: "world_bank_esg"
+    enabled: true
+    alert_type: "environmental"
+    url: "https://api.worldbank.org/v2/en/indicator/EN.ATM.CO2E.PC"
+    method: "GET"
+    interval_minutes: 1440  # Updated annually, so daily checks are sufficient
+    request:
+      params: 
+        format: "json"
+      headers: {}
+    auth:
+      type: "none"
+    response:
+      format: "json"
+      items_path: "1"  # World Bank returns data in a nested array
+    field_mapping:
+      source_id: "country.id"
+      title: "country.value"
+      description: null
+      latitude: null
+      longitude: null
+      location_name: "country.value"
+      event_start: "date"
+      event_end: null
+      raw_data: "__full_item__"
+    severity:
+      type: "threshold"
+      field: "value"
+      thresholds:
+        - gte: 15.0
+          value: "critical"   # Very high CO2 emissions per capita
+        - gte: 5.0
+          value: "high"       # High emissions
+        - gte: 1.0
+          value: "moderate"   # Moderate emissions
+        - default: "low"
+
+  # Our World in Data API — no API key required
+  # Environmental type -> Natural disasters and climate impacts
+  # Usage -> Monitoring natural disasters worldwide, including floods, storms, droughts, etc.
+
+
+  # C02 Earth - no API key required
+  # Environmental type -> CO2 levels at Mauna Loa Observatory
+  # Usage -> C02 monitoring
+  
+  
+  # OpenAQ API — no API key required
+  # Environmental type -> Air quality measurements worldwide
+  # Usage -> Monitoring air quality (PM2.5, PM10, etc.) in different cities globally.
+  - name: "openaq_air_quality"
+    enabled: false  # can enable if we want to monitor global air quality levels
+    alert_type: "environmental"
+    url: "https://api.openaq.org/v3/parameters/2/latest"
+    method: "GET"
+    interval_minutes: 30
+    request:
+      params:
+        limit: 1000
+        page: 1
+    auth:
+      type: "header"
+      env_var: "OpenAQ_API_KEY"
+      header_name: "X-API-Key"
+    response:
+      format: "json"
+      items_path: "results"
+    field_mapping:
+      source_id: "sensorsId"
+      title: "parameter.displayName"
+      description: "parameter.description"
+      latitude: "coordinates.latitude"
+      longitude: "coordinates.longitude"
+      location_name: "locationsId"
+      event_start: "datetime.utc"
+      event_end: null
+      raw_data: "__full_item__"
+    severity:
+      type: "threshold"
+      field: "value"
+      thresholds:
+        - gte: 55.5
+          value: "critical"   # EPA "Unhealthy" PM2.5 threshold (µg/m³)
+        - gte: 35.5
+          value: "high"       # EPA "Unhealthy for Sensitive Groups"
+        - gte: 12.1
+          value: "moderate"   # EPA "Moderate"
+        - default: "low"
+
+# **POSSIBLE NEW SOURCES TO ADD:**
+# Global Biodiversity Information Facility (GBIF) API — no API key required
+# Environmental type -> Invasive species occurrences
+  - name: "gbif_occurrences"
+    enabled: false
+    alert_type: "environmental"
+    url: "https://api.gbif.org/v1/occurrence/search"
+    method: "GET"
+    interval_minutes: 1440  # Not updated frequently, so we can check less often
+    request:
+      params:
+        hasCoordinate: true
+        hasGeospatialIssue: false
+        establishmentMeans: "INVASIVE"
+        limit: 300
+      headers: {}
+    auth:
+      type: "none"
+    response:
+      format: "json"
+      items_path: "results"
+    field_mapping:
+      source_id: "gbifID"
+      title: "species"
+      description: "scientificName"
+      latitude: "decimalLatitude"
+      longitude: "decimalLongitude"
+      location_name: "countryCode"
+      event_start: "eventDate"
+      event_end: null
+      raw_data: "__full_item__"
+    severity:
+      type: "mapping"
+      field: "taxonRank"
+      map:
+        "SPECIES": "high"
+        "GENUS": "moderate"
+        "FAMILY": "low"
+      default: "low"
 
 web_sources: []
 

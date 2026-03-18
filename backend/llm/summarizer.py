@@ -22,7 +22,8 @@ class Summarizer:
             # DeepSeek uses the OpenAI-compatible API with a different base URL
             if settings.LLM_PROVIDER == "deepseek":
                 client = openai.OpenAI(
-                    api_key="sk-190105abaaf345c38ff6e75984afb6cc",
+                    # api_key="sk-190105abaaf345c38ff6e75984afb6cc",
+                    api_key=settings.LLM_API_KEY,
                     base_url="https://api.deepseek.com",
                 )
             else:
@@ -34,7 +35,7 @@ class Summarizer:
                     {"role": "system", "content": system},
                     {"role": "user", "content": user},
                 ],
-                max_tokens=2000,
+                max_completion_tokens=settings.LLM_MAX_TOKENS,
             )
             text = resp.choices[0].message.content
             tokens = resp.usage.total_tokens if resp.usage else 0
@@ -43,7 +44,8 @@ class Summarizer:
         elif settings.LLM_PROVIDER == "anthropic":
             import anthropic
 
-            client = anthropic.Anthropic(api_key="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")
+            #client = anthropic.Anthropic(api_key="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")
+            client = anthropic.Anthropic(api_key=settings.LLM_API_KEY)
             resp = client.messages.create(
                 model=settings.LLM_MODEL,
                 max_tokens=2000,
@@ -98,15 +100,41 @@ class Summarizer:
         logger.info(f"Daily digest generated: {len(alerts)} alerts, {tokens} tokens")
         return summary
 
-    def generate_breaking_summary(self, alert: Alert) -> str:
-        """Short summary for push notifications."""
-        alert_data = {
-            "type": alert.alert_type,
-            "title": alert.title,
-            "description": (alert.description or "")[:300],
-            "location": alert.location_name,
-            "severity": alert.severity,
-        }
-        user_msg = BREAKING_USER.format(alert_json=json.dumps(alert_data))
-        text, _ = self._call_llm(BREAKING_SYSTEM, user_msg)
-        return text
+    def generate_local_digest(
+        self, db: Session, alerts: list, city: str, state: str, zip_code: str
+    ) -> "Summary":
+        """Generate a summary scoped to a specific location."""
+        alerts_data = [
+            {
+                "type": a.alert_type,
+                "severity": a.severity,
+                "title": a.title,
+                "description": (a.description or "")[:500],
+                "location": a.location_name,
+                "time": a.event_start,
+            }
+            for a in alerts
+        ]
+
+        user_msg = DAILY_DIGEST_USER.format(
+            count=len(alerts),
+            date=date.today().strftime("%B %d, %Y"),
+            alerts_json=json.dumps(alerts_data, indent=2),
+        )
+
+        text, tokens = self._call_llm(DAILY_DIGEST_SYSTEM, user_msg)
+
+        summary = Summary(
+            title=f"Local Digest for {city}, {state} — {date.today().strftime('%b %d, %Y')}",
+            content=text,
+            summary_type="local",
+            alert_ids=json.dumps([a.id for a in alerts]),
+            region=f"{city}, {state} {zip_code}",
+            model_used=settings.LLM_MODEL,
+            token_count=tokens,
+        )
+        db.add(summary)
+        db.commit()
+        db.refresh(summary)
+        logger.info(f"Local digest for {city}, {state}: {len(alerts)} alerts, {tokens} tokens")
+        return summary

@@ -63,7 +63,8 @@ class WebScraper(BaseScraper):
     def fetch_raw_data(self) -> list[dict]:
         from firecrawl import FirecrawlApp
 
-        firecrawl = FirecrawlApp(api_key="fc-fa26117bfd0f47f184cbe7add944d79f")
+        from config.settings import settings
+        firecrawl = FirecrawlApp(api_key=settings.FIRECRAWL_API_KEY)
 
         scrape_params = {"formats": ["markdown"]}
         fc_options = self._config.get("firecrawl_options", {})

@@ -8,12 +8,15 @@ import {
   KeyboardAvoidingView,
   Platform,
   SafeAreaView,
-  Pressable
+  Pressable,
+  ActivityIndicator,
+  Alert
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useAuth } from '@/contexts/auth-context';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -23,10 +26,30 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { login } = useAuth();
 
-  const handleLogin = () => {
-    // Navigate to main tabs after login
-    router.replace('/(tabs)');
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Missing Fields', 'Please enter both email and password.');
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      await login(email, password);
+      router.replace('/(tabs)');
+    } catch (err: any) {
+      console.error('Login error:', err);
+      let message = 'Invalid email or password. Please try again.';
+      if (err.message?.includes('Failed to fetch') || err.message?.includes('Network request failed')) {
+        message = 'Cannot connect to server. Make sure the backend is running.';
+      } else if (err.message) {
+        message = err.message;
+      }
+      Alert.alert('Login Failed', message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -93,8 +116,12 @@ export default function LoginScreen() {
             <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.loginButton} onPress={handleLogin} activeOpacity={0.8}>
-            <Text style={styles.loginButtonText}>Log In</Text>
+          <TouchableOpacity style={styles.loginButton} onPress={handleLogin} activeOpacity={0.8} disabled={isSubmitting}>
+            {isSubmitting ? (
+              <ActivityIndicator color={palette.white} />
+            ) : (
+              <Text style={styles.loginButtonText}>Log In</Text>
+            )}
           </TouchableOpacity>
         </View>
 

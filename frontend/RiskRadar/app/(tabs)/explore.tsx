@@ -1,78 +1,98 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   ScrollView,
   View,
   StyleSheet,
   TouchableOpacity,
-  Image,
-  Platform,
+  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
 import { Colors, Spacing, Radius, Shadows } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { apiFetch } from '@/utils/api';
 
 interface AlertItem {
-  id: string;
+  id: number;
+  source: string;
+  alert_type: string;
+  severity: string;
   title: string;
-  description: string;
-  severity: 'critical' | 'warning' | 'info';
-  timestamp: string;
-  icon: string;
-  type: string;
+  description: string | null;
+  location_name: string | null;
+  fetched_at: string;
+  created_at: string;
 }
-
-/**
- * Placeholder alert data for wireframe-accurate list.
- * In production, this would be fetched from the backend API.
- */
-const PLACEHOLDER_ALERTS: AlertItem[] = [
-  {
-    id: '1',
-    title: 'Air Quality Alert',
-    description: 'Unhealthy air quality detected in your area',
-    severity: 'critical',
-    timestamp: '2 hours ago',
-    icon: 'AirQuality',
-    type: 'Air Quality',
-  },
-  {
-    id: '2',
-    title: 'Fire Weather Warning',
-    description: 'High fire weather conditions expected',
-    severity: 'warning',
-    timestamp: '1 hour ago',
-    icon: 'Fire',
-    type: 'Fire',
-  },
-  {
-    id: '3',
-    title: 'Pollen Count Elevated',
-    description: 'High pollen levels today, may affect allergies',
-    severity: 'info',
-    timestamp: '30 minutes ago',
-    icon: 'Pollen',
-    type: 'Pollen',
-  },
-];
 
 export default function AlertsScreen() {
   const scheme = useColorScheme() ?? 'light';
   const palette = Colors[scheme];
-  const [alerts] = useState<AlertItem[]>(PLACEHOLDER_ALERTS);
+  const [alerts, setAlerts] = useState<AlertItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchAlerts = useCallback(async () => {
+    try {
+      setError(null);
+      const data = await apiFetch<AlertItem[]>('/alerts/?limit=50');
+      setAlerts(data);
+    } catch (err: any) {
+      setError('Could not load alerts. Is the backend running?');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchAlerts();
+  }, [fetchAlerts]);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchAlerts();
+  };
 
   const getSeverityColor = (severity: string) => {
-    switch (severity) {
+    switch (severity.toLowerCase()) {
       case 'critical':
+      case 'extreme':
+      case 'hazardous':
         return palette.danger;
       case 'warning':
+      case 'severe':
+      case 'unhealthy':
         return palette.warning;
-      case 'info':
       default:
         return palette.primary;
     }
   };
+
+  const formatTime = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    if (diffMins < 60) return `${diffMins}m ago`;
+    const diffHrs = Math.floor(diffMins / 60);
+    if (diffHrs < 24) return `${diffHrs}h ago`;
+    const diffDays = Math.floor(diffHrs / 24);
+    return `${diffDays}d ago`;
+  };
+
+  if (loading) {
+    return (
+      <ThemedView style={[styles.container, styles.centered]}>
+        <ActivityIndicator size="large" color={palette.primary} />
+        <ThemedText type="body" style={{ marginTop: Spacing.md }}>
+          Loading alerts...
+        </ThemedText>
+      </ThemedView>
+    );
+  }
 
   return (
     <ThemedView style={styles.container}>
@@ -91,8 +111,33 @@ export default function AlertsScreen() {
         style={styles.scrollView}
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={palette.primary} />
+        }
       >
-        {alerts.length > 0 ? (
+        {error ? (
+          <View style={styles.emptyContainer}>
+            <ThemedText type="sectionTitle" style={styles.emptyTitle}>
+              Connection Error
+            </ThemedText>
+            <ThemedText
+              type="body"
+              lightColor={palette.textSecondary}
+              darkColor={palette.textSecondary}
+              style={styles.emptySubtitle}
+            >
+              {error}
+            </ThemedText>
+            <TouchableOpacity
+              style={[styles.retryButton, { backgroundColor: palette.primary }]}
+              onPress={fetchAlerts}
+            >
+              <ThemedText type="cardTitle" lightColor={palette.white} darkColor={palette.white}>
+                Retry
+              </ThemedText>
+            </TouchableOpacity>
+          </View>
+        ) : alerts.length > 0 ? (
           <View style={styles.alertsContainer}>
             {alerts.map((alert) => (
               <AlertCard
@@ -100,6 +145,7 @@ export default function AlertsScreen() {
                 alert={alert}
                 severityColor={getSeverityColor(alert.severity)}
                 palette={palette}
+                formatTime={formatTime}
               />
             ))}
           </View>
@@ -114,7 +160,7 @@ export default function AlertsScreen() {
               darkColor={palette.textSecondary}
               style={styles.emptySubtitle}
             >
-              You're all set! Check back later for updates.
+              You're all set! Pull down to refresh.
             </ThemedText>
           </View>
         )}
@@ -123,17 +169,16 @@ export default function AlertsScreen() {
   );
 }
 
-/**
- * AlertCard displays a single alert item with wireframe-accurate styling.
- */
 function AlertCard({
   alert,
   severityColor,
   palette,
+  formatTime,
 }: {
   alert: AlertItem;
   severityColor: string;
   palette: typeof Colors.light;
+  formatTime: (d: string) => string;
 }) {
   return (
     <TouchableOpacity
@@ -144,9 +189,7 @@ function AlertCard({
       activeOpacity={0.7}
     >
       <View style={styles.alertCardContent}>
-        {/* Left: Icon & Title */}
         <View style={styles.alertLeft}>
-          {/* Icon Background */}
           <View
             style={[
               styles.iconBackground,
@@ -161,10 +204,9 @@ function AlertCard({
             />
           </View>
 
-          {/* Text Content */}
           <View style={styles.alertTextContent}>
             <ThemedText type="cardTitle" numberOfLines={1}>
-              {alert.type}
+              {alert.title}
             </ThemedText>
             <ThemedText
               type="eyebrow"
@@ -182,12 +224,11 @@ function AlertCard({
               numberOfLines={2}
               style={styles.alertDescription}
             >
-              {alert.description}
+              {alert.description ?? `${alert.alert_type} alert from ${alert.source}`}
             </ThemedText>
           </View>
         </View>
 
-        {/* Right: Timestamp */}
         <View style={styles.alertRight}>
           <ThemedText
             type="meta"
@@ -195,7 +236,7 @@ function AlertCard({
             darkColor={palette.textSecondary}
             style={styles.alertTimestamp}
           >
-            {alert.timestamp}
+            {formatTime(alert.created_at)}
           </ThemedText>
         </View>
       </View>
@@ -206,6 +247,10 @@ function AlertCard({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  centered: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   header: {
     paddingHorizontal: Spacing.md,
@@ -282,5 +327,11 @@ const styles = StyleSheet.create({
   },
   emptySubtitle: {
     textAlign: 'center',
+  },
+  retryButton: {
+    marginTop: Spacing.lg,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.lg,
+    borderRadius: Radius.button,
   },
 });

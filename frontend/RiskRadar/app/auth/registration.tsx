@@ -9,12 +9,15 @@ import {
   Platform,
   SafeAreaView,
   ScrollView,
-  Pressable
+  Pressable,
+  ActivityIndicator,
+  Alert
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useAuth } from '@/contexts/auth-context';
 
 export default function RegistrationScreen() {
   const router = useRouter();
@@ -28,10 +31,36 @@ export default function RegistrationScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { register } = useAuth();
 
-  const handleRegister = () => {
-    // Navigate to main tabs after registration
-    router.replace('/(tabs)');
+  const handleRegister = async () => {
+    if (!fullName || !email || !password) {
+      Alert.alert('Missing Fields', 'Please fill in all required fields.');
+      return;
+    }
+    if (password !== confirmPassword) {
+      Alert.alert('Password Mismatch', 'Passwords do not match.');
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      await register(fullName, email, password, zipCode || undefined);
+      router.replace('/(tabs)');
+    } catch (err: any) {
+      console.error('Registration error:', err);
+      let message = 'Registration failed. Please try again.';
+      if (err.message?.includes('already registered')) {
+        message = 'An account with this email already exists.';
+      } else if (err.message?.includes('Failed to fetch') || err.message?.includes('Network request failed')) {
+        message = 'Cannot connect to server. Make sure the backend is running.';
+      } else if (err.message) {
+        message = err.message;
+      }
+      Alert.alert('Registration Failed', message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -156,8 +185,12 @@ export default function RegistrationScreen() {
               </Text>
             </View>
 
-            <TouchableOpacity style={styles.registerButton} onPress={handleRegister} activeOpacity={0.8}>
-              <Text style={styles.registerButtonText}>Create Account</Text>
+            <TouchableOpacity style={styles.registerButton} onPress={handleRegister} activeOpacity={0.8} disabled={isSubmitting}>
+              {isSubmitting ? (
+                <ActivityIndicator color={palette.white} />
+              ) : (
+                <Text style={styles.registerButtonText}>Create Account</Text>
+              )}
             </TouchableOpacity>
           </View>
 
