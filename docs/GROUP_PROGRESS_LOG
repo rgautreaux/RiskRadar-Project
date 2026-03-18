@@ -49,104 +49,64 @@ A Reflective Log of our group work sessions, capturing key developments, decisio
 - Test scope:
 	- Uses real scraper classes (`NWSScraper`, `EPAScraper`, `GenericAPIScraper`) with mocked HTTP responses.
 	- Verifies writes into both `alerts` and `scrape_log`.
-	- Verifies second run deduplicates alerts while still writing new scrape logs.
-- Test status: passing (`2 passed`).
-
-#### 6) Dependency Update
 - Added MySQL driver dependency to backend requirements:
 	- `pymysql>=1.1.0` in `backend/requirements.txt`.
 
 #### 7) README Documentation Expanded
-- Updated `README.md` with:
-	- MariaDB/MySQL schema breakdown section.
 	- Database-scraper connection flow section.
 	- Troubleshooting DB-scraper section including exact integration test command.
 	- MariaDB quick-verify SQL queries for operational checks (table access, latest logs, latest alerts, dedup validation).
 
-### Commands/Verification Used
 - Integration test command:
 	- `cd backend`
-	- `python -m pytest tests/test_scraper_db_integration.py -v --tb=short`
 - DB verification included row count checks and `SHOW CREATE TABLE` confirmations.
 
 ### Outcome
 - Scraper-to-database pipeline is now validated both manually (live MariaDB smoke test) and automatically (repeatable pytest integration).
-- Project documentation now includes clear troubleshooting and verification instructions for team members.
-
----
-
 ## Reusable Progress Log Template
 
 Copy/paste this block for each new work session:
 
 ```markdown
 ## Group Progress Log — YYYY-MM-DD
-
-### Session Focus
 - 
 - 
 - 
-
 ### Work Completed
 
-#### 1) [Feature / Fix Title]
-- What was changed:
 - Files updated:
 - Why this change was needed:
 
-#### 2) [Feature / Fix Title]
 - What was changed:
 - Files updated:
-- Why this change was needed:
 
 ### Validation / Testing
 - Commands run:
-	- 
 - Test results:
 - Database/API verification performed:
 
 ### Issues / Blockers
 - 
 - 
-
 ### Decisions Made
-- 
 - 
 
 ### Next Steps
-- 
-- 
 
 ### Owner(s)
 - Primary:
-- Support:
-```
-
 ### Quick Minimal Version (for short sessions)
 
 ```markdown
 ## Group Progress Log — YYYY-MM-DD
 
-### Completed
-- 
-
 ### Validated
 - 
 
-### Next
-- 
-
-### Owner(s)
-- 
-```
 
 ## Rebecca Gautreaux Log — 2026-03-09
-
-### Session Focus
 - Design and implement automated data retention cleanup for database scalability and routing efficiency.
 - Add scheduled cleanup execution with archive-first behavior, batched deletes, and monitoring logs.
-- Validate retention behavior and end-to-end backend cohesion with repeatable pytest coverage.
-- Remove non-blocking Pydantic deprecation warnings to keep the codebase forward-compatible.
 
 ### Major Developments Completed
 

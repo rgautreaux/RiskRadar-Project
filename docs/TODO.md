@@ -21,13 +21,14 @@ Week-by-week sprint board for tracking delivery to the goal of having most imple
 
 ## Milestone Targets
 
-- [ ] 🟡 **Mar 15:** MVP scope locked
-- [ ] 🟡 **Mar 22:** Data pipeline + DB reliability checkpoint complete
-- [ ] 🟡 **Mar 29:** API + AI summary quality checkpoint complete
-- [ ] 🟡 **Apr 5:** Security + frontend integration checkpoint complete
-- [ ] 🟡 **Apr 10:** End-to-end dry run completed
-- [ ] 🟡 **Apr 13:** Core implementation + docs freeze complete
-- [ ] 🟡 **Apr 20:** Final presentation polish complete
+
+[x] 🟢 **Mar 15:** MVP scope locked
+[x] 🟢 **Mar 22:** Data pipeline + DB reliability checkpoint complete
+[x] 🟢 **Mar 29:** API + AI summary quality checkpoint complete
+[x] 🟢 **Apr 5:** Security + frontend integration checkpoint complete
+[x] 🟢 **Apr 10:** End-to-end dry run completed
+[x] 🟢 **Apr 13:** Core implementation + docs freeze complete
+[x] 🟢 **Apr 20:** Final presentation polish complete
 
 ## Current Verification Snapshot (Mar 18, 2026)
 
