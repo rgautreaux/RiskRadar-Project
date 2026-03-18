@@ -723,6 +723,12 @@ Exit criteria:
 - [ ] Normalize spacing, icon sizing, and card hierarchy.
 - [ ] Compare side-by-side against the wireframe and adjust for closer fidelity.
 
+### Phase 4.5: Signature UX Details Pass
+
+- [ ] Complete all items in the `Signature UX Details` section below.
+- [ ] Capture before/after screenshots for Home, Alerts, Modal, Login, and Registration to confirm visible non-starter identity.
+- [ ] Validate that each signature detail is token-driven or component-driven (no screen-local one-off styling).
+
 ### Phase 5: Branch-Integrated QA
 
 - [ ] Validate both guest and authenticated entry paths.
@@ -740,6 +746,30 @@ To keep the app efficient and stable while making it wireframe-accurate:
 - Use reusable components for repeated card patterns.
 - Avoid unnecessary animation unless it supports comprehension or navigation.
 - Keep placeholder data shapes close to eventual API response structure.
+
+## Signature UX Details
+
+Purpose:
+
+- Operationalize small but intentional UI details so the app feels distinctly RiskRadar-owned rather than library-default.
+
+Implementation checklist (complete all):
+
+- [ ] **SD1 - Branded Header Identity:** `components/brand-header.tsx` must render logo + branded text treatment + notification icon state (`standard` and `alert`) using local PNG assets only. No fallback to generic icon for primary brand marks.
+- [ ] **SD2 - Scope Identity Chip:** Add a reusable local/global scope indicator pattern (icon + label + surface treatment) used consistently on Home and Alerts headers.
+- [ ] **SD3 - Severity Visual Language:** Standardize severity styling across `risk-card.tsx`, `hazard-chip.tsx`, and Alerts rows using one shared severity map (`danger`, `warning`, `primary`, `success`) and one badge shape family.
+- [ ] **SD4 - Data Freshness Meta Pattern:** Every primary risk card and alert row includes a consistent freshness/timestamp line style (icon optional, text required) using `meta` typography tokens.
+- [ ] **SD5 - Card Personality System:** Risk cards include one distinctive RiskRadar treatment beyond base container styles (for example: severity rail, icon plate, or status corner marker) implemented once in shared component logic.
+- [ ] **SD6 - Signature CTA Treatment:** Primary action buttons on Home, Modal, Login, and Registration use one shared visual recipe (radius, padding, text weight, pressed-state feedback) tied to theme tokens.
+- [ ] **SD7 - Stateful Empty/Error/Loading Surfaces:** Home and Alerts each define branded empty/loading/error states with RiskRadar copy tone and icon treatment; no default spinner-only or plain text-only fallback.
+- [ ] **SD8 - Auth Personality Alignment:** Login and Registration include compact brand-header treatment and shared input styling (label, helper/error text, focus ring) with no purple legacy values.
+- [ ] **SD9 - Motion Micro-Details:** Add subtle, purposeful motion in at least two places (for example card entrance stagger and notification panel reveal) with durations between 120ms and 280ms and no decorative-only animation loops.
+- [ ] **SD10 - Tab Bar Ownership Detail:** `tab-bar-icon.tsx` centralizes branded tab icon state behavior and includes one explicit code comment documenting active/inactive mapping rationale against wireframe intent.
+
+Acceptance gate:
+
+- [ ] Run a quick visual QA pass where all SD1-SD10 items are demonstrably visible in the app and can be traced to shared components/tokens.
+- [ ] Confirm there are no remaining primary UI regions that look like Expo starter defaults.
 
 ## Verification Checklist
 
@@ -759,6 +789,8 @@ After implementation, run the following checks:
 - [ ] Verify all core screens in Light Mode have correct brand colors and contrast.
 - [ ] Verify all core screens in Dark Mode have correct brand colors and contrast.
 - [ ] Verify toggling system theme updates surfaces and text without requiring app restart.
+- [ ] Verify all `Signature UX Details` items (SD1-SD10) are complete and visually evident on target routes.
+- [ ] Verify before/after screenshots are captured for Home, Alerts, Modal, Login, and Registration.
 
 ## Definition of Done
 
@@ -768,6 +800,7 @@ This styling task should be considered complete when all of the following are tr
 - The main screens visibly resemble the RiskRadar wireframe structure.
 - Colors, type, spacing, and iconography are consistent throughout the app in both Light Mode and Dark Mode.
 - Navigation and cards look intentional and branded.
+- Signature details (SD1-SD10) are implemented and consistently visible across core routes.
 - The implementation runs cleanly and is easy for teammates to continue building on.
 
 ## Recommended Next Action
