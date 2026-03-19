@@ -38,6 +38,20 @@ By following these technical details and best practices, the team can ensure a s
 # USER_SECURITY_PLAN.md
 
 ## RiskRadar User Security Plan: Email & Password Encryption
+---
+
+### Codebase Audit Results: Email & Password Storage
+**Investigation conducted by Rebecca Gautreaux (Database Administrator)**
+
+The following files and code regions were identified as handling user email and password storage, processing, and authentication:
+
+- **backend/db/models.py**: The `User` model defines the `email` and `password_hash` fields, storing user credentials in the database.
+- **backend/api/users.py**: Handles user registration and login. Checks email uniqueness, hashes passwords, verifies credentials, and stores new users.
+- **auth/security.py** (referenced): Implements password hashing and verification logic used during registration and login.
+
+These regions are the primary locations for email and password handling. Any changes to encryption, hashing, or migration logic should be coordinated with these files to ensure security and prevent regressions.
+
+No code changes were made during this audit; this was a purely investigative step to inform future implementation and risk prevention.
 
 ### Objective
 Enhance the security and privacy of RiskRadar users by encrypting email addresses and securely hashing passwords in the database, following best practices and compliance requirements.
