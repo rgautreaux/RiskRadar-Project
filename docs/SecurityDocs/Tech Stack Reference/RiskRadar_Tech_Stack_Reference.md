@@ -1,7 +1,7 @@
 # RiskRadar — Tech Stack Reference (Source of Truth)
 
-**Version:** Post-Meeting Final · March 3, 2026
-**Source:** Security Questionnaires (Feb–Mar 2026) — Noah Benoit, Max Compeaux, Rebecca Gautreaux, Celeste George, Qui Huynh, Ben Manuel | Main branch source code | In-person meeting corrections (3/2/26)
+**Version:** Post-Meeting Final · March 3, 2026 — Security Audit Update March 22, 2026
+**Source:** Security Questionnaires (Feb–Mar 2026) — Noah Benoit, Max Compeaux, Rebecca Gautreaux, Celeste George, Qui Huynh, Ben Manuel | Main branch source code | In-person meeting corrections (3/2/26) | Codebase security audit (3/22/26)
 
 ---
 
@@ -41,7 +41,7 @@ Cross-platform mobile application targeting iOS and Android. Delivered via React
 | Server | Uvicorn (ASGI) |
 | Language | Python |
 | Background scheduler | APScheduler — 30-minute scrape interval |
-| Password hashing | SHA-256 (current) — see security notes |
+| Password hashing | bcrypt via passlib — confirmed in codebase audit (3/22/26) |
 | Auth mechanism | JWT (JSON Web Tokens) |
 | Message queue | Not implemented — RabbitMQ under consideration, currently localized |
 
@@ -106,7 +106,7 @@ All endpoints served over HTTPS.
 
 ## Authentication
 
-JWT-based authentication. Tokens are issued at login and passed as `Authorization: Bearer <token>` headers on protected routes. Passwords are currently hashed with SHA-256 — see security notes below.
+JWT-based authentication. Tokens are issued at login and passed as `Authorization: Bearer <token>` headers on protected routes. Passwords are hashed with bcrypt via passlib — confirmed in codebase audit (3/22/26).
 
 ---
 
@@ -126,9 +126,13 @@ JWT-based authentication. Tokens are issued at login and passed as `Authorizatio
 
 ## Security Notes
 
-### Password Hashing — SHA-256
+### Password Hashing — bcrypt ✓ (Resolved)
 
-The current implementation uses SHA-256 for password hashing. SHA-256 is a general-purpose cryptographic hash function — it is fast by design, which makes it unsuitable for password storage. An attacker with access to the hash database can run high-speed brute-force or dictionary attacks. **Before production deployment, hashing should be migrated to bcrypt or Argon2**, both of which are deliberately slow and include built-in salting. SQLAlchemy makes this a straightforward update to the user model.
+> **Updated 3/22/26 — Codebase Security Audit (Noah Benoit)**
+
+A codebase audit confirmed that `backend/auth/security.py` already implements bcrypt via `passlib` with `CryptContext(schemes=["bcrypt"], deprecated="auto")`. The previous entry in this document stating SHA-256 was inaccurate and has been corrected. Passwords are hashed correctly and no migration is needed for this item.
+
+The SHA-256 reference in prior documentation likely reflected an earlier version of the codebase or a plan that was already completed before this document was last updated.
 
 ### CORS — Wildcard Origin
 
@@ -160,7 +164,7 @@ SQLAlchemy ORM abstracts the database layer, making the SQLite → MySQL switch 
 
 | Item | Status | Note |
 |---|---|---|
-| SHA-256 → bcrypt/Argon2 | **Open** | Required before production |
+| SHA-256 → bcrypt/Argon2 | **Closed** | Audit (3/22/26) confirmed bcrypt already live in `auth/security.py` |
 | CORS wildcard restriction | **Open** | Required before deployment |
 | Rate limiting | **Open** | Required before production |
 | RabbitMQ integration | **Aspirational** | Under consideration, not started |
@@ -171,4 +175,4 @@ SQLAlchemy ORM abstracts the database layer, making the SQLite → MySQL switch 
 
 ---
 
-*Document reflects the state of the main branch as of 3/2/26 and the decisions recorded during the in-person team meeting on the same date.*
+*Document reflects the state of the main branch as of 3/2/26 and the decisions recorded during the in-person team meeting on the same date. Security notes updated 3/22/26 following codebase audit by Noah Benoit (Security Lead).*
