@@ -43,4 +43,17 @@ This document lists all icon and image assets in the mobile app, their locations
 
 ---
 
+## Visual Asset Reference
+
+Below is a visual reference for key assets. For full mapping, see the Asset Mapping Table in UI_UX_STYLING_PLAN.md.
+
+- ![RiskRadar_ALERT_Logo](../frontend/RiskRadar/assets/icons/branding/RiskRadar_ALERT_Logo.png)
+- ![RiskRadar_STND_Logo](../frontend/RiskRadar/assets/icons/branding/RiskRadar_STND_Logo.png)
+- ![RiskRadar_ALERT_HomeBttn](../frontend/RiskRadar/assets/icons/navigation/RiskRadar_ALERT_HomeBttn.png)
+- ![RiskRadar_STND_HomeBttn](../frontend/RiskRadar/assets/icons/navigation/RiskRadar_STND_HomeBttn.png)
+- ![RiskRadar_Weather_Icon](../frontend/RiskRadar/assets/icons/hazards/RiskRadar_Weather_Icon.png)
+- ![RiskRadar_AirQuality_Icon](../frontend/RiskRadar/assets/icons/hazards/RiskRadar_AirQuality_Icon.png)
+
+---
+
 _Last updated: March 23, 2026_
