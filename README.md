@@ -303,3 +303,33 @@ Expected: `78 passed`. Tests use an in-memory database and mock all external API
 | AI Summaries | DeepSeek / OpenAI / Anthropic |
 | Background Jobs | APScheduler |
 | Web Scraping | Firecrawl |
+
+---
+
+## Scheduled Archive and Deletion System
+
+RiskRadar includes a scheduled job system that automatically archives and deletes out-of-date alerts, summaries, and scrape logs to keep the database clean and performant.
+
+### How It Works
+- The backend scheduler registers two retention jobs:
+  - **Nightly job:** Archives and deletes old scrape logs.
+  - **Weekly job:** Archives and deletes old alerts and summaries, as well as scrape logs.
+- Each job:
+  - Moves eligible records to archive tables (e.g., `AlertArchive`, `SummaryArchive`, `ScrapeLogArchive`).
+  - Deletes the original records from the main tables.
+  - Logs the cleanup run in the `CleanupRun` table for auditing.
+- Jobs run in batches and can be configured for dry-run mode (no data is deleted, only estimated).
+
+### Configuration
+- Retention periods, batch sizes, and schedule times are set in `config/settings.py`.
+- The system is enabled/disabled via the `RETENTION_ENABLED` setting.
+
+### Why This Matters
+This system ensures that the backend database does not grow indefinitely, improves performance, and maintains historical data in archive tables for future reference.
+
+---
+
+For more details, see:
+- [backend/scrapers/scheduler.py](backend/scrapers/scheduler.py)
+- [backend/db/retention.py](backend/db/retention.py)
+- [backend/db/models.py](backend/db/models.py)
