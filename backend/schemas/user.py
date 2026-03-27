@@ -1,11 +1,5 @@
 from pydantic import BaseModel, ConfigDict
 
-"""
-Pydantic schemas for the User resource.
-
-These schemas validate request bodies and shape response payloads
-for the /api/v1/users/* endpoints.
-"""
 
 from typing import Optional
 from datetime import datetime
@@ -48,6 +42,11 @@ class TokenOut(BaseModel):
 class UserOut(BaseModel):
     """Standard user response — never expose password_hash."""
     id: int
+    display_name: Optional[str] = None
+    email: Optional[str] = None
+    zip_code: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
     display_name: Optional[str] = None
     email: Optional[str] = None
     zip_code: Optional[str] = None
