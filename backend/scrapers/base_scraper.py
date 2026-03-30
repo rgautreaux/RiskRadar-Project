@@ -53,7 +53,6 @@ class BaseScraper(ABC):
             session.commit()
             log.alerts_fetched = len(raw_items)
             log.alerts_new = new_count
-            logger.info(f"[{self.source_name}] fetched={len(raw_items)} new={new_count}")
 
         except Exception as e:
             log.status = "failure"

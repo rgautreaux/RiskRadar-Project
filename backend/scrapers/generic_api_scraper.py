@@ -52,7 +52,11 @@ def _extract_path(obj: Any, path: str) -> Any:
             field, idx_str = segment.rstrip("]").split("[")
             obj = obj[field][int(idx_str)]
         else:
-            obj = obj[segment]
+            # Support bare integer indices for list traversal (e.g. items_path: "1")
+            try:
+                obj = obj[int(segment)]
+            except (ValueError, TypeError):
+                obj = obj[segment]
     return obj
 
 

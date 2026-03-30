@@ -133,7 +133,7 @@ api_sources:
   # Environmental type -> Air quality measurements worldwide
   # Usage -> Monitoring air quality (PM2.5, PM10, etc.) in different cities globally.
   - name: "openaq_air_quality"
-    enabled: false  # can enable if we want to monitor global air quality levels
+    enabled: true  # can enable if we want to monitor global air quality levels
     alert_type: "environmental"
     url: "https://api.openaq.org/v3/parameters/2/latest"
     method: "GET"
@@ -175,7 +175,7 @@ api_sources:
 # Global Biodiversity Information Facility (GBIF) API — no API key required
 # Environmental type -> Invasive species occurrences
   - name: "gbif_occurrences"
-    enabled: false
+    enabled: true  # can enable if we want to monitor invasive species occurrences worldwide
     alert_type: "environmental"
     url: "https://api.gbif.org/v1/occurrence/search"
     method: "GET"
