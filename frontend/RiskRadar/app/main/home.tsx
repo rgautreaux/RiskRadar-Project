@@ -11,6 +11,7 @@ import {
   StatusBar,
   ActivityIndicator,
 } from 'react-native';
+import EmptyState from '@/components/ui/EmptyState';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/theme';
@@ -153,14 +154,11 @@ export default function Home() {
               </Text>
             </View>
           ) : (
-            <View style={styles.placeholderBox}>
-              <Text style={styles.placeholderText}>
-                {zipCode.length === 5 ? `Results for ${zipCode}` : 'Awaiting Zip Code...'}
-              </Text>
-              <Text style={styles.placeholderSubtext}>
-                {zipCode.length === 5 ? 'Tap to view full weather summary.' : 'Enter a zip code above.'}
-              </Text>
-            </View>
+            <EmptyState
+              title={zipCode.length === 5 ? `Results for ${zipCode}` : 'Awaiting Zip Code...'}
+              subtitle={zipCode.length === 5 ? 'Tap to view full weather summary.' : 'Enter a zip code above.'}
+              style={styles.placeholderBox}
+            />
           )}
         </TouchableOpacity>
 
@@ -189,10 +187,11 @@ export default function Home() {
               ))}
             </View>
           ) : (
-            <View style={styles.placeholderContent}>
-              <Text style={styles.placeholderText}>No data available</Text>
-              <Text style={styles.placeholderSubtext}>Make sure the backend is running.</Text>
-            </View>
+            <EmptyState
+              title="No data available"
+              subtitle="Make sure the backend is running."
+              style={styles.placeholderContent}
+            />
           )}
         </View>
       </ScrollView>
