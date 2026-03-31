@@ -119,15 +119,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: Spacing.sm,
   },
-  scopeIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    borderRadius: Radius.sm,
-    minWidth: 80,
-    alignItems: 'center',
-  },
+   scopeIndicator: {
+     flexDirection: 'row',
+     alignItems: 'center',
+     paddingHorizontal: Spacing.md,
+     paddingVertical: Spacing.sm,
+     borderRadius: Radius.sm,
+     minWidth: 80,
+   },
   scopeIcon: {
     width: 18,
     height: 18,

@@ -13,6 +13,7 @@ import React, { useState } from 'react';
 
 
 import { ThemedText } from '@/components/themed-text';
+import PrimaryButton from '@/components/ui/PrimaryButton';
 import { ThemedView } from '@/components/themed-view';
 import { Colors, Spacing, Radius, Shadows } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -223,23 +224,7 @@ export default function ModalScreen() {
             </ThemedView>
 
             {/* Action Button */}
-            <TouchableOpacity
-              style={[
-                styles.actionButton,
-                { backgroundColor: palette.primary },
-              ]}
-              onPress={handleClose}
-              activeOpacity={0.8}
-            >
-              <ThemedText
-                type="cardTitle"
-                lightColor={palette.white}
-                darkColor={palette.white}
-                style={{ fontWeight: '700' }}
-              >
-                Acknowledge
-              </ThemedText>
-            </TouchableOpacity>
+            <PrimaryButton label="Acknowledge" onPress={handleClose} />
           </ScrollView>
         </SafeAreaView>
       </Modal>
