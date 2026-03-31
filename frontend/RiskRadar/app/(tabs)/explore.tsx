@@ -15,6 +15,8 @@ import { Colors, Spacing, Radius, Shadows } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { apiFetch } from '@/utils/api';
 import { RiskCard } from '@/components/risk-card';
+import { SectionHeader } from '@/components/section-header';
+import { HazardChip } from '@/components/hazard-chip';
 // Map alert_type or hazard type to icon asset
 const hazardIconMap: Record<string, any> = {
   weather: require('@/assets/icons/hazards/RiskRadar_Weather_Icon.png'),
@@ -116,17 +118,45 @@ export default function AlertsScreen() {
   }
 
 
+  // Example hazard chips (static for now, could be dynamic)
+  const hazardChips = [
+    { hazardType: 'weather', label: 'Weather', icon: hazardIconMap.weather },
+    { hazardType: 'airquality', label: 'Air Quality', icon: hazardIconMap.airquality },
+    { hazardType: 'pollen', label: 'Pollen', icon: hazardIconMap.pollen },
+    { hazardType: 'pollution', label: 'Pollution', icon: hazardIconMap.pollution },
+    { hazardType: 'earthquake', label: 'Earthquake', icon: hazardIconMap.earthquake },
+    { hazardType: 'flood', label: 'Flood', icon: hazardIconMap.flood },
+    { hazardType: 'wind', label: 'Wind', icon: hazardIconMap.wind },
+    { hazardType: 'fire', label: 'Fire', icon: hazardIconMap.fire },
+  ];
+
   return (
     <ThemedView style={styles.container}>
-      {/* Header Section */}
-      <View style={styles.header}>
-        <ThemedText type="title" style={styles.headerTitle}>
-          Alerts
-        </ThemedText>
-        <ThemedText type="body" lightColor={palette.textSecondary} darkColor={palette.textSecondary}>
-          {alerts.length} active alert{alerts.length !== 1 ? 's' : ''}
-        </ThemedText>
-      </View>
+      {/* Branded Section Header */}
+      <SectionHeader
+        title="Alerts"
+        subtitle={`${alerts.length} active alert${alerts.length !== 1 ? 's' : ''}`}
+        style={styles.sectionHeader}
+      />
+
+      {/* Hazard Chips Row */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.hazardChipsRow}
+        style={{ marginBottom: Spacing.md }}
+      >
+        {hazardChips.map((chip) => (
+          <HazardChip
+            key={chip.hazardType}
+            hazardType={chip.hazardType}
+            label={chip.label}
+            iconSource={chip.icon}
+            isActive={false}
+            style={{ marginRight: Spacing.sm }}
+          />
+        ))}
+      </ScrollView>
 
       {/* Alerts List */}
       <ScrollView
@@ -212,13 +242,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  header: {
-    paddingHorizontal: Spacing.md,
-    paddingTop: Spacing.lg,
-    paddingBottom: Spacing.sm,
+  sectionHeader: {
+    paddingBottom: 0,
   },
-  headerTitle: {
-    marginBottom: Spacing.xs,
+  hazardChipsRow: {
+    paddingHorizontal: Spacing.md,
+    paddingBottom: Spacing.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   scrollView: {
     flex: 1,
