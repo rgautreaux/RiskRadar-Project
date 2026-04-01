@@ -19,6 +19,7 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useAuth } from '@/contexts/auth-context';
 import { apiFetch } from '@/utils/api';
 import { API_BASE_URL } from '@/constants/api';
+import { StateView } from '@/components/ui/state-view';
 
 interface AlertStats {
   total: number;
@@ -46,6 +47,8 @@ export default function Home() {
   const [summary, setSummary] = useState<Summary | null>(null);
   const [loadingStats, setLoadingStats] = useState(true);
   const [loadingSummary, setLoadingSummary] = useState(true);
+  const [errorStats, setErrorStats] = useState<string | null>(null);
+  const [errorSummary, setErrorSummary] = useState<string | null>(null);
 
   useEffect(() => {
     if (user?.zip_code) setZipCode(user.zip_code);
@@ -54,20 +57,28 @@ export default function Home() {
   useEffect(() => {
     (async () => {
       try {
+        setErrorStats(null);
         console.log('Fetching stats from:', API_BASE_URL + '/alerts/stats');
         const data = await apiFetch<AlertStats>('/alerts/stats');
         console.log('Stats loaded:', data);
         setStats(data);
-      } catch (err) { console.error('Stats fetch failed:', err); }
+      } catch (err) { 
+        console.error('Stats fetch failed:', err);
+        setErrorStats('Failed to load risk assessment data');
+      }
       finally { setLoadingStats(false); }
     })();
 
     (async () => {
       try {
+        setErrorSummary(null);
         const data = await apiFetch<Summary | null>('/summaries/latest');
         console.log('Summary loaded:', data);
         setSummary(data);
-      } catch (err) { console.error('Summary fetch failed:', err); }
+      } catch (err) { 
+        console.error('Summary fetch failed:', err);
+        setErrorSummary('Failed to load latest summary');
+      }
       finally { setLoadingSummary(false); }
     })();
   }, []);
@@ -90,12 +101,20 @@ export default function Home() {
           <Text style={styles.greeting}>Welcome, {displayName}</Text>
           <Text style={styles.headerSubtitle}>Stay ahead of the weather</Text>
         </View>
-        <TouchableOpacity
-          style={styles.profileButton}
-          onPress={() => !isLoggedIn ? router.replace('/auth/login') : console.log('Profile')}
-        >
-          <Ionicons name={!isLoggedIn ? 'log-in-outline' : 'person-circle-outline'} size={28} color={palette.primary} />
-        </TouchableOpacity>
+        <View style={styles.headerActions}>
+          <TouchableOpacity
+            style={styles.settingsButton}
+            onPress={() => router.push('/main/settings')}
+          >
+            <Ionicons name="settings-outline" size={24} color={palette.textSecondary} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.profileButton}
+            onPress={() => !isLoggedIn ? router.replace('/auth/login') : console.log('Profile')}
+          >
+            <Ionicons name={!isLoggedIn ? 'log-in-outline' : 'person-circle-outline'} size={28} color={palette.primary} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -143,16 +162,35 @@ export default function Home() {
             <Text style={styles.cardTitle}>Latest Summary</Text>
           </View>
 
-          {loadingSummary ? (
-            <ActivityIndicator color={palette.primary} style={{ paddingVertical: 24 }} />
-          ) : summary ? (
+          <StateView
+            state={loadingSummary ? 'loading' : errorSummary ? 'error' : summary ? 'success' : 'empty'}
+            loadingText="Loading summary..."
+            emptyText={zipCode.length === 5 ? `No summary available for ${zipCode}` : 'Enter a zip code to see summaries'}
+            emptyIcon="document-outline"
+            errorText={errorSummary || 'Failed to load summary'}
+            onRetry={() => {
+              setLoadingSummary(true);
+              setErrorSummary(null);
+              (async () => {
+                try {
+                  const data = await apiFetch<Summary | null>('/summaries/latest');
+                  setSummary(data);
+                } catch (err) {
+                  setErrorSummary('Failed to load latest summary');
+                } finally {
+                  setLoadingSummary(false);
+                }
+              })();
+            }}
+          >
             <View style={styles.summaryBox}>
-              <Text style={styles.summaryTitle}>{summary.title}</Text>
-              <Text style={styles.summaryText} numberOfLines={3}>{summary.content}</Text>
+              <Text style={styles.summaryTitle}>{summary?.title}</Text>
+              <Text style={styles.summaryText} numberOfLines={3}>{summary?.content}</Text>
               <Text style={styles.summaryMeta}>
-                Generated {new Date(summary.generated_at).toLocaleDateString()}
+                Generated {summary ? new Date(summary.generated_at).toLocaleDateString() : ''}
               </Text>
             </View>
+          </StateView>
           ) : (
             <EmptyState
               title={zipCode.length === 5 ? `Results for ${zipCode}` : 'Awaiting Zip Code...'}
@@ -171,21 +209,40 @@ export default function Home() {
             <Text style={styles.cardTitle}>Risk Assessment</Text>
           </View>
 
-          {loadingStats ? (
-            <ActivityIndicator color={palette.primary} style={{ paddingVertical: 24 }} />
-          ) : stats ? (
+          <StateView
+            state={loadingStats ? 'loading' : errorStats ? 'error' : stats ? 'success' : 'empty'}
+            loadingText="Loading risk data..."
+            emptyText="No risk data available"
+            emptyIcon="stats-chart-outline"
+            errorText={errorStats || 'Failed to load risk data'}
+            onRetry={() => {
+              setLoadingStats(true);
+              setErrorStats(null);
+              (async () => {
+                try {
+                  const data = await apiFetch<AlertStats>('/alerts/stats');
+                  setStats(data);
+                } catch (err) {
+                  setErrorStats('Failed to load risk assessment data');
+                } finally {
+                  setLoadingStats(false);
+                }
+              })();
+            }}
+          >
             <View style={styles.statsContainer}>
               <View style={styles.statRow}>
                 <Text style={styles.statLabel}>Total Active Alerts</Text>
-                <Text style={styles.statValue}>{stats.total}</Text>
+                <Text style={styles.statValue}>{stats?.total}</Text>
               </View>
-              {Object.entries(stats.by_severity).map(([severity, count]) => (
+              {stats && Object.entries(stats.by_severity).map(([severity, count]) => (
                 <View key={severity} style={styles.statRow}>
                   <Text style={styles.statLabel}>{severity}</Text>
                   <Text style={styles.statValue}>{count}</Text>
                 </View>
               ))}
             </View>
+          </StateView>
           ) : (
             <EmptyState
               title="No data available"
@@ -199,7 +256,7 @@ export default function Home() {
   );
 }
 
-function getStyles(palette: typeof Colors.light) {
+function getStyles(palette: typeof Colors.light | typeof Colors.dark) {
   return StyleSheet.create({
     safeArea: {
       flex: 1,
@@ -225,6 +282,17 @@ function getStyles(palette: typeof Colors.light) {
       fontSize: 14,
       color: palette.textSecondary,
       marginTop: 2,
+    },
+    headerActions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    settingsButton: {
+      width: 44,
+      height: 44,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: 8,
     },
     profileButton: {
       width: 44,

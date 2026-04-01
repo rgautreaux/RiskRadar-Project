@@ -14,6 +14,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Colors, Spacing, Radius, Shadows } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { apiFetch } from '@/utils/api';
+import { StateView } from '@/components/ui/state-view';
 import { RiskCard } from '@/components/risk-card';
 import { SectionHeader } from '@/components/section-header';
 import { HazardChip } from '@/components/hazard-chip';
@@ -109,10 +110,7 @@ export default function AlertsScreen() {
   if (loading) {
     return (
       <ThemedView style={[styles.container, styles.centered]}>
-        <ActivityIndicator size="large" color={palette.primary} />
-        <ThemedText type="body" style={{ marginTop: Spacing.md }}>
-          Loading alerts...
-        </ThemedText>
+        <StateView state="loading" loadingText="Loading alerts..." />
       </ThemedView>
     );
   }
@@ -167,6 +165,13 @@ export default function AlertsScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={palette.primary} />
         }
       >
+        <StateView
+          state={error ? 'error' : alerts.length > 0 ? 'success' : 'empty'}
+          emptyText="No active alerts"
+          emptyIcon="notifications-off-outline"
+          errorText={error || 'Failed to load alerts'}
+          onRetry={fetchAlerts}
+        >
         {error ? (
           <View style={styles.emptyContainer}>
             <ThemedText type="sectionTitle" style={styles.emptyTitle}>
@@ -225,6 +230,7 @@ export default function AlertsScreen() {
               );
             })}
           </View>
+        </StateView>
         ) : (
           <View style={styles.emptyContainer}>
             <ThemedText type="sectionTitle" style={styles.emptyTitle}>

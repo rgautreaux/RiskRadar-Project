@@ -28,13 +28,33 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<{ email?: string; password?: string; form?: string }>({});
   const { login } = useAuth();
 
-  const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Missing Fields', 'Please enter both email and password.');
-      return;
+  const validateForm = () => {
+    const newErrors: { email?: string; password?: string } = {};
+    let isValid = true;
+    
+    if (!email.trim()) {
+      newErrors.email = 'Email address is required';
+      isValid = false;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = 'Please enter a valid email address';
+      isValid = false;
     }
+    
+    if (!password) {
+      newErrors.password = 'Password is required';
+      isValid = false;
+    }
+    
+    setErrors(newErrors);
+    return isValid;
+  };
+
+  const handleLogin = async () => {
+    if (!validateForm()) return;
+    setErrors({});
     setIsSubmitting(true);
     try {
       await login(email, password);
@@ -47,7 +67,7 @@ export default function LoginScreen() {
       } else if (err.message) {
         message = err.message;
       }
-      Alert.alert('Login Failed', message);
+      setErrors({ form: message });
     } finally {
       setIsSubmitting(false);
     }
@@ -75,9 +95,11 @@ export default function LoginScreen() {
         </View>
 
         <View style={styles.formContainer}>
+          {errors.form ? <Text style={styles.formError}>{errors.form}</Text> : null}
+
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Email Address</Text>
-            <View style={styles.inputContainer}>
+            <View style={[styles.inputContainer, errors.email && styles.inputError]}>
               <Ionicons name="mail-outline" size={20} color={palette.textSecondary} style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
@@ -86,14 +108,18 @@ export default function LoginScreen() {
                 keyboardType="email-address"
                 autoCapitalize="none"
                 value={email}
-                onChangeText={setEmail}
+                onChangeText={(text) => {
+                  setEmail(text);
+                  if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
+                }}
               />
             </View>
+            {errors.email ? <Text style={styles.errorText}>{errors.email}</Text> : null}
           </View>
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Password</Text>
-            <View style={styles.inputContainer}>
+            <View style={[styles.inputContainer, errors.password && styles.inputError]}>
               <Ionicons name="lock-closed-outline" size={20} color={palette.textSecondary} style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
@@ -101,7 +127,10 @@ export default function LoginScreen() {
                 placeholderTextColor={palette.textSecondary}
                 secureTextEntry={!showPassword}
                 value={password}
-                onChangeText={setPassword}
+                onChangeText={(text) => {
+                  setPassword(text);
+                  if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }));
+                }}
               />
               <Pressable onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
                 <Ionicons
@@ -111,6 +140,7 @@ export default function LoginScreen() {
                 />
               </Pressable>
             </View>
+            {errors.password ? <Text style={styles.errorText}>{errors.password}</Text> : null}
           </View>
 
           <TouchableOpacity style={styles.forgotPassword}>
@@ -136,7 +166,7 @@ export default function LoginScreen() {
   );
 }
 
-function getStyles(palette: typeof Colors.light) {
+function getStyles(palette: typeof Colors.light | typeof Colors.dark) {
   return StyleSheet.create({
     safeArea: {
       flex: 1,
@@ -218,6 +248,21 @@ function getStyles(palette: typeof Colors.light) {
     },
     eyeIcon: {
       padding: 8,
+    },
+    errorText: {
+      color: palette.danger,
+      fontSize: 12,
+      marginTop: 4,
+      marginLeft: 4,
+    },
+    formError: {
+      color: palette.danger,
+      fontSize: 14,
+      textAlign: 'center',
+      marginBottom: 16,
+    },
+    inputError: {
+      borderColor: palette.danger,
     },
     forgotPassword: {
       alignSelf: 'flex-end',
