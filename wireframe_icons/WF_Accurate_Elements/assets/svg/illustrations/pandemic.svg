@@ -1,0 +1,108 @@
+<svg width="240" height="240" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="virus-gradient" x1="120" y1="60" x2="120" y2="180" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F87171"/>
+      <stop offset="0.5" stop-color="#EF4444"/>
+      <stop offset="1" stop-color="#DC2626"/>
+    </linearGradient>
+    <radialGradient id="virus-radial" cx="120" cy="120" r="50">
+      <stop stop-color="#FCA5A5" offset="0"/>
+      <stop stop-color="#EF4444" offset="0.7"/>
+      <stop stop-color="#DC2626" offset="1"/>
+    </radialGradient>
+    <filter id="virus-shadow">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="4"/>
+      <feOffset dx="0" dy="2" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.4"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background glow -->
+  <circle cx="120" cy="120" r="70" fill="#FEE2E2" opacity="0.4"/>
+  <circle cx="120" cy="120" r="55" fill="#FECACA" opacity="0.3"/>
+  
+  <!-- Main virus body -->
+  <circle cx="120" cy="120" r="48" fill="url(#virus-radial)" filter="url(#virus-shadow)"/>
+  
+  <!-- Surface proteins (large) -->
+  <circle cx="98" cy="102" r="10" fill="#B91C1C" opacity="0.9"/>
+  <circle cx="142" cy="102" r="10" fill="#B91C1C" opacity="0.9"/>
+  <circle cx="120" cy="145" r="10" fill="#DC2626" opacity="0.9"/>
+  
+  <!-- Surface proteins (medium) -->
+  <circle cx="105" cy="125" r="7" fill="#991B1B" opacity="0.85"/>
+  <circle cx="135" cy="125" r="7" fill="#991B1B" opacity="0.85"/>
+  <circle cx="120" cy="100" r="7" fill="#DC2626" opacity="0.85"/>
+  
+  <!-- Surface proteins (small) -->
+  <circle cx="110" cy="112" r="5" fill="#7F1D1D" opacity="0.8"/>
+  <circle cx="130" cy="112" r="5" fill="#7F1D1D" opacity="0.8"/>
+  <circle cx="115" cy="135" r="5" fill="#991B1B" opacity="0.8"/>
+  <circle cx="125" cy="135" r="5" fill="#991B1B" opacity="0.8"/>
+  
+  <!-- Spike proteins (top) -->
+  <g>
+    <rect x="118" y="52" width="4" height="25" rx="2" fill="#B91C1C" filter="url(#virus-shadow)"/>
+    <circle cx="120" cy="48" r="6" fill="#DC2626"/>
+    <circle cx="120" cy="48" r="3.5" fill="#FCA5A5"/>
+  </g>
+  
+  <!-- Spike proteins (bottom) -->
+  <g>
+    <rect x="118" y="163" width="4" height="25" rx="2" fill="#B91C1C" filter="url(#virus-shadow)"/>
+    <circle cx="120" cy="192" r="6" fill="#DC2626"/>
+    <circle cx="120" cy="192" r="3.5" fill="#FCA5A5"/>
+  </g>
+  
+  <!-- Spike proteins (right) -->
+  <g>
+    <rect x="163" y="118" width="25" height="4" rx="2" fill="#B91C1C" filter="url(#virus-shadow)"/>
+    <circle cx="192" cy="120" r="6" fill="#DC2626"/>
+    <circle cx="192" cy="120" r="3.5" fill="#FCA5A5"/>
+  </g>
+  
+  <!-- Spike proteins (left) -->
+  <g>
+    <rect x="52" y="118" width="25" height="4" rx="2" fill="#B91C1C" filter="url(#virus-shadow)"/>
+    <circle cx="48" cy="120" r="6" fill="#DC2626"/>
+    <circle cx="48" cy="120" r="3.5" fill="#FCA5A5"/>
+  </g>
+  
+  <!-- Spike proteins (diagonal - top-right) -->
+  <g transform="rotate(45 120 120)">
+    <rect x="118" y="52" width="4" height="22" rx="2" fill="#B91C1C" opacity="0.9"/>
+    <circle cx="120" cy="50" r="5" fill="#DC2626"/>
+    <circle cx="120" cy="50" r="3" fill="#FCA5A5"/>
+  </g>
+  
+  <!-- Spike proteins (diagonal - top-left) -->
+  <g transform="rotate(-45 120 120)">
+    <rect x="118" y="52" width="4" height="22" rx="2" fill="#B91C1C" opacity="0.9"/>
+    <circle cx="120" cy="50" r="5" fill="#DC2626"/>
+    <circle cx="120" cy="50" r="3" fill="#FCA5A5"/>
+  </g>
+  
+  <!-- Spike proteins (diagonal - bottom-right) -->
+  <g transform="rotate(135 120 120)">
+    <rect x="118" y="52" width="4" height="22" rx="2" fill="#B91C1C" opacity="0.9"/>
+    <circle cx="120" cy="50" r="5" fill="#DC2626"/>
+    <circle cx="120" cy="50" r="3" fill="#FCA5A5"/>
+  </g>
+  
+  <!-- Spike proteins (diagonal - bottom-left) -->
+  <g transform="rotate(-135 120 120)">
+    <rect x="118" y="52" width="4" height="22" rx="2" fill="#B91C1C" opacity="0.9"/>
+    <circle cx="120" cy="50" r="5" fill="#DC2626"/>
+    <circle cx="120" cy="50" r="3" fill="#FCA5A5"/>
+  </g>
+  
+  <!-- Highlights on main body -->
+  <circle cx="108" cy="108" r="8" fill="white" opacity="0.15"/>
+  <circle cx="132" cy="115" r="6" fill="white" opacity="0.1"/>
+</svg>

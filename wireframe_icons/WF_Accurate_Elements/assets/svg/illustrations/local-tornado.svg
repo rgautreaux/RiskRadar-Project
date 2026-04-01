@@ -1,0 +1,64 @@
+<svg width="300" height="300" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="local-shadow">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dx="0" dy="2" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.3"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Ground shadow -->
+  <ellipse cx="150" cy="260" rx="90" ry="15" fill="#CBD5E1" opacity="0.3"/>
+  
+  <!-- House -->
+  <rect x="100" y="180" width="100" height="80" fill="#FEF3C7" filter="url(#local-shadow)"/>
+  
+  <!-- Roof -->
+  <path d="M 85 180 L 150 130 L 215 180 Z" fill="#DC2626" filter="url(#local-shadow)"/>
+  <path d="M 85 180 L 150 130 L 215 180 Z" fill="#B91C1C" opacity="0.3"/>
+  
+  <!-- Door -->
+  <rect x="130" y="210" width="25" height="50" fill="#78716C"/>
+  <circle cx="148" cy="235" r="2.5" fill="#D6D3D1"/>
+  
+  <!-- Window -->
+  <rect x="165" y="200" width="25" height="25" fill="#60A5FA" opacity="0.7"/>
+  <line x1="177.5" y1="200" x2="177.5" y2="225" stroke="#3B82F6" stroke-width="2"/>
+  <line x1="165" y1="212.5" x2="190" y2="212.5" stroke="#3B82F6" stroke-width="2"/>
+  
+  <!-- Tornado funnel approaching -->
+  <g transform="translate(230, 0)">
+    <ellipse cx="0" cy="60" rx="35" ry="12" fill="#7DD3FC" opacity="0.6"/>
+    <ellipse cx="0" cy="70" rx="32" ry="11" fill="#60A5FA" opacity="0.7"/>
+    <ellipse cx="0" cy="80" rx="28" ry="10" fill="#3B82F6" opacity="0.75"/>
+    <ellipse cx="0" cy="90" rx="24" ry="9" fill="#2563EB" opacity="0.8"/>
+    <ellipse cx="0" cy="100" rx="20" ry="8" fill="#1D4ED8" opacity="0.85"/>
+    <ellipse cx="0" cy="110" rx="16" ry="7" fill="#1E40AF" opacity="0.9"/>
+    <ellipse cx="0" cy="120" rx="12" ry="6" fill="#1E3A8A" opacity="0.95"/>
+    <ellipse cx="0" cy="130" rx="8" ry="5" fill="#1E3A8A"/>
+    
+    <!-- Swirl lines -->
+    <path d="M -20 65 Q 0 68 20 65" stroke="#BAE6FD" stroke-width="2" fill="none" opacity="0.6"/>
+    <path d="M -18 80 Q 0 83 18 80" stroke="#93C5FD" stroke-width="2" fill="none" opacity="0.7"/>
+    <path d="M -15 95 Q 0 98 15 95" stroke="#60A5FA" stroke-width="2" fill="none" opacity="0.7"/>
+  </g>
+  
+  <!-- Flying debris -->
+  <rect x="195" y="110" width="12" height="8" fill="#78716C" opacity="0.7" transform="rotate(35 201 114)"/>
+  <rect x="210" y="140" width="10" height="6" fill="#57534E" opacity="0.7" transform="rotate(-25 215 143)"/>
+  <rect x="185" y="165" width="8" height="12" fill="#6B7280" opacity="0.6" transform="rotate(50 189 171)"/>
+  
+  <!-- Motion lines -->
+  <path d="M 245 45 Q 255 45 260 48" stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
+  <path d="M 255 65 Q 267 63 275 65" stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
+  
+  <!-- Tree being blown -->
+  <rect x="55" y="210" width="8" height="40" fill="#78716C" transform="rotate(20 59 230)"/>
+  <ellipse cx="65" cy="205" rx="15" ry="20" fill="#16A34A" transform="rotate(25 65 205)"/>
+</svg>

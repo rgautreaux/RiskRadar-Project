@@ -1,0 +1,91 @@
+<svg width="300" height="300" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="local-fire-glow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="local-fire-shadow">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dx="0" dy="2" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.3"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Ground shadow with heat glow -->
+  <ellipse cx="150" cy="260" rx="110" ry="18" fill="#FED7AA" opacity="0.3"/>
+  <ellipse cx="150" cy="260" rx="90" ry="15" fill="#FB923C" opacity="0.2"/>
+  
+  <!-- House -->
+  <rect x="100" y="180" width="100" height="80" fill="#FEF3C7" filter="url(#local-fire-shadow)"/>
+  
+  <!-- Roof -->
+  <path d="M 85 180 L 150 130 L 215 180 Z" fill="#B91C1C" filter="url(#local-fire-shadow)"/>
+  <path d="M 85 180 L 150 130 L 215 180 Z" fill="#7F1D1D" opacity="0.4"/>
+  
+  <!-- Door -->
+  <rect x="130" y="210" width="25" height="50" fill="#57534E"/>
+  
+  <!-- Window -->
+  <rect x="165" y="200" width="25" height="25" fill="#FB923C" opacity="0.8"/>
+  <line x1="177.5" y1="200" x2="177.5" y2="225" stroke="#F97316" stroke-width="2"/>
+  <line x1="165" y1="212.5" x2="190" y2="212.5" stroke="#F97316" stroke-width="2"/>
+  
+  <!-- Large fire on left side of house -->
+  <g transform="translate(70, 170)">
+    <ellipse cx="0" cy="35" rx="25" ry="12" fill="#FED7AA" opacity="0.4"/>
+    <path d="M 0 0 C 0 0 12 8 12 20 C 12 32 6 40 0 40 C -6 40 -12 32 -12 20 C -12 8 0 0 0 0 Z" fill="#EF4444" filter="url(#local-fire-glow)"/>
+    <path d="M 0 5 C 0 5 9 11 9 22 C 9 33 4 38 0 38 C -4 38 -9 33 -9 22 C -9 11 0 5 0 5 Z" fill="#FB923C"/>
+    <path d="M 0 10 C 0 10 6 15 6 24 C 6 33 3 36 0 36 C -3 36 -6 33 -6 24 C -6 15 0 10 0 10 Z" fill="#FCD34D"/>
+    <ellipse cx="0" cy="24" rx="3" ry="7" fill="#FEF08A"/>
+  </g>
+  
+  <!-- Fire in center/roof area -->
+  <g transform="translate(150, 130)">
+    <ellipse cx="0" cy="40" rx="28" ry="14" fill="#FED7AA" opacity="0.4"/>
+    <path d="M 0 0 C 0 0 13 9 13 22 C 13 35 7 45 0 45 C -7 45 -13 35 -13 22 C -13 9 0 0 0 0 Z" fill="#EF4444" filter="url(#local-fire-glow)"/>
+    <path d="M 0 5 C 0 5 10 12 10 24 C 10 36 5 43 0 43 C -5 43 -10 36 -10 24 C -10 12 0 5 0 5 Z" fill="#FB923C"/>
+    <path d="M 0 10 C 0 10 7 16 7 26 C 7 36 3 40 0 40 C -3 40 -7 36 -7 26 C -7 16 0 10 0 10 Z" fill="#FCD34D"/>
+    <ellipse cx="0" cy="26" rx="3.5" ry="8" fill="#FEF08A"/>
+  </g>
+  
+  <!-- Fire on right side -->
+  <g transform="translate(220, 175)">
+    <ellipse cx="0" cy="32" rx="22" ry="11" fill="#FED7AA" opacity="0.4"/>
+    <path d="M 0 0 C 0 0 11 7 11 18 C 11 29 5 36 0 36 C -5 36 -11 29 -11 18 C -11 7 0 0 0 0 Z" fill="#EF4444" filter="url(#local-fire-glow)"/>
+    <path d="M 0 4 C 0 4 8 10 8 20 C 8 30 4 34 0 34 C -4 34 -8 30 -8 20 C -8 10 0 4 0 4 Z" fill="#FB923C"/>
+    <path d="M 0 8 C 0 8 5 13 5 22 C 5 31 2 34 0 34 C -2 34 -5 31 -5 22 C -5 13 0 8 0 8 Z" fill="#FCD34D"/>
+    <ellipse cx="0" cy="22" rx="2.5" ry="6" fill="#FEF08A"/>
+  </g>
+  
+  <!-- Smaller fire on far right -->
+  <g transform="translate(235, 200)">
+    <path d="M 0 0 C 0 0 7 5 7 12 C 7 19 3 24 0 24 C -3 24 -7 19 -7 12 C -7 5 0 0 0 0 Z" fill="#EF4444" opacity="0.9"/>
+    <path d="M 0 3 C 0 3 5 7 5 13 C 5 19 2 22 0 22 C -2 22 -5 19 -5 13 C -5 7 0 3 0 3 Z" fill="#FB923C"/>
+    <path d="M 0 6 C 0 6 3 9 3 14 C 3 19 1 21 0 21 C -1 21 -3 19 -3 14 C -3 9 0 6 0 6 Z" fill="#FCD34D"/>
+  </g>
+  
+  <!-- Smoke rising -->
+  <ellipse cx="150" cy="100" rx="30" ry="20" fill="#78716C" opacity="0.3"/>
+  <ellipse cx="155" cy="80" rx="35" ry="25" fill="#A8A29E" opacity="0.25"/>
+  <ellipse cx="148" cy="60" rx="32" ry="22" fill="#D6D3D1" opacity="0.2"/>
+  
+  <!-- Embers/sparks -->
+  <circle cx="120" cy="150" r="2.5" fill="#FCD34D" opacity="0.8">
+    <animate attributeName="opacity" values="0.3;0.8;0.3" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="180" cy="160" r="3" fill="#FDE047" opacity="0.7">
+    <animate attributeName="opacity" values="0.4;0.7;0.4" dur="1.8s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="140" cy="120" r="2" fill="#FEF08A" opacity="0.9">
+    <animate attributeName="opacity" values="0.5;0.9;0.5" dur="2s" repeatCount="indefinite"/>
+  </circle>
+</svg>

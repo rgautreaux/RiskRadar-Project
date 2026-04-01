@@ -1,0 +1,50 @@
+<svg width="240" height="240" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="eq-building-gradient" x1="120" y1="80" x2="120" y2="200" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#78716C"/>
+      <stop offset="1" stop-color="#57534E"/>
+    </linearGradient>
+    <linearGradient id="eq-roof-gradient" x1="120" y1="60" x2="120" y2="110" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#44403C"/>
+      <stop offset="1" stop-color="#292524"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Building tilted -->
+  <g transform="rotate(-3 120 150)">
+    <rect x="75" y="130" width="90" height="70" rx="3" fill="url(#eq-building-gradient)"/>
+    
+    <!-- Roof -->
+    <path d="M120 70L165 115H75L120 70Z" fill="url(#eq-roof-gradient)"/>
+    
+    <!-- Windows -->
+    <rect x="88" y="145" width="18" height="20" rx="1" fill="#292524" opacity="0.7"/>
+    <rect x="111" y="145" width="18" height="20" rx="1" fill="#292524" opacity="0.7"/>
+    <rect x="134" y="145" width="18" height="20" rx="1" fill="#292524" opacity="0.7"/>
+    
+    <!-- Door -->
+    <rect x="105" y="172" width="20" height="28" rx="2" fill="#1C1917"/>
+    <circle cx="119" cy="186" r="1.5" fill="#A8A29E"/>
+    
+    <!-- Cracks -->
+    <path d="M150 130L148 145L152 160L150 175" stroke="#EF4444" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+    <path d="M90 140L93 155L88 168" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+  </g>
+  
+  <!-- Ground cracks -->
+  <path d="M40 195L60 185L75 195L90 180L110 195" stroke="#DC2626" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M130 195L150 180L170 195L190 185L210 195" stroke="#DC2626" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Seismic waves -->
+  <path d="M30 200C35 197 40 203 45 200C50 197 55 203 60 200C65 197 70 203 75 200" stroke="#F97316" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
+  <path d="M90 205C95 202 100 208 105 205C110 202 115 208 120 205C125 202 130 208 135 205" stroke="#F97316" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
+  <path d="M150 200C155 197 160 203 165 200C170 197 175 203 180 200C185 197 190 203 195 200" stroke="#F97316" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
+  
+  <!-- Dust particles -->
+  <circle cx="60" cy="140" r="3" fill="#A8A29E" opacity="0.4"/>
+  <circle cx="180" cy="150" r="4" fill="#A8A29E" opacity="0.3"/>
+  <circle cx="50" cy="165" r="2.5" fill="#D6D3D1" opacity="0.5"/>
+  <circle cx="190" cy="170" r="3.5" fill="#D6D3D1" opacity="0.4"/>
+  <circle cx="75" cy="125" r="2" fill="#E7E5E4" opacity="0.5"/>
+  <circle cx="165" cy="135" r="2.5" fill="#E7E5E4" opacity="0.4"/>
+</svg>

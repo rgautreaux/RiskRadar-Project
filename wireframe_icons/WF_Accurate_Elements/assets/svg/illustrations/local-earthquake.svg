@@ -1,0 +1,67 @@
+<svg width="300" height="300" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="local-eq-shadow">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dx="0" dy="2" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.3"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Ground shadow -->
+  <ellipse cx="150" cy="260" rx="90" ry="15" fill="#CBD5E1" opacity="0.3"/>
+  
+  <!-- Large earthquake crack in ground -->
+  <path d="M 40 240 L 60 230 L 75 245 L 95 235 L 115 250 L 140 240 L 165 255 L 190 245 L 215 260 L 240 250 L 260 265" 
+        stroke="#475569" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 40 240 L 60 230 L 75 245 L 95 235 L 115 250 L 140 240 L 165 255 L 190 245 L 215 260 L 240 250 L 260 265" 
+        stroke="#64748B" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Main house (tilted) -->
+  <g transform="translate(150, 200) rotate(-4) translate(-50, -40)">
+    <rect x="0" y="0" width="100" height="80" fill="#FEF3C7" filter="url(#local-eq-shadow)"/>
+    <path d="M -15 0 L 50 -50 L 115 0 Z" fill="#DC2626"/>
+    <path d="M -15 0 L 50 -50 L 115 0 Z" fill="#B91C1C" opacity="0.3"/>
+    <rect x="30" y="30" width="25" height="50" fill="#78716C"/>
+    <circle cx="48" cy="55" r="2.5" fill="#D6D3D1"/>
+    <rect x="65" y="20" width="25" height="25" fill="#60A5FA" opacity="0.7"/>
+    <line x1="77.5" y1="20" x2="77.5" y2="45" stroke="#3B82F6" stroke-width="2"/>
+    <line x1="65" y1="32.5" x2="90" y2="32.5" stroke="#3B82F6" stroke-width="2"/>
+    
+    <!-- Crack on house wall -->
+    <path d="M 45 15 L 50 25 L 47 35 L 52 45" stroke="#78716C" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  </g>
+  
+  <!-- Small tilted buildings in background -->
+  <g transform="translate(240, 220) rotate(8) translate(-8, -15)">
+    <rect x="0" y="0" width="16" height="30" fill="#60A5FA" opacity="0.6"/>
+    <rect x="2" y="4" width="3" height="3" fill="#1E3A8A" opacity="0.5"/>
+    <rect x="6" y="4" width="3" height="3" fill="#1E3A8A" opacity="0.5"/>
+    <rect x="11" y="4" width="3" height="3" fill="#1E3A8A" opacity="0.5"/>
+  </g>
+  
+  <g transform="translate(60, 230) rotate(-5) translate(-6, -12)">
+    <rect x="0" y="0" width="12" height="24" fill="#FCD34D" opacity="0.6"/>
+    <rect x="2" y="3" width="2.5" height="2.5" fill="#92400E" opacity="0.5"/>
+    <rect x="5.5" y="3" width="2.5" height="2.5" fill="#92400E" opacity="0.5"/>
+  </g>
+  
+  <!-- Small house pieces -->
+  <g transform="translate(85, 240) rotate(-8)">
+    <rect x="0" y="0" width="14" height="12" fill="#FEF3C7" opacity="0.7"/>
+    <path d="M -2 0 L 7 -8 L 16 0 Z" fill="#EF4444" opacity="0.7"/>
+  </g>
+  
+  <!-- Falling debris -->
+  <rect x="180" y="180" width="8" height="6" fill="#64748B" opacity="0.6" transform="rotate(35)"/>
+  <rect x="120" y="200" width="6" height="8" fill="#475569" opacity="0.6" transform="rotate(-25)"/>
+  
+  <!-- Dust clouds -->
+  <ellipse cx="130" cy="235" rx="20" ry="12" fill="#D6D3D1" opacity="0.4"/>
+  <ellipse cx="170" cy="240" rx="25" ry="15" fill="#A8A29E" opacity="0.3"/>
+</svg>

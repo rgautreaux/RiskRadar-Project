@@ -12,4 +12,4 @@ class SummaryOut(BaseModel):
     generated_at: datetime
     model_used: Optional[str] = None
 
-    model_config = {"from_attributes": True, "protected_namespaces": ()}
+    model_config = {"from_attributes": True}

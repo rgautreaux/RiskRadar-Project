@@ -1,0 +1,98 @@
+<svg width="240" height="240" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="pollen-flower-gradient" x1="120" y1="60" x2="120" y2="140" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FDE047"/>
+      <stop offset="0.5" stop-color="#FACC15"/>
+      <stop offset="1" stop-color="#EAB308"/>
+    </linearGradient>
+    <linearGradient id="pollen-petal-gradient" x1="120" y1="40" x2="120" y2="100" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FCA5A5"/>
+      <stop offset="0.5" stop-color="#F87171"/>
+      <stop offset="1" stop-color="#EF4444"/>
+    </linearGradient>
+    <radialGradient id="pollen-particle" cx="50%" cy="50%" r="50%">
+      <stop stop-color="#FEF08A" offset="0"/>
+      <stop stop-color="#FDE047" offset="0.7"/>
+      <stop stop-color="#FACC15" offset="1"/>
+    </radialGradient>
+    <filter id="pollen-glow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Pollen cloud effect -->
+  <circle cx="120" cy="100" r="80" fill="#FEF3C7" opacity="0.3"/>
+  <circle cx="120" cy="100" r="65" fill="#FDE68A" opacity="0.2"/>
+  
+  <!-- Flower petals (top) -->
+  <ellipse cx="120" cy="65" rx="20" ry="28" fill="url(#pollen-petal-gradient)" filter="url(#pollen-glow)"/>
+  <!-- Flower petals (right) -->
+  <ellipse cx="155" cy="100" rx="28" ry="20" fill="url(#pollen-petal-gradient)" filter="url(#pollen-glow)"/>
+  <!-- Flower petals (bottom) -->
+  <ellipse cx="120" cy="135" rx="20" ry="28" fill="url(#pollen-petal-gradient)" filter="url(#pollen-glow)"/>
+  <!-- Flower petals (left) -->
+  <ellipse cx="85" cy="100" rx="28" ry="20" fill="url(#pollen-petal-gradient)" filter="url(#pollen-glow)"/>
+  
+  <!-- Diagonal petals -->
+  <g transform="rotate(45 120 100)">
+    <ellipse cx="120" cy="65" rx="18" ry="26" fill="#F87171" opacity="0.9"/>
+    <ellipse cx="155" cy="100" rx="26" ry="18" fill="#F87171" opacity="0.9"/>
+    <ellipse cx="120" cy="135" rx="18" ry="26" fill="#F87171" opacity="0.9"/>
+    <ellipse cx="85" cy="100" rx="26" ry="18" fill="#F87171" opacity="0.9"/>
+  </g>
+  
+  <!-- Flower center -->
+  <circle cx="120" cy="100" r="28" fill="url(#pollen-flower-gradient)" filter="url(#pollen-glow)"/>
+  
+  <!-- Pollen texture on center -->
+  <circle cx="110" cy="95" r="4" fill="#F59E0B" opacity="0.6"/>
+  <circle cx="125" cy="92" r="3.5" fill="#F59E0B" opacity="0.7"/>
+  <circle cx="115" cy="105" r="3" fill="#D97706" opacity="0.6"/>
+  <circle cx="130" cy="105" r="4" fill="#D97706" opacity="0.5"/>
+  <circle cx="120" cy="98" r="3.5" fill="#F59E0B" opacity="0.8"/>
+  
+  <!-- Floating pollen particles -->
+  <g opacity="0.8">
+    <circle cx="50" cy="80" r="6" fill="url(#pollen-particle)" filter="url(#pollen-glow)">
+      <animateTransform attributeName="transform" type="translate" values="0,0; -5,8; 0,0" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="70" cy="60" r="5" fill="url(#pollen-particle)" filter="url(#pollen-glow)">
+      <animateTransform attributeName="transform" type="translate" values="0,0; 6,-7; 0,0" dur="2.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="180" cy="70" r="7" fill="url(#pollen-particle)" filter="url(#pollen-glow)">
+      <animateTransform attributeName="transform" type="translate" values="0,0; 8,10; 0,0" dur="3.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="170" cy="120" r="5.5" fill="url(#pollen-particle)" filter="url(#pollen-glow)">
+      <animateTransform attributeName="transform" type="translate" values="0,0; -7,6; 0,0" dur="2.8s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="60" cy="130" r="6.5" fill="url(#pollen-particle)" filter="url(#pollen-glow)">
+      <animateTransform attributeName="transform" type="translate" values="0,0; 9,-8; 0,0" dur="3.2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="190" cy="100" r="5" fill="url(#pollen-particle)" filter="url(#pollen-glow)">
+      <animateTransform attributeName="transform" type="translate" values="0,0; -6,9; 0,0" dur="2.7s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Smaller pollen particles -->
+  <g opacity="0.6">
+    <circle cx="90" cy="55" r="3.5" fill="#FDE047"/>
+    <circle cx="145" cy="65" r="3" fill="#FACC15"/>
+    <circle cx="160" cy="140" r="4" fill="#FDE047"/>
+    <circle cx="80" cy="145" r="3.5" fill="#FACC15"/>
+    <circle cx="45" cy="110" r="3" fill="#FEF08A"/>
+    <circle cx="195" cy="85" r="3.5" fill="#FEF08A"/>
+  </g>
+  
+  <!-- Stem -->
+  <rect x="117" y="135" width="6" height="50" rx="3" fill="#84CC16"/>
+  <path d="M123 160C123 160 135 155 140 165" stroke="#65A30D" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M117 170C117 170 105 165 100 175" stroke="#65A30D" stroke-width="3" fill="none" stroke-linecap="round"/>
+  
+  <!-- Leaf -->
+  <ellipse cx="142" cy="168" rx="12" ry="8" fill="#84CC16" transform="rotate(-25 142 168)"/>
+  <ellipse cx="98" cy="178" rx="12" ry="8" fill="#84CC16" transform="rotate(30 98 178)"/>
+</svg>

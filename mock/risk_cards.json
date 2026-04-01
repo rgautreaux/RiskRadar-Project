@@ -1,0 +1,21 @@
+// mock/risk_cards.json
+[
+  {
+    "riskType": "weather",
+    "title": "Thunderstorm Risk",
+    "severity": "high",
+    "icon": "RiskRadar_Weather_Icon.png",
+    "description": "Thunderstorms likely this afternoon.",
+    "value": 80,
+    "unit": "%"
+  },
+  {
+    "riskType": "air-quality",
+    "title": "Ozone Alert",
+    "severity": "moderate",
+    "icon": "RiskRadar_AirQuality_Icon.png",
+    "description": "Ozone levels elevated.",
+    "value": 120,
+    "unit": "AQI"
+  }
+]

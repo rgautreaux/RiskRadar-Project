@@ -1,0 +1,47 @@
+<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="logo-shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dx="0" dy="2" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.3"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Red outer circle -->
+  <circle cx="40" cy="40" r="38" fill="#FF4444" filter="url(#logo-shadow)"/>
+  
+  <!-- Globe background (blue ocean) -->
+  <circle cx="40" cy="40" r="26" fill="#0EA5E9"/>
+  
+  <!-- Green continents -->
+  <!-- North America / Top left -->
+  <path d="M 25 28 Q 20 26 18 30 Q 17 35 20 38 Q 23 40 26 38 Q 28 36 27 32 Q 26 29 25 28 Z" fill="#4ADE80"/>
+  
+  <!-- Europe / Top right -->
+  <path d="M 48 24 Q 45 22 43 24 Q 42 27 44 30 Q 46 31 49 30 Q 52 28 50 25 Q 49 23 48 24 Z" fill="#4ADE80"/>
+  
+  <!-- South America / Left -->
+  <path d="M 20 42 Q 18 44 18 48 Q 19 52 22 54 Q 25 55 27 52 Q 28 48 26 45 Q 24 43 20 42 Z" fill="#4ADE80"/>
+  
+  <!-- Africa / Center right -->
+  <path d="M 44 36 Q 42 34 40 36 Q 38 40 40 45 Q 42 50 46 52 Q 50 53 53 50 Q 55 46 54 42 Q 52 38 48 37 Q 46 36 44 36 Z" fill="#4ADE80"/>
+  
+  <!-- Asia / Right side -->
+  <path d="M 54 32 Q 52 30 50 32 Q 48 35 50 40 Q 52 43 56 44 Q 60 44 62 41 Q 63 37 61 34 Q 59 31 56 31 Q 55 31 54 32 Z" fill="#4ADE80"/>
+  
+  <!-- Australia / Bottom right -->
+  <path d="M 52 56 Q 50 55 49 57 Q 48 59 50 61 Q 52 62 54 61 Q 56 59 55 57 Q 54 55 52 56 Z" fill="#4ADE80"/>
+  
+  <!-- Exclamation mark (white) -->
+  <!-- Exclamation line -->
+  <rect x="37" y="26" width="6" height="20" rx="3" fill="white"/>
+  
+  <!-- Exclamation dot -->
+  <circle cx="40" cy="52" r="4" fill="white"/>
+</svg>

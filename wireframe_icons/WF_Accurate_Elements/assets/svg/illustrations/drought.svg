@@ -1,0 +1,82 @@
+<svg width="240" height="240" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sun-gradient" x1="120" y1="40" x2="120" y2="100" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FEF08A"/>
+      <stop offset="0.5" stop-color="#FDE047"/>
+      <stop offset="1" stop-color="#FACC15"/>
+    </linearGradient>
+    <linearGradient id="ground-gradient" x1="120" y1="150" x2="120" y2="200" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#D6D3D1"/>
+      <stop offset="0.5" stop-color="#A8A29E"/>
+      <stop offset="1" stop-color="#78716C"/>
+    </linearGradient>
+    <filter id="sun-glow">
+      <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Sun glow effect -->
+  <circle cx="120" cy="70" r="45" fill="#FEF3C7" opacity="0.4"/>
+  <circle cx="120" cy="70" r="35" fill="#FDE68A" opacity="0.3"/>
+  
+  <!-- Sun -->
+  <circle cx="120" cy="70" r="28" fill="url(#sun-gradient)" filter="url(#sun-glow)"/>
+  
+  <!-- Sun rays -->
+  <g stroke="#FACC15" stroke-width="3.5" stroke-linecap="round" opacity="0.8">
+    <line x1="120" y1="28" x2="120" y2="38"/>
+    <line x1="155" y1="35" x2="149" y2="43"/>
+    <line x1="170" y1="70" x2="160" y2="70"/>
+    <line x1="155" y1="105" x2="149" y2="97"/>
+    <line x1="120" y1="112" x2="120" y2="102"/>
+    <line x1="85" y1="105" x2="91" y2="97"/>
+    <line x1="70" y1="70" x2="80" y2="70"/>
+    <line x1="85" y1="35" x2="91" y2="43"/>
+  </g>
+  
+  <!-- Cracked ground -->
+  <ellipse cx="120" cy="195" rx="90" ry="18" fill="url(#ground-gradient)"/>
+  
+  <!-- Ground surface with cracks -->
+  <rect x="40" y="155" width="160" height="50" fill="#A8A29E" opacity="0.7"/>
+  
+  <!-- Dried earth cracks -->
+  <path d="M50 155C50 155 65 140 75 155" fill="#78716C" opacity="0.6"/>
+  <path d="M75 155C75 155 90 135 100 155" fill="#78716C" opacity="0.6"/>
+  <path d="M100 155C100 155 115 142 125 155" fill="#78716C" opacity="0.6"/>
+  <path d="M125 155C125 155 140 132 150 155" fill="#78716C" opacity="0.6"/>
+  <path d="M150 155C150 155 165 145 175 155" fill="#78716C" opacity="0.6"/>
+  
+  <!-- Large cracks -->
+  <path d="M45 170C52 165 58 172 65 167C72 162 78 170 85 165" 
+        stroke="#57534E" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <path d="M155 175C162 170 168 177 175 172C182 167 188 175 195 170" 
+        stroke="#57534E" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <path d="M90 180C95 177 100 183 105 180C110 177 115 183 120 180C125 177 130 183 135 180C140 177 145 183 150 180" 
+        stroke="#57534E" stroke-width="3" stroke-linecap="round" fill="none"/>
+  
+  <!-- Small cracks -->
+  <path d="M70 190C73 187 76 190 79 187" stroke="#44403C" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <path d="M160 188C163 185 166 188 169 185" stroke="#44403C" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <path d="M105 193C108 190 111 193 114 190" stroke="#44403C" stroke-width="2" stroke-linecap="round" fill="none"/>
+  
+  <!-- Dead plant -->
+  <path d="M180 160C180 155 182 150 185 147" stroke="#78716C" stroke-width="2.5" stroke-linecap="round" opacity="0.7"/>
+  <path d="M185 147C183 145 182 142 182 139" stroke="#78716C" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+  <path d="M185 150C187 148 190 147 193 147" stroke="#78716C" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+  
+  <path d="M55 165C55 160 53 155 50 152" stroke="#78716C" stroke-width="2.5" stroke-linecap="round" opacity="0.7"/>
+  <path d="M50 152C52 150 53 147 53 144" stroke="#78716C" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+  
+  <!-- Heat waves -->
+  <path d="M95 125C97 122 99 125 101 122C103 119 105 122 107 119" 
+        stroke="#FB923C" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+  <path d="M130 120C132 117 134 120 136 117C138 114 140 117 142 114" 
+        stroke="#FB923C" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+  <path d="M165 130C167 127 169 130 171 127" 
+        stroke="#FB923C" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+</svg>

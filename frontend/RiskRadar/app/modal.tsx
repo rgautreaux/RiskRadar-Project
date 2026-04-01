@@ -10,10 +10,13 @@ import {
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 
+
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Colors, Spacing, Radius, Shadows } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+// Import notification panel art
+const alertNotifArt = require('@/assets/icons/navigation/RiskRadar_ALERT_NotifWindow.png');
 
 /**
  * ModalScreen presents a branded notification details surface.
@@ -81,17 +84,11 @@ export default function ModalScreen() {
             >
               {/* Alert Icon and Title */}
               <View style={styles.alertHeader}>
-                <View
-                  style={[
-                    styles.alertIcon,
-                    { backgroundColor: palette.danger, opacity: 0.15 },
-                  ]}
-                >
-                  <View
-                    style={[
-                      styles.iconIndicator,
-                      { backgroundColor: palette.danger },
-                    ]}
+                <View style={styles.alertIconArtContainer}>
+                  <img
+                    src={alertNotifArt}
+                    alt="Alert Notification Art"
+                    style={{ width: 56, height: 56, objectFit: 'contain', borderRadius: Radius.md }}
                   />
                 </View>
                 <View style={styles.alertTitleContainer}>
@@ -287,18 +284,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: Spacing.lg,
   },
-  alertIcon: {
+  alertIconArtContainer: {
     width: 56,
     height: 56,
     borderRadius: Radius.md,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: Spacing.md,
-  },
-  iconIndicator: {
-    width: 28,
-    height: 28,
-    borderRadius: Radius.sm,
+    overflow: 'hidden',
   },
   alertTitleContainer: {
     flex: 1,

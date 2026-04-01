@@ -1,18 +1,34 @@
 import React, { useState, useEffect, useCallback } from 'react';
+
 import {
   ScrollView,
   View,
   StyleSheet,
-  TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
+
 
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
 import { Colors, Spacing, Radius, Shadows } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { apiFetch } from '@/utils/api';
+import { RiskCard } from '@/components/risk-card';
+// Map alert_type or hazard type to icon asset
+const hazardIconMap: Record<string, any> = {
+  weather: require('@/assets/icons/hazards/RiskRadar_Weather_Icon.png'),
+  'air quality': require('@/assets/icons/hazards/RiskRadar_AirQuality_Icon.png'),
+  airquality: require('@/assets/icons/hazards/RiskRadar_AirQuality_Icon.png'),
+  pollen: require('@/assets/icons/hazards/RiskRadar_Pollen_Icon.png'),
+  pollution: require('@/assets/icons/hazards/RiskRadar_Pollution_Icon.png'),
+  earthquake: require('@/assets/icons/hazards/RiskRadar_LocalEQ_Icon.png'),
+  flood: require('@/assets/icons/hazards/RiskRadar_LocalFlood_Icon.png'),
+  wind: require('@/assets/icons/hazards/RiskRadar_LocalWindEvent_Icon.png'),
+  fire: require('@/assets/icons/hazards/RiskRadar_LocalFIre_Icon.png'),
+  // fallback
+  default: require('@/assets/icons/hazards/RiskRadar_Weather_Icon.png'),
+};
 
 interface AlertItem {
   id: number;
@@ -56,18 +72,23 @@ export default function AlertsScreen() {
     fetchAlerts();
   };
 
-  const getSeverityColor = (severity: string) => {
+
+  const getSeverityLevel = (severity: string): 'low' | 'moderate' | 'high' | 'critical' => {
     switch (severity.toLowerCase()) {
       case 'critical':
       case 'extreme':
       case 'hazardous':
-        return palette.danger;
+        return 'critical';
       case 'warning':
       case 'severe':
       case 'unhealthy':
-        return palette.warning;
+        return 'high';
+      case 'moderate':
+        return 'moderate';
+      case 'low':
+      case 'info':
       default:
-        return palette.primary;
+        return 'low';
     }
   };
 
@@ -93,6 +114,7 @@ export default function AlertsScreen() {
       </ThemedView>
     );
   }
+
 
   return (
     <ThemedView style={styles.container}>
@@ -128,26 +150,37 @@ export default function AlertsScreen() {
             >
               {error}
             </ThemedText>
-            <TouchableOpacity
-              style={[styles.retryButton, { backgroundColor: palette.primary }]}
-              onPress={fetchAlerts}
+            <View style={[styles.retryButton, { backgroundColor: palette.primary }]}
             >
-              <ThemedText type="cardTitle" lightColor={palette.white} darkColor={palette.white}>
+              <ThemedText type="cardTitle" lightColor={palette.white} darkColor={palette.white} onPress={fetchAlerts}>
                 Retry
               </ThemedText>
-            </TouchableOpacity>
+            </View>
           </View>
         ) : alerts.length > 0 ? (
           <View style={styles.alertsContainer}>
-            {alerts.map((alert) => (
-              <AlertCard
-                key={alert.id}
-                alert={alert}
-                severityColor={getSeverityColor(alert.severity)}
-                palette={palette}
-                formatTime={formatTime}
-              />
-            ))}
+            {alerts.map((alert) => {
+              // Map alert_type to icon asset
+              const typeKey = (alert.alert_type || '').toLowerCase().replace(/[^a-z]/g, '');
+              const iconSource =
+                hazardIconMap[typeKey] ||
+                hazardIconMap[alert.alert_type?.toLowerCase()] ||
+                hazardIconMap.default;
+              return (
+                <RiskCard
+                  key={alert.id}
+                  riskType={alert.alert_type}
+                  title={alert.title}
+                  severity={getSeverityLevel(alert.severity)}
+                  iconSource={iconSource}
+                  description={alert.description ?? `${alert.alert_type} alert from ${alert.source}`}
+                  value={undefined}
+                  unit={undefined}
+                  onPress={undefined}
+                  style={{ marginBottom: Spacing.sm }}
+                />
+              );
+            })}
           </View>
         ) : (
           <View style={styles.emptyContainer}>
@@ -169,80 +202,7 @@ export default function AlertsScreen() {
   );
 }
 
-function AlertCard({
-  alert,
-  severityColor,
-  palette,
-  formatTime,
-}: {
-  alert: AlertItem;
-  severityColor: string;
-  palette: typeof Colors.light;
-  formatTime: (d: string) => string;
-}) {
-  return (
-    <TouchableOpacity
-      style={[
-        styles.alertCard,
-        { backgroundColor: palette.card, borderLeftColor: severityColor },
-      ]}
-      activeOpacity={0.7}
-    >
-      <View style={styles.alertCardContent}>
-        <View style={styles.alertLeft}>
-          <View
-            style={[
-              styles.iconBackground,
-              { backgroundColor: severityColor, opacity: 0.15 },
-            ]}
-          >
-            <View
-              style={[
-                styles.iconPlaceholder,
-                { backgroundColor: severityColor },
-              ]}
-            />
-          </View>
 
-          <View style={styles.alertTextContent}>
-            <ThemedText type="cardTitle" numberOfLines={1}>
-              {alert.title}
-            </ThemedText>
-            <ThemedText
-              type="eyebrow"
-              lightColor={severityColor}
-              darkColor={severityColor}
-              numberOfLines={1}
-              style={styles.alertSeverity}
-            >
-              {alert.severity.toUpperCase()}
-            </ThemedText>
-            <ThemedText
-              type="meta"
-              lightColor={palette.textSecondary}
-              darkColor={palette.textSecondary}
-              numberOfLines={2}
-              style={styles.alertDescription}
-            >
-              {alert.description ?? `${alert.alert_type} alert from ${alert.source}`}
-            </ThemedText>
-          </View>
-        </View>
-
-        <View style={styles.alertRight}>
-          <ThemedText
-            type="meta"
-            lightColor={palette.textSecondary}
-            darkColor={palette.textSecondary}
-            style={styles.alertTimestamp}
-          >
-            {formatTime(alert.created_at)}
-          </ThemedText>
-        </View>
-      </View>
-    </TouchableOpacity>
-  );
-}
 
 const styles = StyleSheet.create({
   container: {

@@ -1,0 +1,71 @@
+<svg width="240" height="240" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="fire-outer" x1="120" y1="60" x2="120" y2="190" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#DC2626"/>
+      <stop offset="0.5" stop-color="#EA580C"/>
+      <stop offset="1" stop-color="#F59E0B"/>
+    </linearGradient>
+    <linearGradient id="fire-mid" x1="120" y1="70" x2="120" y2="180" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F97316"/>
+      <stop offset="0.5" stop-color="#FB923C"/>
+      <stop offset="1" stop-color="#FCD34D"/>
+    </linearGradient>
+    <linearGradient id="fire-inner" x1="120" y1="85" x2="120" y2="170" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FDE047"/>
+      <stop offset="1" stop-color="#FEF08A"/>
+    </linearGradient>
+    <filter id="fire-glow">
+      <feGaussianBlur stdDeviation="5" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Ground glow -->
+  <ellipse cx="120" cy="195" rx="80" ry="25" fill="#FED7AA" opacity="0.4"/>
+  <ellipse cx="120" cy="195" rx="65" ry="20" fill="#FDBA74" opacity="0.3"/>
+  
+  <!-- Main flame (outer) -->
+  <path d="M120 60C120 60 145 85 145 110C145 135 132.5 150 120 150C107.5 150 95 135 95 110C95 85 120 60 120 60Z" 
+        fill="url(#fire-outer)" filter="url(#fire-glow)"/>
+  
+  <!-- Secondary flame (middle) -->
+  <path d="M120 70C120 70 140 90 140 112C140 134 130 147 120 147C110 147 100 134 100 112C100 90 120 70 120 70Z" 
+        fill="url(#fire-mid)"/>
+  
+  <!-- Core flame (inner) -->
+  <path d="M120 85C120 85 132 100 132 118C132 136 126 145 120 145C114 145 108 136 108 118C108 100 120 85 120 85Z" 
+        fill="url(#fire-inner)"/>
+  
+  <!-- Bright center -->
+  <path d="M120 95C120 95 126 105 126 120C126 135 123 142 120 142C117 142 114 135 114 120C114 105 120 95 120 95Z" 
+        fill="#FFFBEB"/>
+  
+  <!-- Left flame -->
+  <path d="M85 105C85 105 95 118 95 132C95 146 89 155 83 155C77 155 71 146 71 132C71 118 85 105 85 105Z" 
+        fill="url(#fire-outer)" opacity="0.9"/>
+  <path d="M85 110C85 110 93 120 93 133C93 146 88 153 83 153C78 153 73 146 73 133C73 120 85 110 85 110Z" 
+        fill="url(#fire-mid)" opacity="0.9"/>
+  
+  <!-- Right flame -->
+  <path d="M155 110C155 110 164 122 164 136C164 150 158.5 160 152.5 160C146.5 160 141 150 141 136C141 122 155 110 155 110Z" 
+        fill="url(#fire-outer)" opacity="0.9"/>
+  <path d="M155 115C155 115 162 125 162 137C162 149 157.5 158 152.5 158C147.5 158 143 149 143 137C143 125 155 115 155 115Z" 
+        fill="url(#fire-mid)" opacity="0.9"/>
+  
+  <!-- Sparks -->
+  <circle cx="100" cy="75" r="2.5" fill="#FEF08A" opacity="0.8">
+    <animate attributeName="opacity" values="0.3;0.8;0.3" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="140" cy="80" r="3" fill="#FDE047" opacity="0.7">
+    <animate attributeName="opacity" values="0.4;0.7;0.4" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="110" cy="65" r="2" fill="#FFFBEB" opacity="0.9">
+    <animate attributeName="opacity" values="0.5;0.9;0.5" dur="1.8s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="130" cy="68" r="2.5" fill="#FEF3C7" opacity="0.8">
+    <animate attributeName="opacity" values="0.4;0.8;0.4" dur="2.2s" repeatCount="indefinite"/>
+  </circle>
+</svg>
