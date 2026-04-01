@@ -9,7 +9,7 @@ import openai
 
 from config.settings import settings
 from db.models import Alert, Summary
-from llm.prompts import DAILY_DIGEST_SYSTEM, DAILY_DIGEST_USER, LOCAL_DIGEST_USER
+import llm.prompts as prompts
 
 
 logger = logging.getLogger(__name__)
@@ -66,13 +66,13 @@ class Summarizer:
             for a in alerts
         ]
 
-        user_msg = DAILY_DIGEST_USER.format(
+        user_msg = prompts.TRIP_PACKING_USER.format(
             count=len(alerts),
             date=date.today().strftime("%B %d, %Y"),
             alerts_json=json.dumps(alerts_data, indent=2),
         )
 
-        text, tokens, model = self._call_llm(DAILY_DIGEST_SYSTEM, user_msg, is_premium=is_premium)
+        text, tokens, model = self._call_llm(prompts.TRIP_PACKING_SYSTEM, user_msg, is_premium=is_premium)
 
         summary = Summary(
             title=f"Environmental Digest — {date.today().strftime('%b %d, %Y')}",
@@ -105,7 +105,7 @@ class Summarizer:
             for a in alerts
         ]
 
-        user_msg = LOCAL_DIGEST_USER.format(
+        user_msg = prompts.TRIP_PACKING_USER.format(
             count=len(alerts),
             date=date.today().strftime("%B %d, %Y"),
             city=city,
@@ -114,7 +114,7 @@ class Summarizer:
             alerts_json=json.dumps(alerts_data, indent=2),
         )
 
-        text, tokens, model = self._call_llm(DAILY_DIGEST_SYSTEM, user_msg, is_premium=is_premium)
+        text, tokens, model = self._call_llm(prompts.TRIP_PACKING_SYSTEM, user_msg, is_premium=is_premium)
 
         summary = Summary(
             title=f"Local Digest for {city}, {state} — {date.today().strftime('%b %d, %Y')}",
