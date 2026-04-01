@@ -121,6 +121,7 @@ class SummaryArchive(Base):
     cleanup_run_id = Column(Integer)
 
 
+
 class ScrapeLogArchive(Base):
     __tablename__ = "scrape_log_archive"
 
@@ -136,6 +137,18 @@ class ScrapeLogArchive(Base):
     completed_at = Column(DateTime(timezone=True), nullable=False)
     archived_at = Column(DateTime(timezone=True), nullable=False, default=_now)
     cleanup_run_id = Column(Integer)
+
+
+# Migration logging table for email/password migration
+class MigrationLog(Base):
+    __tablename__ = "migration_log"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    timestamp = Column(DateTime(timezone=True), nullable=False, default=_now)
+    user_id = Column(Integer)
+    action = Column(Text)
+    status = Column(Text)
+    error_message = Column(Text)
 
 
 class CleanupRun(Base):

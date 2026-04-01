@@ -17,6 +17,8 @@ interface AuthState {
   user: User | null;
   isLoading: boolean;
   isLoggedIn: boolean;
+  isDevUserMode: boolean;
+  toggleDevUserMode: () => void;
   login: (email: string, password: string) => Promise<void>;
   register: (displayName: string, email: string, password: string, zipCode?: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -27,6 +29,23 @@ const AuthContext = createContext<AuthState | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDevUserMode, setIsDevUserMode] = useState(false);
+
+  const toggleDevUserMode = useCallback(() => {
+    setIsDevUserMode((prev) => !prev);
+  }, []);
+
+  const fakeUser: User = {
+    id: 999,
+    display_name: 'Dev Mock User',
+    email: 'dev@riskradar.local',
+    zip_code: '12345',
+    latitude: null,
+    longitude: null,
+    alert_types: null,
+    notify_severity: null,
+    created_at: new Date().toISOString()
+  };
 
   // Check for existing token on mount
   useEffect(() => {
@@ -84,9 +103,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return (
     <AuthContext.Provider
       value={{
-        user,
+        user: isDevUserMode ? fakeUser : user,
         isLoading,
-        isLoggedIn: !!user,
+        isLoggedIn: isDevUserMode ? true : !!user,
+        isDevUserMode,
+        toggleDevUserMode,
         login,
         register,
         logout,

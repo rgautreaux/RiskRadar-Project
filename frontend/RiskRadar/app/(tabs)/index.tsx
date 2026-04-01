@@ -7,6 +7,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
+import PrimaryButton from '@/components/ui/PrimaryButton';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -117,31 +118,19 @@ export default function HomeScreen() {
 
           {/* Action Buttons */}
           <View style={styles.actionContainer}>
-            <TouchableOpacity 
-              style={[styles.primaryButton, { backgroundColor: palette.primary, shadowColor: palette.primary }]} 
+            <PrimaryButton
+              label="Log In"
               onPress={handleLogin}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="log-in-outline" size={20} color={palette.white} style={styles.buttonIcon} />
-              <ThemedText type="cardTitle" lightColor={palette.white} darkColor={palette.white}>
-                Log In
-              </ThemedText>
-            </TouchableOpacity>
+              leftIcon={<Ionicons name="log-in-outline" size={20} color={palette.white} style={styles.buttonIcon} />}
+            />
 
-            <TouchableOpacity 
-              style={[styles.secondaryButton, { backgroundColor: palette.secondary }]}
+            <PrimaryButton
+              label="Create Account"
               onPress={handleCreateAccount}
-              activeOpacity={0.6}
-            >
-              <Ionicons name="person-add-outline" size={20} color={palette.primary} style={styles.buttonIcon} />
-              <ThemedText 
-                type="cardTitle" 
-                lightColor={palette.primary}
-                darkColor={palette.primary}
-              >
-                Create Account
-              </ThemedText>
-            </TouchableOpacity>
+              leftIcon={<Ionicons name="person-add-outline" size={20} color={palette.primary} style={styles.buttonIcon} />}
+              style={{ backgroundColor: palette.secondary }}
+              textStyle={{ color: palette.primary }}
+            />
           </View>
 
           {/* Footer / Guest Mode */}

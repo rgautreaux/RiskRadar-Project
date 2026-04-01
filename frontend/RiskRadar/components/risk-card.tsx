@@ -22,6 +22,8 @@ export interface RiskCardProps {
   onPress?: () => void;
   /** Custom container style */
   style?: ViewStyle;
+  /** SD4: Freshness meta/timestamp string */
+  meta?: string;
 }
 
 /**
@@ -46,6 +48,7 @@ export function RiskCard({
   unit,
   onPress,
   style,
+  meta,
 }: RiskCardProps) {
   const scheme = useColorScheme() ?? 'light';
   const palette = Colors[scheme];
@@ -67,103 +70,137 @@ export function RiskCard({
   return (
     <View
       style={[
-        styles.container,
-        { backgroundColor: palette.card, borderColor: palette.border },
+        styles.outerContainer,
         style,
       ]}
       onTouchEnd={onPress}
     >
-      {/* Header with Icon and Severity */}
-      <View style={styles.header}>
-        <Image
-          source={iconSource}
-          style={styles.icon}
-          resizeMode="contain"
-        />
-        <View
-          style={[
-            styles.severityBadge,
-            { backgroundColor: severityBgColors[severity] },
-          ]}
-        >
-          <Text
-            style={[
-              styles.severityText,
-              { color: severityColors[severity] },
-            ]}
-          >
-            {severity.charAt(0).toUpperCase() + severity.slice(1)}
-          </Text>
-        </View>
-      </View>
-
-      {/* Title */}
-      <Text
+      {/* SD5: Severity Rail */}
+      <View style={[styles.severityRail, { backgroundColor: severityColors[severity] }]} />
+      <View
         style={[
-          styles.title,
-          {
-            color: palette.text,
-            fontFamily: Fonts.sans,
-            fontWeight: '700',
-          },
+          styles.container,
+          { backgroundColor: palette.card, borderColor: palette.border },
         ]}
       >
-        {title}
-      </Text>
+        {/* Header with Icon and Severity */}
+        <View style={styles.header}>
+          <Image
+            source={iconSource}
+            style={styles.icon}
+            resizeMode="contain"
+          />
+          <View
+            style={[
+              styles.severityBadge,
+              { backgroundColor: severityBgColors[severity] },
+            ]}
+          >
+            <Text
+              style={[
+                styles.severityText,
+                { color: severityColors[severity] },
+              ]}
+            >
+              {severity.charAt(0).toUpperCase() + severity.slice(1)}
+            </Text>
+          </View>
+        </View>
 
-      {/* Description */}
-      {description && (
+        {/* Title */}
         <Text
           style={[
-            styles.description,
+            styles.title,
             {
-              color: palette.textSecondary,
+              color: palette.text,
               fontFamily: Fonts.sans,
-              fontWeight: '400',
+              fontWeight: '700',
             },
           ]}
         >
-          {description}
+          {title}
         </Text>
-      )}
 
-      {/* Value/Metric (if provided) */}
-      {value !== undefined && (
-        <View style={styles.metricSection}>
+        {/* SD4: Freshness Meta Pattern */}
+        {meta && (
+          <Text
+            style={{
+              color: palette.textSecondary,
+              fontFamily: Fonts.sans,
+              fontWeight: '500',
+              fontSize: 12,
+              marginBottom: 2,
+            }}
+          >
+            {meta}
+          </Text>
+        )}
+
+        {/* Description */}
+        {description && (
           <Text
             style={[
-              styles.value,
+              styles.description,
               {
-                color: palette.text,
+                color: palette.textSecondary,
                 fontFamily: Fonts.sans,
-                fontWeight: '700',
+                fontWeight: '400',
               },
             ]}
           >
-            {value}
+            {description}
           </Text>
-          {unit && (
+        )}
+
+        {/* Value/Metric (if provided) */}
+        {value !== undefined && (
+          <View style={styles.metricSection}>
             <Text
               style={[
-                styles.unit,
+                styles.value,
                 {
-                  color: palette.textSecondary,
+                  color: palette.text,
                   fontFamily: Fonts.sans,
-                  fontWeight: '400',
+                  fontWeight: '700',
                 },
               ]}
             >
-              {unit}
+              {value}
             </Text>
-          )}
-        </View>
-      )}
+            {unit && (
+              <Text
+                style={[
+                  styles.unit,
+                  {
+                    color: palette.textSecondary,
+                    fontFamily: Fonts.sans,
+                    fontWeight: '400',
+                  },
+                ]}
+              >
+                {unit}
+              </Text>
+            )}
+          </View>
+        )}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  outerContainer: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+  },
+  severityRail: {
+    width: 6,
+    borderTopLeftRadius: Radius.md,
+    borderBottomLeftRadius: Radius.md,
+    marginRight: Spacing.sm,
+  },
   container: {
+    flex: 1,
     borderWidth: 1,
     borderRadius: Radius.md,
     padding: Spacing.md,

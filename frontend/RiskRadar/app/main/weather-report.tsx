@@ -15,6 +15,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { apiFetch } from '@/utils/api';
+import { StateView } from '@/components/ui/state-view';
 
 interface Summary {
   id: number;
@@ -56,10 +57,12 @@ export default function WeatherReport() {
   const [alerts, setAlerts] = useState<AlertItem[]>([]);
   const [locationInfo, setLocationInfo] = useState<LocationInfo | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
       try {
+        setError(null);
         const isValidZip = zipCode.length === 5 && /^\d{5}$/.test(zipCode);
 
         if (isValidZip) {
@@ -70,15 +73,12 @@ export default function WeatherReport() {
             apiFetch<Summary | null>(`/summaries/generate/local?zip_code=${zipCode}`, { method: 'POST' }).catch(() => null),
           ]);
 
-          setLocationInfo(locInfo);
-          setAlerts(alertsData ?? []);
-
-          // Fetch the latest summary after generation has completed
-          const summaryData = await apiFetch<Summary | null>(`/summaries/latest/local?zip_code=${zipCode}`).catch(() => null);
-          setSummary(summaryData);
-        }
-      } catch {
-        // Backend not reachable
+        const [summaryData, locInfo, alertsData] = await Promise.all(promises);
+        setSummary(summaryData);
+        setLocationInfo(locInfo);
+        setAlerts(alertsData ?? []);
+      } catch (err: any) {
+        setError('Failed to load weather report. Please check your connection.');
       } finally {
         setLoading(false);
       }
@@ -102,76 +102,107 @@ export default function WeatherReport() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Location Header */}
-        <View style={styles.mainWeatherCard}>
-          <Text style={styles.locationText}>
-            {locationInfo
-              ? `${locationInfo.city}, ${locationInfo.state} ${zipCode}`
-              : `Location: ${zipCode}`}
-          </Text>
-          <View style={styles.tempContainer}>
-            <Ionicons name="partly-sunny" size={80} color="#F59E0B" />
-          </View>
-        </View>
-
-        {loading ? (
-          <ActivityIndicator size="large" color={palette.primary} style={{ paddingVertical: 40 }} />
-        ) : (
-          <>
-            {/* AI Summary */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>AI Summary</Text>
-              <View style={styles.summaryCard}>
-                {summary ? (
-                  <>
-                    <Text style={styles.summaryHeading}>{summary.title}</Text>
-                    <Text style={styles.summaryText}>{summary.content}</Text>
-                    <Text style={styles.summaryMeta}>
-                      Generated {new Date(summary.generated_at).toLocaleString()}
-                      {summary.model_used ? ` via ${summary.model_used}` : ''}
-                    </Text>
-                  </>
-                ) : (
-                  <Text style={styles.summaryText}>
-                    No summary available yet. The backend generates summaries from active alerts.
-                  </Text>
-                )}
-              </View>
+        <StateView
+          state={loading ? 'loading' : error ? 'error' : 'success'}
+          loadingText="Loading weather report..."
+          errorText={error || 'Failed to load report'}
+          onRetry={() => {
+            setLoading(true);
+            setError(null);
+            // Retry the fetch
+            (async () => {
+              try {
+                const isValidZip = zipCode.length === 5 && /^\d{5}$/.test(zipCode);
+                const promises: Promise<any>[] = [
+                  apiFetch<Summary | null>(`/summaries/latest/local?zip_code=${zipCode}`).catch(() => null)
+                ];
+                if (isValidZip) {
+                  promises.push(
+                    apiFetch<LocationInfo>(`/location/info?zip_code=${zipCode}`).catch(() => null),
+                    apiFetch<AlertItem[]>(`/location/alerts?zip_code=${zipCode}`).catch(() => []),
+                    apiFetch<Summary | null>(`/summaries/generate/local?zip_code=${zipCode}`, { method: 'POST' }).catch(() => null),
+                    apiFetch<Summary | null>(`/summaries/latest/local?zip_code=${zipCode}`).catch(() => null)
+                  );
+                } else {
+                  promises.push(Promise.resolve(null), Promise.resolve([]));
+                }
+                const [summaryData, locInfo, alertsData] = await Promise.all(promises);
+                setSummary(summaryData);
+                setLocationInfo(locInfo);
+                setAlerts(alertsData ?? []);
+              } catch (err: any) {
+                setError('Failed to load weather report. Please check your connection.');
+              } finally {
+                setLoading(false);
+              }
+            })();
+          }}
+        >
+          {/* Location Header */}
+          <View style={styles.mainWeatherCard}>
+            <Text style={styles.locationText}>
+              {locationInfo
+                ? `${locationInfo.city}, ${locationInfo.state} ${zipCode}`
+                : `Location: ${zipCode}`}
+            </Text>
+            <View style={styles.tempContainer}>
+              <Ionicons name="partly-sunny" size={80} color="#F59E0B" />
             </View>
+          </View>
 
-            {/* Active Alerts Summary */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Recent Alerts</Text>
-              {alerts.length > 0 ? (
-                alerts.map((alert) => (
-                  <View key={alert.id} style={styles.alertRow}>
-                    <View style={[styles.severityDot, {
-                      backgroundColor: alert.severity.toLowerCase().includes('critical') || alert.severity.toLowerCase().includes('extreme')
-                        ? palette.danger
-                        : alert.severity.toLowerCase().includes('warning') || alert.severity.toLowerCase().includes('severe')
-                          ? palette.warning
-                          : palette.primary,
-                    }]} />
-                    <View style={styles.alertRowText}>
-                      <Text style={styles.alertTitle}>{alert.title}</Text>
-                      <Text style={styles.alertMeta}>{alert.alert_type} - {alert.severity}</Text>
-                    </View>
-                  </View>
-                ))
+          {/* AI Summary */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>AI Summary</Text>
+            <View style={styles.summaryCard}>
+              {summary ? (
+                <>
+                  <Text style={styles.summaryHeading}>{summary.title}</Text>
+                  <Text style={styles.summaryText}>{summary.content}</Text>
+                  <Text style={styles.summaryMeta}>
+                    Generated {new Date(summary.generated_at).toLocaleString()}
+                    {summary.model_used ? ` via ${summary.model_used}` : ''}
+                  </Text>
+                </>
               ) : (
-                <View style={styles.summaryCard}>
-                  <Text style={styles.summaryText}>No active alerts for this area.</Text>
-                </View>
+                <Text style={styles.summaryText}>
+                  No summary available yet. The backend generates summaries from active alerts.
+                </Text>
               )}
             </View>
-          </>
-        )}
+          </View>
+
+          {/* Active Alerts Summary */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Recent Alerts</Text>
+            {alerts.length > 0 ? (
+              alerts.map((alert) => (
+                <View key={alert.id} style={styles.alertRow}>
+                  <View style={[styles.severityDot, {
+                    backgroundColor: alert.severity.toLowerCase().includes('critical') || alert.severity.toLowerCase().includes('extreme')
+                      ? palette.danger
+                      : alert.severity.toLowerCase().includes('warning') || alert.severity.toLowerCase().includes('severe')
+                        ? palette.warning
+                        : palette.primary,
+                  }]} />
+                  <View style={styles.alertRowText}>
+                    <Text style={styles.alertTitle}>{alert.title}</Text>
+                    <Text style={styles.alertMeta}>{alert.alert_type} - {alert.severity}</Text>
+                  </View>
+                </View>
+              ))
+            ) : (
+              <View style={styles.summaryCard}>
+                <Text style={styles.summaryText}>No active alerts for this area.</Text>
+              </View>
+            )}
+          </View>
+        </StateView>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-function getStyles(palette: typeof Colors.light) {
+function getStyles(palette: typeof Colors.light | typeof Colors.dark) {
   return StyleSheet.create({
     safeArea: {
       flex: 1,

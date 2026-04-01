@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Image, StyleSheet, ViewStyle } from 'react-native';
+import { Text } from 'react-native';
 import { Colors, Spacing, Radius, Fonts } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
@@ -10,6 +11,8 @@ export interface BrandHeaderProps {
   onNotificationPress?: () => void;
   /** Custom container style */
   style?: ViewStyle;
+  /** Scope: 'local' or 'global' */
+  scope?: 'local' | 'global';
 }
 
 /**
@@ -24,6 +27,7 @@ export function BrandHeader({
   isAlert = false,
   onNotificationPress,
   style,
+  scope = 'local',
 }: BrandHeaderProps) {
   const scheme = useColorScheme() ?? 'light';
   const palette = Colors[scheme];
@@ -39,6 +43,12 @@ export function BrandHeader({
   const notifIconSource = isAlert
     ? require('@/assets/icons/navigation/RiskRadar_ALERT_NotifIcon.png')
     : require('@/assets/icons/navigation/RiskRadar_STND_NotifIcon.png');
+
+  // SD2: Scope chip assets
+  const scopeIcon = scope === 'local'
+    ? require('@/assets/icons/navigation/RiskRadar_Local_Icon.png')
+    : require('@/assets/icons/navigation/RiskRadar_GEN_Global_Icon.png');
+  const scopeLabel = scope === 'local' ? 'Local' : 'Global';
 
   return (
     <View style={[styles.container, { backgroundColor: palette.primaryDark }, style]}>
@@ -56,9 +66,13 @@ export function BrandHeader({
       </View>
 
       <View style={styles.rightSection}>
-        {/* Location/Scope Indicator Placeholder */}
-        <View style={[styles.scopeIndicator, { backgroundColor: palette.surface }]}>
-          {/* TODO: Add scope icon and text */}
+        {/* SD2: Scope Identity Chip */}
+        <View style={[styles.scopeIndicator, { backgroundColor: palette.surface }]}> 
+          <Image source={scopeIcon} style={styles.scopeIcon} resizeMode="contain" />
+          <View style={{ width: 4 }} />
+          <View>
+            <Text style={{ color: palette.text, fontFamily: Fonts.sans, fontWeight: '600', fontSize: 13 }}>{scopeLabel}</Text>
+          </View>
         </View>
 
         {/* Notification Button */}
@@ -105,12 +119,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: Spacing.sm,
   },
-  scopeIndicator: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    borderRadius: Radius.sm,
-    minWidth: 80,
-    alignItems: 'center',
+   scopeIndicator: {
+     flexDirection: 'row',
+     alignItems: 'center',
+     paddingHorizontal: Spacing.md,
+     paddingVertical: Spacing.sm,
+     borderRadius: Radius.sm,
+     minWidth: 80,
+   },
+  scopeIcon: {
+    width: 18,
+    height: 18,
   },
   notificationButton: {
     width: 40,

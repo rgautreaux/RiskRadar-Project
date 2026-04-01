@@ -13,6 +13,7 @@ import {
   ActivityIndicator,
   Alert
 } from 'react-native';
+import PrimaryButton from '@/components/ui/PrimaryButton';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/theme';
@@ -32,17 +33,61 @@ export default function RegistrationScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<{
+    fullName?: string;
+    email?: string;
+    zipCode?: string;
+    password?: string;
+    confirmPassword?: string;
+    form?: string;
+  }>({});
   const { register } = useAuth();
 
+  const validateForm = () => {
+    const newErrors: typeof errors = {};
+    let isValid = true;
+    
+    if (!fullName.trim()) {
+      newErrors.fullName = 'Full name is required.';
+      isValid = false;
+    }
+    
+    if (!email.trim()) {
+      newErrors.email = 'Email address is required.';
+      isValid = false;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = 'Please enter a valid email address.';
+      isValid = false;
+    }
+    
+    if (zipCode && (zipCode.length !== 5 || !/^\d{5}$/.test(zipCode))) {
+      newErrors.zipCode = 'Please enter a valid 5-digit zip code.';
+      isValid = false;
+    }
+    
+    if (!password) {
+      newErrors.password = 'Password is required.';
+      isValid = false;
+    } else if (password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters.';
+      isValid = false;
+    }
+    
+    if (!confirmPassword) {
+      newErrors.confirmPassword = 'Please confirm your password.';
+      isValid = false;
+    } else if (password !== confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match.';
+      isValid = false;
+    }
+    
+    setErrors(newErrors);
+    return isValid;
+  };
+
   const handleRegister = async () => {
-    if (!fullName || !email || !password) {
-      Alert.alert('Missing Fields', 'Please fill in all required fields.');
-      return;
-    }
-    if (password !== confirmPassword) {
-      Alert.alert('Password Mismatch', 'Passwords do not match.');
-      return;
-    }
+    if (!validateForm()) return;
+    setErrors({});
     setIsSubmitting(true);
     try {
       await register(fullName, email, password, zipCode || undefined);
@@ -57,7 +102,7 @@ export default function RegistrationScreen() {
       } else if (err.message) {
         message = err.message;
       }
-      Alert.alert('Registration Failed', message);
+      setErrors({ form: message });
     } finally {
       setIsSubmitting(false);
     }
@@ -86,9 +131,11 @@ export default function RegistrationScreen() {
           </View>
 
           <View style={styles.formContainer}>
+            {errors.form ? <Text style={styles.formError}>{errors.form}</Text> : null}
+
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Full Name</Text>
-              <View style={styles.inputContainer}>
+              <View style={[styles.inputContainer, errors.fullName && styles.inputError]}>
                 <Ionicons name="person-outline" size={20} color={palette.textSecondary} style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
@@ -96,14 +143,18 @@ export default function RegistrationScreen() {
                   placeholderTextColor={palette.textSecondary}
                   autoCapitalize="words"
                   value={fullName}
-                  onChangeText={setFullName}
+                  onChangeText={(text) => {
+                    setFullName(text);
+                    if (errors.fullName) setErrors((prev) => ({ ...prev, fullName: undefined }));
+                  }}
                 />
               </View>
+              {errors.fullName ? <Text style={styles.errorText}>{errors.fullName}</Text> : null}
             </View>
 
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Email Address</Text>
-              <View style={styles.inputContainer}>
+              <View style={[styles.inputContainer, errors.email && styles.inputError]}>
                 <Ionicons name="mail-outline" size={20} color={palette.textSecondary} style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
@@ -112,14 +163,18 @@ export default function RegistrationScreen() {
                   keyboardType="email-address"
                   autoCapitalize="none"
                   value={email}
-                  onChangeText={setEmail}
+                  onChangeText={(text) => {
+                    setEmail(text);
+                    if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
+                  }}
                 />
               </View>
+              {errors.email ? <Text style={styles.errorText}>{errors.email}</Text> : null}
             </View>
 
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Home Zip Code</Text>
-              <View style={styles.inputContainer}>
+              <View style={[styles.inputContainer, errors.zipCode && styles.inputError]}>
                 <Ionicons name="location-outline" size={20} color={palette.textSecondary} style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
@@ -128,14 +183,18 @@ export default function RegistrationScreen() {
                   keyboardType="number-pad"
                   maxLength={5}
                   value={zipCode}
-                  onChangeText={setZipCode}
+                  onChangeText={(text) => {
+                    setZipCode(text);
+                    if (errors.zipCode) setErrors((prev) => ({ ...prev, zipCode: undefined }));
+                  }}
                 />
               </View>
+              {errors.zipCode ? <Text style={styles.errorText}>{errors.zipCode}</Text> : null}
             </View>
 
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Password</Text>
-              <View style={styles.inputContainer}>
+              <View style={[styles.inputContainer, errors.password && styles.inputError]}>
                 <Ionicons name="lock-closed-outline" size={20} color={palette.textSecondary} style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
@@ -143,7 +202,10 @@ export default function RegistrationScreen() {
                   placeholderTextColor={palette.textSecondary}
                   secureTextEntry={!showPassword}
                   value={password}
-                  onChangeText={setPassword}
+                  onChangeText={(text) => {
+                    setPassword(text);
+                    if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }));
+                  }}
                 />
                 <Pressable onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
                   <Ionicons
@@ -153,11 +215,12 @@ export default function RegistrationScreen() {
                   />
                 </Pressable>
               </View>
+              {errors.password ? <Text style={styles.errorText}>{errors.password}</Text> : null}
             </View>
 
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Confirm Password</Text>
-              <View style={styles.inputContainer}>
+              <View style={[styles.inputContainer, errors.confirmPassword && styles.inputError]}>
                 <Ionicons name="shield-checkmark-outline" size={20} color={palette.textSecondary} style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
@@ -165,7 +228,10 @@ export default function RegistrationScreen() {
                   placeholderTextColor={palette.textSecondary}
                   secureTextEntry={!showConfirmPassword}
                   value={confirmPassword}
-                  onChangeText={setConfirmPassword}
+                  onChangeText={(text) => {
+                    setConfirmPassword(text);
+                    if (errors.confirmPassword) setErrors((prev) => ({ ...prev, confirmPassword: undefined }));
+                  }}
                 />
                 <Pressable onPress={() => setShowConfirmPassword(!showConfirmPassword)} style={styles.eyeIcon}>
                   <Ionicons
@@ -175,6 +241,7 @@ export default function RegistrationScreen() {
                   />
                 </Pressable>
               </View>
+              {errors.confirmPassword ? <Text style={styles.errorText}>{errors.confirmPassword}</Text> : null}
             </View>
 
             <View style={styles.termsContainer}>
@@ -185,13 +252,12 @@ export default function RegistrationScreen() {
               </Text>
             </View>
 
-            <TouchableOpacity style={styles.registerButton} onPress={handleRegister} activeOpacity={0.8} disabled={isSubmitting}>
-              {isSubmitting ? (
-                <ActivityIndicator color={palette.white} />
-              ) : (
-                <Text style={styles.registerButtonText}>Create Account</Text>
-              )}
-            </TouchableOpacity>
+            <PrimaryButton
+              label={isSubmitting ? '...' : 'Create Account'}
+              onPress={handleRegister}
+              disabled={isSubmitting}
+              loading={isSubmitting}
+            />
           </View>
 
           <View style={styles.footerContainer}>
@@ -206,7 +272,7 @@ export default function RegistrationScreen() {
   );
 }
 
-function getStyles(palette: typeof Colors.light) {
+function getStyles(palette: typeof Colors.light | typeof Colors.dark) {
   return StyleSheet.create({
     safeArea: {
       flex: 1,
@@ -278,6 +344,21 @@ function getStyles(palette: typeof Colors.light) {
     },
     eyeIcon: {
       padding: 8,
+    },
+    errorText: {
+      color: palette.danger,
+      fontSize: 12,
+      marginTop: 4,
+      marginLeft: 4,
+    },
+    formError: {
+      color: palette.danger,
+      fontSize: 14,
+      textAlign: 'center',
+      marginBottom: 16,
+    },
+    inputError: {
+      borderColor: palette.danger,
     },
     termsContainer: {
       marginBottom: 24,
