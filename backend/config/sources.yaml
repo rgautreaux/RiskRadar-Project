@@ -80,10 +80,10 @@ api_sources:
   #       - default: "low"
 
   # World Bank Open Data API — no API key required
-  # Environmental type -> Environemtal, social, and governance (ESG) indicators
+  # Environmental type -> Environmental, social, and governance (ESG) indicators
   # Usage -> Monitoring ESG indicators worldwide, such as CO2 emissions per capita, deforestation rates, etc.
   - name: "world_bank_esg"
-    enabled: true
+    enabled: false
     alert_type: "environmental"
     url: "https://api.worldbank.org/v2/en/indicator/EN.ATM.CO2E.PC"
     method: "GET"
@@ -119,17 +119,12 @@ api_sources:
           value: "moderate"   # Moderate emissions
         - default: "low"
 
-  # Our World in Data API — no API key required
-  # Environmental type -> Natural disasters and climate impacts
-  # Usage -> Monitoring natural disasters worldwide, including floods, storms, droughts, etc.
-
-
   # C02 Earth - no API key required
   # Environmental type -> CO2 levels at Mauna Loa Observatory
   # Usage -> C02 monitoring
   
   
-  # OpenAQ API — no API key required
+  # OpenAQ API — API key required
   # Environmental type -> Air quality measurements worldwide
   # Usage -> Monitoring air quality (PM2.5, PM10, etc.) in different cities globally.
   - name: "openaq_air_quality"
@@ -151,8 +146,8 @@ api_sources:
       items_path: "results"
     field_mapping:
       source_id: "sensorsId"
-      title: "parameter.displayName"
-      description: "parameter.description"
+      title: "sensorsId"
+      description: "value"
       latitude: "coordinates.latitude"
       longitude: "coordinates.longitude"
       location_name: "locationsId"
@@ -184,7 +179,7 @@ api_sources:
       params:
         hasCoordinate: true
         hasGeospatialIssue: false
-        establishmentMeans: "INVASIVE"
+        degreeOfEstablishment: "invasive"
         limit: 300
       headers: {}
     auth:
@@ -210,6 +205,48 @@ api_sources:
         "GENUS": "moderate"
         "FAMILY": "low"
       default: "low"
+
+  # Our World in Data (OWID) — Natural Disaster Events — no API key required
+  # Environmental type -> Natural disasters and climate impacts
+  # Usage -> Country-level count of reported natural disaster events (latest year)
+  #          Source: EM-DAT / CRED, processed by OWID. Updated annually (~October).
+  #          ~195 country rows per fetch; deduped on ISO3 country code.
+  - name: "owid_natural_disasters"
+    enabled: true
+    alert_type: "environmental"
+    url: "https://ourworldindata.org/grapher/number-of-natural-disaster-events.csv"
+    method: "GET"
+    interval_minutes: 1440  # Annual dataset — daily checks are sufficient
+    request:
+      params:
+        time: "latest"               # Fetch only the most recent year (~195 rows)
+        useColumnShortNames: "true"  # Columns: Entity, Code, Year, n_events
+      headers: {}
+    auth:
+      type: "none"
+    response:
+      format: "csv"
+    field_mapping:
+      source_id: "Code"              # ISO3 country code (e.g. "USA") — unique per latest-year fetch
+      title: "Entity"                # Country/region name
+      description: "n_events"        # Raw disaster event count
+      latitude: null
+      longitude: null
+      location_name: "Entity"
+      event_start: "Year"
+      event_end: null
+      raw_data: "__full_item__"
+    severity:
+      type: "threshold"
+      field: "n_events"
+      thresholds:
+        - gte: 20
+          value: "critical"   # High-disaster countries (e.g. USA, China, India)
+        - gte: 10
+          value: "high"
+        - gte: 5
+          value: "moderate"
+        - default: "low"
 
 web_sources: []
 

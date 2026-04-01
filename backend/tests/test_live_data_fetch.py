@@ -51,7 +51,8 @@ from config.settings import settings
 
 def _require_env(var_name: str, label: str) -> None:
     """Skip the calling test if *var_name* is not set in the environment."""
-    if not os.environ.get(var_name, "").strip():
+    value = os.environ.get(var_name, "").strip() or str(getattr(settings, var_name, "")).strip()
+    if not value:
         pytest.skip(f"{label} — {var_name} not configured, skipping live test")
 
 

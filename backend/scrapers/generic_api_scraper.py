@@ -93,10 +93,11 @@ class GenericAPIScraper(BaseScraper):
         auth_cfg = cfg.get("auth", {})
         auth_type = auth_cfg.get("type", "none")
         if auth_type != "none":
-            key_value = os.environ.get(auth_cfg["env_var"], "")
+            env_var = auth_cfg["env_var"]
+            key_value = os.environ.get(env_var, "").strip() or str(getattr(settings, env_var, "")).strip()
             if not key_value:
                 raise RuntimeError(
-                    f"{self.source_name}: env var {auth_cfg['env_var']} not set"
+                    f"{self.source_name}: env var {env_var} not set"
                 )
             if auth_type == "query_param":
                 param_name = auth_cfg.get("param_name", "api_key")
