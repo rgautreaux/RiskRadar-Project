@@ -57,7 +57,7 @@ class User(Base):
     # Deprecated: email (to be removed after migration)
     email = Column(Text, unique=True, nullable=True)
     # New: AES-encrypted email storage
-    email_encrypted = Column(Text, unique=True, nullable=True)
+    email_encrypted = Column(Text, nullable=True)
     # HMAC of email for uniqueness lookup (not reversible)
     email_hmac = Column(Text, unique=True, nullable=True)
     password_hash = Column(Text)
