@@ -51,6 +51,8 @@ def _extract_path(obj: Any, path: str) -> Any:
         if "[" in segment:
             field, idx_str = segment.rstrip("]").split("[")
             obj = obj[field][int(idx_str)]
+        elif isinstance(obj, (list, tuple)) and segment.isdigit():
+            obj = obj[int(segment)]
         else:
             obj = obj[segment]
     return obj

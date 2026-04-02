@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Animated, ImageSourcePropType } from 'react-native';
-
 import {
+  Animated,
+  ImageSourcePropType,
   ScrollView,
   View,
   StyleSheet,
@@ -122,7 +122,7 @@ export default function AlertsScreen() {
       setError(null);
       const data = await apiFetch<AlertItem[]>('/alerts/?limit=50');
       setAlerts(data);
-    } catch (err: any) {
+    } catch {
       setError('Could not load alerts. Is the backend running?');
     } finally {
       setLoading(false);

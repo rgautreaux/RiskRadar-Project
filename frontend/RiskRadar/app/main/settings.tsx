@@ -16,7 +16,7 @@ import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useAuth } from '@/contexts/auth-context';
-import PrimaryButton from '@/components/ui/PrimaryButton';
+import { PrimaryButton } from '@/components/ui/PrimaryButton';
 
 export default function SettingsScreen() {
   const router = useRouter();

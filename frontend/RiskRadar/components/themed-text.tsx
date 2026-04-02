@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, TextProps, StyleSheet, TextStyle } from 'react-native';
+import { Text, TextProps, TextStyle } from 'react-native';
 
 import { Colors, Fonts, Typography } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -112,9 +112,3 @@ function getTypographyStyle(
       } as TextStyle;
   }
 }
-
-const styles = StyleSheet.create({
-  default: {
-    textAlign: 'left',
-  },
-});

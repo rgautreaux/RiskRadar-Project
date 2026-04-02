@@ -7,7 +7,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
-import PrimaryButton from '@/components/ui/PrimaryButton';
+import { PrimaryButton } from '@/components/ui/PrimaryButton';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';

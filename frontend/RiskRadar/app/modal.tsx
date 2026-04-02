@@ -7,14 +7,14 @@ import {
   SafeAreaView,
   ScrollView,
   Image,
+  Animated,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import React, { useState, useRef, useEffect } from 'react';
-import { Animated } from 'react-native';
 
 
 import { ThemedText } from '@/components/themed-text';
-import PrimaryButton from '@/components/ui/PrimaryButton';
+import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { ThemedView } from '@/components/themed-view';
 import { Colors, Spacing, Radius, Shadows } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -247,6 +247,7 @@ export default function ModalScreen() {
                 </View>
               </View>
             </ThemedView>
+            </Animated.View>
 
             {/* Action Button */}
             <PrimaryButton label="Acknowledge" onPress={handleClose} />

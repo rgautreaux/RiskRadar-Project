@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, ViewProps, StyleSheet, ViewStyle } from 'react-native';
+import { View, ViewProps, ViewStyle } from 'react-native';
 
 import { Colors, Shadows, Spacing } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -13,12 +13,6 @@ export type ThemedViewProps = ViewProps & {
    * @default 'background'
    */
   surface?: 'background' | 'card' | 'surfaceMuted';
-  /**
-   * Whether to apply a card shadow (elevation).
-   * @default false
-   */
-  elevated?: boolean;
-  /**
    * Padding preset for the container. If omitted, no automatic padding is applied.
    * Use StyleSheet manually for custom padding.
    * @default undefined

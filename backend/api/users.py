@@ -22,6 +22,7 @@ import json
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 
 from db.database import get_db
 from db.models import User
@@ -63,13 +64,15 @@ def register_user(body: UserCreate, db: Session = Depends(get_db)):
     - Returns the created user (without password_hash).
     """
     hmac_val = email_hmac(body.email)
-    existing = db.query(User).filter(User.email_hmac == hmac_val).first()
+    existing = db.query(User).filter(
+        or_(User.email_hmac == hmac_val, User.email == body.email)
+    ).first()
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
 
     user = User(
         display_name=body.display_name,
-        email=None,  # legacy field, not used
+        email=body.email,
         email_encrypted=encrypt_email(body.email),
         email_hmac=hmac_val,
         password_hash=hash_password(body.password),
@@ -94,7 +97,9 @@ def login_user(body: UserLogin, db: Session = Depends(get_db)):
     - Return { access_token, token_type: "bearer" }.
     """
     hmac_val = email_hmac(body.email)
-    user = db.query(User).filter(User.email_hmac == hmac_val).first()
+    user = db.query(User).filter(
+        or_(User.email_hmac == hmac_val, User.email == body.email)
+    ).first()
     if not user or not verify_password(body.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid email or password")
     token = create_access_token(data={"sub": str(user.id)})

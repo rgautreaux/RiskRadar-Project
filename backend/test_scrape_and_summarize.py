@@ -6,8 +6,14 @@ Run from the backend directory:
 
 import sys
 import logging
+from pathlib import Path
+
+BACKEND_DIR = Path(__file__).resolve().parent
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
 
 from sqlalchemy import text
+from config.settings import settings
 
 logging.basicConfig(
     level=logging.INFO,
@@ -78,21 +84,23 @@ def main():
 
         # --- Step 4: Generate summary ---
         logger.info("=== Step 4: Generating daily digest summary ===")
-        from llm.summarizer import Summarizer
+        if not settings.LLM_API_KEY or not settings.LLM_PROVIDER:
+            logger.info("Skipping summary generation: LLM provider/API key not configured.")
+        else:
+            from llm.summarizer import Summarizer
 
-        summarizer = Summarizer()
-        try:
-            summary = summarizer.generate_daily_digest(db, since_hours=24)
-            if summary:
-                logger.info(f"Summary generated! (model={summary.model_used}, tokens={summary.token_count})")
-                print("--- DAILY DIGEST ---")
-                print(f"Summary content: {summary.content}")
-                print("--- END ---")
-            else:
-                logger.warning("No summary generated (no recent alerts).")
-        except Exception as e:
-            logger.error(f"Summary generation failed: {e}")
-            logger.info("This is expected if LLM_API_KEY is not configured.")
+            summarizer = Summarizer()
+            try:
+                summary = summarizer.generate_daily_digest(db, since_hours=24)
+                if summary:
+                    logger.info(f"Summary generated! (model={summary.model_used}, tokens={summary.token_count})")
+                    print("--- DAILY DIGEST ---")
+                    print(f"Summary content: {summary.content}")
+                    print("--- END ---")
+                else:
+                    logger.warning("No summary generated (no recent alerts).")
+            except Exception as e:
+                logger.error(f"Summary generation failed: {e}")
 
     finally:
         db.close()

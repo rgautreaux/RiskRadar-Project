@@ -8,7 +8,6 @@ import {
   TouchableOpacity,
   Platform,
   StatusBar,
-  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -85,7 +84,7 @@ export default function WeatherReport() {
         setSummary(summaryData);
         setLocationInfo(locInfo);
         setAlerts(alertsData ?? []);
-      } catch (err: any) {
+      } catch {
         setError('Failed to load weather report. Please check your connection.');
       } finally {
         setLoading(false);
@@ -138,7 +137,7 @@ export default function WeatherReport() {
                 setSummary(summaryData);
                 setLocationInfo(locInfo);
                 setAlerts(alertsData ?? []);
-              } catch (err: any) {
+              } catch {
                 setError('Failed to load weather report. Please check your connection.');
               } finally {
                 setLoading(false);

@@ -77,7 +77,13 @@ export function StateView({
   return <>{children}</>;
 }
 
-function getStyles(palette: typeof Colors.light) {
+type Palette = {
+  primary: string;
+  danger: string;
+  textSecondary: string;
+};
+
+function getStyles(palette: Palette) {
   return StyleSheet.create({
     container: {
       flex: 1,

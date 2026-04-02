@@ -9,9 +9,7 @@ import {
   ScrollView,
   Platform,
   StatusBar,
-  ActivityIndicator,
 } from 'react-native';
-import EmptyState from '@/components/ui/EmptyState';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/theme';
@@ -62,8 +60,7 @@ export default function Home() {
         const data = await apiFetch<AlertStats>('/alerts/stats');
         console.log('Stats loaded:', data);
         setStats(data);
-      } catch (err) { 
-        console.error('Stats fetch failed:', err);
+      } catch {
         setErrorStats('Failed to load risk assessment data');
       }
       finally { setLoadingStats(false); }
@@ -75,8 +72,7 @@ export default function Home() {
         const data = await apiFetch<Summary | null>('/summaries/latest');
         console.log('Summary loaded:', data);
         setSummary(data);
-      } catch (err) { 
-        console.error('Summary fetch failed:', err);
+      } catch {
         setErrorSummary('Failed to load latest summary');
       }
       finally { setLoadingSummary(false); }
@@ -175,7 +171,7 @@ export default function Home() {
                 try {
                   const data = await apiFetch<Summary | null>('/summaries/latest');
                   setSummary(data);
-                } catch (err) {
+                } catch {
                   setErrorSummary('Failed to load latest summary');
                 } finally {
                   setLoadingSummary(false);
@@ -191,13 +187,6 @@ export default function Home() {
               </Text>
             </View>
           </StateView>
-          ) : (
-            <EmptyState
-              title={zipCode.length === 5 ? `Results for ${zipCode}` : 'Awaiting Zip Code...'}
-              subtitle={zipCode.length === 5 ? 'Tap to view full weather summary.' : 'Enter a zip code above.'}
-              style={styles.placeholderBox}
-            />
-          )}
         </TouchableOpacity>
 
         {/* Risk Assessment Card */}
@@ -222,7 +211,7 @@ export default function Home() {
                 try {
                   const data = await apiFetch<AlertStats>('/alerts/stats');
                   setStats(data);
-                } catch (err) {
+                } catch {
                   setErrorStats('Failed to load risk assessment data');
                 } finally {
                   setLoadingStats(false);
@@ -243,13 +232,6 @@ export default function Home() {
               ))}
             </View>
           </StateView>
-          ) : (
-            <EmptyState
-              title="No data available"
-              subtitle="Make sure the backend is running."
-              style={styles.placeholderContent}
-            />
-          )}
         </View>
       </ScrollView>
     </SafeAreaView>

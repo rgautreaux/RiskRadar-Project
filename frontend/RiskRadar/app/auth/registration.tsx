@@ -10,10 +10,8 @@ import {
   SafeAreaView,
   ScrollView,
   Pressable,
-  ActivityIndicator,
-  Alert
 } from 'react-native';
-import PrimaryButton from '@/components/ui/PrimaryButton';
+import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { BrandHeader } from '@/components/brand-header';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
