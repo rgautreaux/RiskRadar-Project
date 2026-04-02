@@ -8328,3 +8328,8 @@ Generating patch (7 lines) in [](file:///c%3A/Users/rebec/OneDrive/Documents/Git
 The image import in EmptyState now uses the correct path: it requires the logo from assets/icons/branding/RiskRadar_STND_Logo.png, which exists in your project. This will prevent runtime bundling errors.
 
 Made changes.
+
+
+---
+
+
