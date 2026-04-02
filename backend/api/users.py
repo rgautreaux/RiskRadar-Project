@@ -76,19 +76,19 @@ def register_user(body: UserCreate, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=TokenOut)
 def login_user(body: UserLogin, db: Session = Depends(get_db)):
-        """
-        Authenticate with email + password, receive a JWT.
-        - Look up user by email_hmac in the database.
-        - Verify the password against the stored bcrypt hash.
-        - Create a JWT with the user's ID in the "sub" claim.
-        - Return { access_token, token_type: "bearer" }.
-        """
-        hmac_val = email_hmac(body.email)
-        user = db.query(User).filter(User.email_hmac == hmac_val).first()
-        if not user or not verify_password(body.password, user.password_hash):
-                raise HTTPException(status_code=401, detail="Invalid email or password")
-        token = create_access_token(data={"sub": str(user.id)})
-        return TokenOut(access_token=token)
+    """
+    Authenticate with email + password, receive a JWT.
+    - Look up user by email_hmac in the database.
+    - Verify the password against the stored bcrypt hash.
+    - Create a JWT with the user's ID in the "sub" claim.
+    - Return { access_token, token_type: "bearer" }.
+    """
+    hmac_val = email_hmac(body.email)
+    user = db.query(User).filter(User.email_hmac == hmac_val).first()
+    if not user or not verify_password(body.password, user.password_hash):
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    token = create_access_token(data={"sub": str(user.id)})
+    return TokenOut(access_token=token)
 
 
 # ---------------------------------------------------------------------------
