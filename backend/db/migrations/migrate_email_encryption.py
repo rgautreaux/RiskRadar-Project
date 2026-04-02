@@ -29,7 +29,7 @@ def _now_utc() -> datetime:
     return datetime.now(timezone.utc)
 
 
-def _safe_error_message(exc: Exception) -> str:
+def safe_error_message(exc: Exception) -> str:
     """Sanitize exception text to avoid leaking sensitive values into logs."""
     message = str(exc) if exc else "unknown error"
     message = EMAIL_RE.sub("[REDACTED_EMAIL]", message)
@@ -88,7 +88,7 @@ def migrate_emails() -> int:
                 _log(db, action="email_encryption", status="success", user_id=user.id)
                 db.commit()
                 succeeded += 1
-            except Exception as exc:
+            except Exception as exc:  # noqa: BLE001 - capture migration/user-level failures safely
                 db.rollback()
                 failed += 1
                 _log(
@@ -96,7 +96,7 @@ def migrate_emails() -> int:
                     action="email_encryption",
                     status="error",
                     user_id=user.id,
-                    error_message=_safe_error_message(exc),
+                    error_message=safe_error_message(exc),
                 )
                 db.commit()
 
@@ -104,13 +104,13 @@ def migrate_emails() -> int:
         _log(db, action="email_encryption_batch", status="completed", error_message=summary)
         db.commit()
         return 0 if failed == 0 else 2
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 - capture batch-level failure and persist audit record
         db.rollback()
         _log(
             db,
             action="email_encryption_batch",
             status="failed",
-            error_message=_safe_error_message(exc),
+            error_message=safe_error_message(exc),
         )
         db.commit()
         return 1

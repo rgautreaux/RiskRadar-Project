@@ -28,6 +28,6 @@ def test_migrate_emails_success(db_session, monkeypatch):
 
 def test_safe_error_message_redacts_email():
     exc = RuntimeError("duplicate email a@test.com caused conflict")
-    safe = migration._safe_error_message(exc)
+    safe = migration.safe_error_message(exc)
     assert "a@test.com" not in safe
     assert "[REDACTED_EMAIL]" in safe
