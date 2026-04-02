@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Animated } from 'react-native';
 
 import {
   ScrollView,
@@ -189,7 +190,7 @@ export default function AlertsScreen() {
           </View>
         ) : alerts.length > 0 ? (
           <View style={styles.alertsContainer}>
-            {alerts.map((alert) => {
+            {alerts.map((alert, i) => {
               // Map alert_type to icon asset
               const typeKey = (alert.alert_type || '').toLowerCase().replace(/[^a-z]/g, '');
               const iconSource =
@@ -208,20 +209,44 @@ export default function AlertsScreen() {
                 const diffDays = Math.floor(diffHrs / 24);
                 return `${diffDays}d ago`;
               };
+              // SD9: Staggered animation
+              const fadeAnim = useRef(new Animated.Value(0)).current;
+              const slideAnim = useRef(new Animated.Value(20)).current;
+              useEffect(() => {
+                Animated.timing(fadeAnim, {
+                  toValue: 1,
+                  duration: 220,
+                  delay: 80 + i * 60,
+                  useNativeDriver: true,
+                }).start();
+                Animated.timing(slideAnim, {
+                  toValue: 0,
+                  duration: 220,
+                  delay: 80 + i * 60,
+                  useNativeDriver: true,
+                }).start();
+              }, [fadeAnim, slideAnim]);
               return (
-                <RiskCard
+                <Animated.View
                   key={alert.id}
-                  riskType={alert.alert_type}
-                  title={alert.title}
-                  severity={getSeverityLevel(alert.severity)}
-                  iconSource={iconSource}
-                  description={alert.description ?? `${alert.alert_type} alert from ${alert.source}`}
-                  value={undefined}
-                  unit={undefined}
-                  onPress={undefined}
-                  style={{ marginBottom: Spacing.sm }}
-                  meta={formatTime(alert.fetched_at || alert.created_at)}
-                />
+                  style={{
+                    opacity: fadeAnim,
+                    transform: [{ translateY: slideAnim }],
+                    marginBottom: Spacing.sm,
+                  }}
+                >
+                  <RiskCard
+                    riskType={alert.alert_type}
+                    title={alert.title}
+                    severity={getSeverityLevel(alert.severity)}
+                    iconSource={iconSource}
+                    description={alert.description ?? `${alert.alert_type} alert from ${alert.source}`}
+                    value={undefined}
+                    unit={undefined}
+                    onPress={undefined}
+                    meta={formatTime(alert.fetched_at || alert.created_at)}
+                  />
+                </Animated.View>
               );
             })}
           </View>

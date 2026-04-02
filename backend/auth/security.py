@@ -20,15 +20,51 @@ CONFIGURATION:
 
 from datetime import datetime, timedelta, timezone
 
+
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
-
 from config.settings import settings
 from db.database import get_db
 from db.models import User
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.primitives import padding, hashes, hmac
+from cryptography.hazmat.backends import default_backend
+import base64
+# ---------------------------------------------------------------------------
+# AES Email Encryption/Decryption & HMAC for lookup
+# ---------------------------------------------------------------------------
+_EMAIL_AES_KEY = settings.JWT_SECRET_KEY[:32].encode("utf-8")  # Use a 32-byte key (for demo; use a dedicated key in prod)
+_EMAIL_AES_IV = b"RiskRadarEmailIV!"  # 16 bytes (for demo; use random IV in prod)
+
+def encrypt_email(email: str) -> str:
+    """Encrypt an email address using AES-CBC."""
+    backend = default_backend()
+    padder = padding.PKCS7(128).padder()
+    padded_data = padder.update(email.encode("utf-8")) + padder.finalize()
+    cipher = Cipher(algorithms.AES(_EMAIL_AES_KEY), modes.CBC(_EMAIL_AES_IV), backend=backend)
+    encryptor = cipher.encryptor()
+    ct = encryptor.update(padded_data) + encryptor.finalize()
+    return base64.b64encode(ct).decode("utf-8")
+
+def decrypt_email(encrypted_email: str) -> str:
+    """Decrypt an AES-encrypted email address."""
+    backend = default_backend()
+    cipher = Cipher(algorithms.AES(_EMAIL_AES_KEY), modes.CBC(_EMAIL_AES_IV), backend=backend)
+    decryptor = cipher.decryptor()
+    ct = base64.b64decode(encrypted_email)
+    padded_data = decryptor.update(ct) + decryptor.finalize()
+    unpadder = padding.PKCS7(128).unpadder()
+    data = unpadder.update(padded_data) + unpadder.finalize()
+    return data.decode("utf-8")
+
+def email_hmac(email: str) -> str:
+    """Generate an HMAC (SHA256) of the email for uniqueness lookup."""
+    h = hmac.HMAC(_EMAIL_AES_KEY, hashes.SHA256(), backend=default_backend())
+    h.update(email.encode("utf-8"))
+    return base64.b64encode(h.finalize()).decode("utf-8")
 
 # ---------------------------------------------------------------------------
 # Password hashing - bcrypt via passlib

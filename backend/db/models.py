@@ -54,7 +54,12 @@ class User(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     device_token = Column(Text)
     display_name = Column(Text)
-    email = Column(Text, unique=True)
+    # Deprecated: email (to be removed after migration)
+    email = Column(Text, unique=True, nullable=True)
+    # New: AES-encrypted email storage
+    email_encrypted = Column(Text, unique=True, nullable=True)
+    # HMAC of email for uniqueness lookup (not reversible)
+    email_hmac = Column(Text, unique=True, nullable=True)
     password_hash = Column(Text)
     zip_code = Column(Text)
     latitude = Column(Float)
@@ -63,6 +68,8 @@ class User(Base):
     notify_severity = Column(Text, default="high")
     created_at = Column(DateTime(timezone=True), nullable=False, default=_now)
     updated_at = Column(DateTime(timezone=True), nullable=False, default=_now, onupdate=_now)
+
+# NOTE: Migration required to populate email_encrypted and email_hmac from email.
 
 
 class ScrapeLog(Base):
