@@ -89,4 +89,4 @@ Welcome to the RiskRadar mobile frontend! This guide will help new contributors 
 
 ---
 
-_Last updated: March 23, 2026_
+_Last updated: April 1, 2026 (All asset references and documentation validated and up to date.)_
