@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Image, ViewStyle, TextStyle } from 'react-nativ
 import { Colors, Spacing, Fonts } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
-const radarIcon = require('@/assets/icons/navigation/RiskRadar_STND_Logo.png');
+const radarIcon = require('@/assets/icons/branding/RiskRadar_STND_Logo.png');
 
 export interface EmptyStateProps {
   title: string;
