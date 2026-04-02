@@ -39,6 +39,16 @@ from schemas.user import (
 router = APIRouter(prefix="/users", tags=["Users"])
 
 
+def _user_out_with_email(user: User) -> UserOut:
+    """Build a UserOut response with email decrypted from email_encrypted."""
+    user_out = UserOut.model_validate(user)
+    if user.email_encrypted:
+        user_out.email = decrypt_email(user.email_encrypted)
+    elif user.email:
+        user_out.email = user.email  # fallback for legacy plaintext records
+    return user_out
+
+
 # ---------------------------------------------------------------------------
 # Public endpoints (no JWT required)
 # ---------------------------------------------------------------------------
@@ -98,7 +108,7 @@ def login_user(body: UserLogin, db: Session = Depends(get_db)):
 @router.get("/me", response_model=UserOut)
 def get_me(current_user: User = Depends(get_current_user)):
     """Return the profile of the currently authenticated user."""
-    return current_user
+    return _user_out_with_email(current_user)
 
 
 @router.get("/{user_id}/preferences", response_model=UserOut)
@@ -113,7 +123,7 @@ def get_preferences(
     """
     if current_user.id != user_id:
         raise HTTPException(status_code=403, detail="Cannot access another user's preferences")
-    return current_user
+    return _user_out_with_email(current_user)
 
 
 @router.put("/{user_id}/preferences", response_model=UserOut)
@@ -148,7 +158,7 @@ def update_preferences(
 
     db.commit()
     db.refresh(user)
-    return user
+    return _user_out_with_email(user)
 
 
 @router.get("/notifications", response_model=NotificationSettingsOut)

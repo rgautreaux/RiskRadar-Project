@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Animated } from 'react-native';
+import { Animated, ImageSourcePropType } from 'react-native';
 
 import {
   ScrollView,
@@ -18,8 +18,72 @@ import { apiFetch } from '@/utils/api';
 import { RiskCard } from '@/components/risk-card';
 import { SectionHeader } from '@/components/section-header';
 import { HazardChip } from '@/components/hazard-chip';
+
+// ---------------------------------------------------------------------------
+// AnimatedAlertCard — isolated component so hooks are called at the top level
+// ---------------------------------------------------------------------------
+interface AnimatedAlertCardProps {
+  alert: AlertItem;
+  index: number;
+  iconSource: ImageSourcePropType;
+  getSeverityLevel: (severity: string) => 'low' | 'moderate' | 'high' | 'critical';
+}
+
+function AnimatedAlertCard({ alert, index, iconSource, getSeverityLevel }: AnimatedAlertCardProps) {
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(20)).current;
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 220,
+      delay: 80 + index * 60,
+      useNativeDriver: true,
+    }).start();
+    Animated.timing(slideAnim, {
+      toValue: 0,
+      duration: 220,
+      delay: 80 + index * 60,
+      useNativeDriver: true,
+    }).start();
+  }, [fadeAnim, slideAnim, index]);
+
+  const formatTime = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    if (diffMins < 60) return `${diffMins}m ago`;
+    const diffHrs = Math.floor(diffMins / 60);
+    if (diffHrs < 24) return `${diffHrs}h ago`;
+    const diffDays = Math.floor(diffHrs / 24);
+    return `${diffDays}d ago`;
+  };
+
+  return (
+    <Animated.View
+      style={{
+        opacity: fadeAnim,
+        transform: [{ translateY: slideAnim }],
+        marginBottom: Spacing.sm,
+      }}
+    >
+      <RiskCard
+        riskType={alert.alert_type}
+        title={alert.title}
+        severity={getSeverityLevel(alert.severity)}
+        iconSource={iconSource}
+        description={alert.description ?? `${alert.alert_type} alert from ${alert.source}`}
+        value={undefined}
+        unit={undefined}
+        onPress={undefined}
+        meta={formatTime(alert.fetched_at || alert.created_at)}
+      />
+    </Animated.View>
+  );
+}
 // Map alert_type or hazard type to icon asset
-const hazardIconMap: Record<string, any> = {
+const hazardIconMap: Record<string, ImageSourcePropType> = {
   weather: require('@/assets/icons/hazards/RiskRadar_Weather_Icon.png'),
   'air quality': require('@/assets/icons/hazards/RiskRadar_AirQuality_Icon.png'),
   airquality: require('@/assets/icons/hazards/RiskRadar_AirQuality_Icon.png'),
@@ -197,56 +261,14 @@ export default function AlertsScreen() {
                 hazardIconMap[typeKey] ||
                 hazardIconMap[alert.alert_type?.toLowerCase()] ||
                 hazardIconMap.default;
-              // SD4: Format freshness meta
-              const formatTime = (dateStr: string) => {
-                const date = new Date(dateStr);
-                const now = new Date();
-                const diffMs = now.getTime() - date.getTime();
-                const diffMins = Math.floor(diffMs / 60000);
-                if (diffMins < 60) return `${diffMins}m ago`;
-                const diffHrs = Math.floor(diffMins / 60);
-                if (diffHrs < 24) return `${diffHrs}h ago`;
-                const diffDays = Math.floor(diffHrs / 24);
-                return `${diffDays}d ago`;
-              };
-              // SD9: Staggered animation
-              const fadeAnim = useRef(new Animated.Value(0)).current;
-              const slideAnim = useRef(new Animated.Value(20)).current;
-              useEffect(() => {
-                Animated.timing(fadeAnim, {
-                  toValue: 1,
-                  duration: 220,
-                  delay: 80 + i * 60,
-                  useNativeDriver: true,
-                }).start();
-                Animated.timing(slideAnim, {
-                  toValue: 0,
-                  duration: 220,
-                  delay: 80 + i * 60,
-                  useNativeDriver: true,
-                }).start();
-              }, [fadeAnim, slideAnim]);
               return (
-                <Animated.View
+                <AnimatedAlertCard
                   key={alert.id}
-                  style={{
-                    opacity: fadeAnim,
-                    transform: [{ translateY: slideAnim }],
-                    marginBottom: Spacing.sm,
-                  }}
-                >
-                  <RiskCard
-                    riskType={alert.alert_type}
-                    title={alert.title}
-                    severity={getSeverityLevel(alert.severity)}
-                    iconSource={iconSource}
-                    description={alert.description ?? `${alert.alert_type} alert from ${alert.source}`}
-                    value={undefined}
-                    unit={undefined}
-                    onPress={undefined}
-                    meta={formatTime(alert.fetched_at || alert.created_at)}
-                  />
-                </Animated.View>
+                  alert={alert}
+                  index={i}
+                  iconSource={iconSource}
+                  getSeverityLevel={getSeverityLevel}
+                />
               );
             })}
           </View>
