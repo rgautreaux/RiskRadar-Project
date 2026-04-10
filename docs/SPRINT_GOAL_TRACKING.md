@@ -1,6 +1,8 @@
 # April 10 Synchronization Note
 The latest audit-trail pass confirms Rebecca’s implementation work is complete on her side. The remaining dependency is backend/security lead sign-off for the Phase 3 handoff, and the documentation bundle now reflects that boundary explicitly.
 
+- Critical backend regression expansion was completed in this Apr 10 session across location, summaries, system, and user/auth paths.
+- Full backend pytest validation completed in this Apr 10 session with `107 passed, 0 failed` (warnings only).
 - Migration verification was rerun in this Apr 10 session: targeted migration tests passed and migration script execution completed successfully in this environment.
 - The April 10 transcript, progress log, TODO, AUTHORS, README, and sprint tracker are synchronized around the current closure state.
 - No additional implementation steps remain for Rebecca; only the external approval gate is open.
@@ -61,7 +63,7 @@ Latest alignment updates:
 ### 4. Initial Integration Testing
 - **Status:** ✅ Complete (Backend), 🟡 In Progress (Full E2E)
 - **Evidence:**
-  - Backend: Full pytest suite (87/87 passing), integration tests for scraper-to-database, and API endpoint tests.
+  - Backend: Full pytest suite now validated in the latest Apr 10 pass (`107/107 passing`), including integration tests for scraper-to-database and API endpoint tests.
   - Backend smoke runner for scraper/database verification completes cleanly after the latest registry, extraction, and summary-skip fixes.
   - Frontend: Lint and TypeScript checks complete cleanly, Expo app shell runs, and the Rebecca-owned screen/component work is validated; only the remaining cross-team E2E polish is still being finalized.
 

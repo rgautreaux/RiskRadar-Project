@@ -4,6 +4,8 @@ UI/UX, planning, and progress-tracking docs are synchronized as of April 10, 202
 
 [x] 🟢 Migration Verification and Documentation Sync (Apr 10, 2026): transcript, progress log, reflection, TODO, AUTHORS, README, and sprint tracking refreshed for this session; targeted migration tests and migration script execution completed successfully in this environment.
 
+[x] 🟢 Critical Regression Expansion + Full Backend Validation (Apr 10, 2026): implemented backend critical-flow regression coverage updates (location, summaries, system, users), stabilized migration regression tests, and completed full backend validation with `107 passed, 0 failed` (warnings only).
+
 [x] 🟢 Audit Trail Sync and Status Confirmation (Apr 10, 2026): refreshed the transcript, progress log, reflection, README, AUTHORS, and sprint tracking so Rebecca’s current status and the remaining sign-off boundary stay aligned.
 
 UI/UX, planning, and progress-tracking docs are synchronized as of April 2, 2026. Latest transcript and progress-log entries are in chronological order, and documentation is audit-ready for onboarding continuity. QA checklist is validated and Rebecca's UI/UX tasks are complete.
@@ -89,6 +91,13 @@ Week-by-week sprint board for tracking delivery to the goal of having most imple
   - full backend test suite explanation and run guide
   - scheduled data cleanup (retention) architecture + operations notes
   - current smoke-run status and frontend lint/typecheck baseline
+
+## Current Verification Snapshot (Apr 10, 2026)
+
+- Critical regression coverage was expanded this session for location ingestion, local summaries, system health/trigger behavior, and user auth/notification flows.
+- Migration-focused regression checks pass after in-session stabilization updates.
+- Full backend pytest suite is green in this session: `107 passed, 0 failed` (warnings only).
+- Documentation source-of-truth files are synchronized to this same status state.
 
 ---
 

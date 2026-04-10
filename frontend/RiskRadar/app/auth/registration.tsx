@@ -90,7 +90,7 @@ export default function RegistrationScreen() {
     setIsSubmitting(true);
     try {
       await register(fullName, email, password, zipCode || undefined);
-      router.replace('/(tabs)');
+      router.replace('/main/home');
     } catch (err: any) {
       console.error('Registration error:', err);
       let message = 'Registration failed. Please try again.';

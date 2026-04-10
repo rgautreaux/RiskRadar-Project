@@ -1,6 +1,8 @@
 # April 2026 QA & Documentation Synchronization Note
 A full QA pass was performed and all checklist items validated as of April 1, 2026 (Rebecca). All UI/UX tasks assigned to Rebecca are complete, and all documentation is fully synchronized and audit-ready. The Apr 2 documentation follow-up updated transcript, progress, reflection, README, TODO, sprint tracking, and AUTHORS records without changing QA conclusions.
 
+Apr 10 update: backend critical-flow regression coverage was expanded and full backend pytest validation completed successfully (`107 passed`, warnings only). This does not change prior UI/UX QA conclusions, but keeps cross-doc verification status aligned.
+
 ---
 
 # QA_CHECKLIST.md
@@ -55,4 +57,4 @@ _Full QA pass performed, all checklist items validated, and all UI asset issues 
 
 ---
 
-_Last updated: April 2, 2026_
+_Last updated: April 10, 2026_

@@ -57,7 +57,7 @@ export default function LoginScreen() {
     setIsSubmitting(true);
     try {
       await login(email, password);
-      router.replace('/(tabs)');
+      router.replace('/main/home');
     } catch (err: any) {
       console.error('Login error:', err);
       let message = 'Invalid email or password. Please try again.';

@@ -1,5 +1,25 @@
 # Rebecca Gautreaux Log — 2026-04-10 (Critical Regression Expansion and Full Backend Validation)
 
+# Rebecca Gautreaux Log — 2026-04-10 (Checklist Marking - Rebecca-Controlled Items)
+
+### Session Focus
+- Mark only the sign-off checklist items that Rebecca has direct clearance to update.
+- Keep staging-only evidence and external approvals unmarked until they are actually completed.
+
+### Work Completed
+- Added a `Rebecca-Controlled Progress (Apr 10, 2026)` section to `backend/db/migrations/phase3_review_handoff.md`.
+- Marked local execution and local evidence-capture items complete.
+- Left staging execution evidence and backend/security approval items pending.
+
+### Validation / Testing
+- No new code behavior changes were introduced in this pass.
+- Checklist state now matches the current evidence and ownership boundary.
+
+### Outcome
+- The checklist now clearly distinguishes what Rebecca has completed from what still requires staging execution and external approvals.
+
+---
+
 ### Session Focus
 - Expand regression coverage for backend critical flows to reduce freeze risk.
 - Execute the full implementation sequence from planning through full-suite validation.
