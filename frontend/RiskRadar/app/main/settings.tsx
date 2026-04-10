@@ -10,6 +10,7 @@ import {
   Platform,
   StatusBar,
   TextInput,
+  ActivityIndicator,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,6 +19,7 @@ import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useAuth } from '@/contexts/auth-context';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
+import { apiFetch } from '@/utils/api';
 
 const DEMO_SETTINGS_KEY = 'riskradar_demo_settings';
 
@@ -36,6 +38,10 @@ export default function SettingsScreen() {
   const [useGps, setUseGps] = useState(false);
   const [zipCode, setZipCode] = useState(user?.zip_code || '');
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [healthStatus, setHealthStatus] = useState<'idle' | 'checking' | 'healthy' | 'unhealthy'>('idle');
+  const [healthDetail, setHealthDetail] = useState('');
+  const [scrapeStatus, setScrapeStatus] = useState<'idle' | 'triggering' | 'done' | 'error'>('idle');
+  const [scrapeDetail, setScrapeDetail] = useState('');
 
   useEffect(() => {
     (async () => {
@@ -90,6 +96,40 @@ export default function SettingsScreen() {
       setSaveStatus('saved');
     } catch {
       setSaveStatus('error');
+    }
+  };
+
+  const handleCheckHealth = async () => {
+    setHealthStatus('checking');
+    setHealthDetail('');
+    try {
+      const response = await apiFetch<{ status: string; alert_count?: number; database?: string }>('/health');
+      setHealthStatus(response.status === 'healthy' ? 'healthy' : 'unhealthy');
+      setHealthDetail(
+        response.status === 'healthy'
+          ? `Backend healthy${typeof response.alert_count === 'number' ? `, ${response.alert_count} alerts indexed` : ''}.`
+          : 'Backend reported an unhealthy state.'
+      );
+    } catch (error) {
+      setHealthStatus('unhealthy');
+      setHealthDetail(error instanceof Error ? error.message : 'Unable to reach the backend health endpoint.');
+    }
+  };
+
+  const handleTriggerScrape = async () => {
+    setScrapeStatus('triggering');
+    setScrapeDetail('');
+    try {
+      const response = await apiFetch<{ triggered_at: string; results: Array<{ source: string; status: string; alerts_stored?: number; error?: string }> }>('/scrape/trigger', {
+        method: 'POST',
+      });
+      const successCount = response.results.filter((item) => item.status === 'success').length;
+      const errorCount = response.results.filter((item) => item.status === 'error').length;
+      setScrapeStatus('done');
+      setScrapeDetail(`Triggered ${response.results.length} scrapers: ${successCount} success, ${errorCount} error.`);
+    } catch (error) {
+      setScrapeStatus('error');
+      setScrapeDetail(error instanceof Error ? error.message : 'Could not trigger the scrape pipeline.');
     }
   };
 
@@ -229,6 +269,42 @@ export default function SettingsScreen() {
           </View>
         </View>
 
+        {/* Backend Demo Tools */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Backend Demo Tools</Text>
+          <Text style={styles.sectionSubtitle}>Show system health and data refresh capability</Text>
+          <View style={styles.card}>
+            <View style={styles.backendActionRow}>
+              <PrimaryButton
+                label={healthStatus === 'checking' ? 'Checking...' : 'Check Backend Health'}
+                onPress={handleCheckHealth}
+                loading={healthStatus === 'checking'}
+                style={styles.backendButton}
+              />
+              <PrimaryButton
+                label={scrapeStatus === 'triggering' ? 'Triggering...' : 'Trigger Scrape'}
+                onPress={handleTriggerScrape}
+                loading={scrapeStatus === 'triggering'}
+                style={styles.backendButton}
+                disabled={!isLoggedIn || isDevUserMode}
+              />
+            </View>
+            <Text style={styles.backendNote}>
+              Backend health is public. Scrape trigger requires a real authenticated session.
+            </Text>
+            {healthDetail ? (
+              <Text style={[styles.backendResult, healthStatus === 'healthy' ? styles.backendSuccess : styles.backendError]}>
+                {healthDetail}
+              </Text>
+            ) : null}
+            {scrapeDetail ? (
+              <Text style={[styles.backendResult, scrapeStatus === 'done' ? styles.backendSuccess : styles.backendError]}>
+                {scrapeDetail}
+              </Text>
+            ) : null}
+          </View>
+        </View>
+
         {/* Logout */}
         <View style={styles.footerSection}>
           <PrimaryButton
@@ -329,6 +405,28 @@ function getStyles(palette: typeof Colors.light | typeof Colors.dark) {
     rowTextContainer: {
       flex: 1,
       paddingRight: 16,
+    },
+    backendActionRow: {
+      marginTop: 8,
+    },
+    backendButton: {
+      marginBottom: 12,
+    },
+    backendNote: {
+      fontSize: 12,
+      color: palette.textSecondary,
+      marginTop: 4,
+    },
+    backendResult: {
+      fontSize: 13,
+      marginTop: 10,
+      lineHeight: 18,
+    },
+    backendSuccess: {
+      color: palette.success,
+    },
+    backendError: {
+      color: palette.danger,
     },
     rowTitle: {
       fontSize: 16,

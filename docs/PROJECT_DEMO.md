@@ -36,6 +36,7 @@ This file is the presentation-facing demo reference for RiskRadar. It lists what
 ### 5. Alerts exploration
 
 - The alerts view shows active alerts and hazard category chips.
+- The alerts view now includes demo prioritization filters so critical alerts and major hazards can be surfaced first.
 - The modal view provides a polished alert detail presentation with recommendations.
 - These screens are useful for showing severity and alert context without leaving the app flow.
 
@@ -43,6 +44,7 @@ This file is the presentation-facing demo reference for RiskRadar. It lists what
 
 - The backend exposes a health check endpoint for a simple system-status demo.
 - The backend also exposes a manual scrape trigger for showing the live ingestion pipeline.
+- The settings screen now includes in-app buttons for backend health checks and scrape-trigger demos.
 - Swagger docs are available for a technical audience that wants the API layer, not only the app UI.
 
 ## Demos To Be Implemented or Strengthened
@@ -62,11 +64,13 @@ This file is the presentation-facing demo reference for RiskRadar. It lists what
 
 - Add clearer severity- or source-based prioritization so the audience can immediately see what matters most.
 - If full filtering is too large for the current scope, use the existing alerts list and modal as the presentation path, then explain planned filtering.
+- This is now partially implemented with demo filters, but it can still be expanded into richer backend-driven sorting or source-specific views.
 
 ### 4. Operations and trust demo
 
 - Make the health check and scrape trigger easier to show during the presentation.
-- If possible, show the scrape trigger through a simple UI path or a scripted API call so the ingestion pipeline feels tangible.
+- This is now partially implemented through the settings screen, which offers both health checks and a scrape trigger action.
+- If possible, add a more presenter-friendly summary view for the scrape result so the backend story is even faster to explain.
 
 ### 5. Repeatable demo rehearsal path
 
@@ -108,5 +112,6 @@ This file is the presentation-facing demo reference for RiskRadar. It lists what
 ## Current Demo Status Summary
 
 - Already demoable: landing/login, dashboard, zip search, weather report, alerts list, alert modal, health check, Swagger docs.
-- In progress or still to be strengthened: persistent settings, polished fallback states, alert prioritization, and a repeatable operations demo.
+- Already demoable: landing/login, dashboard, zip search, weather report, alerts list, alert modal, health check, scrape trigger, Swagger docs.
+- In progress or still to be strengthened: persistent settings, polished fallback states, richer alert prioritization, and a cleaner operations summary.
 - Best live story today: show the product end to end from entry screen to location-based insight, then close with a brief backend trust proof.
