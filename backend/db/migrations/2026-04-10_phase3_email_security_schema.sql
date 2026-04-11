@@ -8,7 +8,7 @@ START TRANSACTION;
 -- ---------------------------------------------------------------------------
 ALTER TABLE `users`
   ADD COLUMN IF NOT EXISTS `email_encrypted` TEXT NULL AFTER `email`,
-  ADD COLUMN IF NOT EXISTS `email_hmac` TEXT NULL AFTER `email_encrypted`;
+  ADD COLUMN IF NOT EXISTS `email_hmac` VARCHAR(64) NULL AFTER `email_encrypted`;
 
 ALTER TABLE `users`
   ADD UNIQUE KEY `uq_users_email_hmac` (`email_hmac`);

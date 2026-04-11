@@ -17,7 +17,7 @@ import sys
 from pathlib import Path
 from typing import cast
 
-from sqlalchemy import inspect, text
+from sqlalchemy import inspect
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
@@ -32,7 +32,6 @@ models_module = import_module("db.models")
 encrypt_email = security_module.encrypt_email
 email_hmac = security_module.email_hmac
 SessionLocal = database_module.SessionLocal
-Base = database_module.Base
 MigrationLog = models_module.MigrationLog
 User = models_module.User
 
@@ -75,18 +74,34 @@ def _log(
 
 
 def _ensure_phase3_schema(db: Session) -> None:
-    """Create the migration log table and add missing email columns if needed."""
+    """Ensure only Phase 3 prerequisites exist before migrating data."""
     bind = db.get_bind()
-    Base.metadata.create_all(bind=bind)
+    MigrationLog.__table__.create(bind=bind, checkfirst=True)
 
     inspector = inspect(bind)
     user_columns = {column["name"] for column in inspector.get_columns("users")}
+    missing_columns = [
+        column_name for column_name in ("email_encrypted", "email_hmac") if column_name not in user_columns
+    ]
+    if missing_columns:
+        raise RuntimeError(
+            "Phase 3 schema prerequisites missing on users table "
+            f"({', '.join(missing_columns)}). "
+            "Apply backend/db/migrations/2026-04-10_phase3_email_security_schema.sql first."
+        )
 
-    if "email_encrypted" not in user_columns:
-        db.execute(text("ALTER TABLE users ADD COLUMN email_encrypted TEXT"))
-
-    if "email_hmac" not in user_columns:
-        db.execute(text("ALTER TABLE users ADD COLUMN email_hmac TEXT"))
+    has_unique_email_hmac = any(
+        index.get("unique") and index.get("column_names") == ["email_hmac"]
+        for index in inspector.get_indexes("users")
+    ) or any(
+        unique.get("column_names") == ["email_hmac"]
+        for unique in inspector.get_unique_constraints("users")
+    )
+    if not has_unique_email_hmac:
+        raise RuntimeError(
+            "Phase 3 schema prerequisite missing: unique key on users.email_hmac. "
+            "Apply backend/db/migrations/2026-04-10_phase3_email_security_schema.sql first."
+        )
 
     db.commit()
 

@@ -55,6 +55,11 @@ node_modules/
 .coverage
 htmlcov/
 
+# Local SQLite artifacts
+*.db
+*.sqlite
+*.sqlite3
+
 # Environment files
 .env
 .env.*

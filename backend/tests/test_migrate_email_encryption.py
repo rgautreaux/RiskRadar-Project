@@ -8,7 +8,7 @@ def test_migrate_emails_success(db_session, monkeypatch):
     db_session.commit()
     user_id = user.id
 
-    monkeypatch.setattr(migration, "SessionLocal", lambda: db_session, raising=False)
+    monkeypatch.setattr(migration, "SessionLocal", lambda: db_session)
     monkeypatch.setattr(migration, "encrypt_email", lambda value: f"enc:{value}")
     monkeypatch.setattr(migration, "email_hmac", lambda value: f"hmac:{value}")
 
