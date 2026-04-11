@@ -226,6 +226,33 @@ def _check_dispatch_references(db: Session) -> list[PreflightIssue]:
     return issues
 
 
+def _check_required_indexes(inspector: Inspector, existing_tables: set[str]) -> list[PreflightIssue]:
+    required_indexes = {
+        "alerts": ["idx_alerts_source_fetched_at", "idx_alerts_type_severity_fetched_at"],
+        "summaries": ["idx_summaries_summary_type_generated_at"],
+        "scrape_log": ["idx_scrape_log_source_started_at", "idx_scrape_log_status_completed_at"],
+        "cleanup_runs": ["idx_cleanup_runs_status_started_at"],
+        "notification_dispatch_log": ["idx_notification_dispatch_status_created_at"],
+    }
+
+    issues: list[PreflightIssue] = []
+    for table_name, expected_indexes in required_indexes.items():
+        if table_name not in existing_tables:
+            continue
+
+        actual_indexes = {index["name"] for index in inspector.get_indexes(table_name)}
+        missing_indexes = [index_name for index_name in expected_indexes if index_name not in actual_indexes]
+        if missing_indexes:
+            issues.append(
+                PreflightIssue(
+                    severity="blocking",
+                    message=f"{table_name} is missing indexes: {', '.join(missing_indexes)}",
+                )
+            )
+
+    return issues
+
+
 def run_preflight(strict: bool = False) -> int:
     """Run safety checks before applying a schema or data migration.
 
@@ -243,6 +270,7 @@ def run_preflight(strict: bool = False) -> int:
         issues.extend(_check_unique_email_hmac(db))
         if strict:
             issues.extend(_check_plaintext_email_leftovers(db))
+        issues.extend(_check_required_indexes(inspector, existing_tables))
         issues.extend(_check_archive_lineage(db))
         issues.extend(_check_dispatch_references(db))
 

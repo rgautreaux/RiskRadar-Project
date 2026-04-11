@@ -1,5 +1,7 @@
 from datetime import datetime, timezone
 
+from sqlalchemy import text
+
 from db.migrations import preflight as migration_preflight
 from db.models import NotificationDispatchLog, User
 
@@ -44,6 +46,17 @@ def test_preflight_blocks_orphan_notification_dispatch_rows(db_session, monkeypa
         created_at=NOW,
     )
     db_session.add(dispatch_log)
+    db_session.commit()
+
+    monkeypatch.setattr(migration_preflight, "SessionLocal", lambda: db_session)
+
+    code = migration_preflight.run_preflight()
+
+    assert code == 2
+
+
+def test_preflight_blocks_missing_required_index(db_session, monkeypatch):
+    db_session.execute(text("DROP INDEX idx_alerts_source_fetched_at"))
     db_session.commit()
 
     monkeypatch.setattr(migration_preflight, "SessionLocal", lambda: db_session)
