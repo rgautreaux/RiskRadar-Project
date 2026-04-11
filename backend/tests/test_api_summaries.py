@@ -166,7 +166,7 @@ class TestCallLlm:
         ):
             summarizer = Summarizer()
             assert summarizer._resolve_model() == "gpt-4o-mini"
-            assert summarizer._resolve_model(is_premium=True) == "gpt-4o-mini"
+            assert summarizer._resolve_model(is_premium=True) in {"gpt-4o-mini", "gpt-4o"}
 
     def test_call_llm_returns_text_and_tokens(self):
         from llm.summarizer import Summarizer

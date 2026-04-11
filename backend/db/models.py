@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, Integer, Text, Float, UniqueConstraint, DateTime, JSON, Boolean
+from sqlalchemy import Column, Integer, Text, Float, UniqueConstraint, DateTime, JSON, Boolean, Index
 from db.database import Base
 
 
@@ -30,6 +30,8 @@ class Alert(Base):
 
     __table_args__ = (
         UniqueConstraint("source", "source_id", name="uq_source_alert"),
+        Index("idx_alerts_source_fetched_at", "source", "fetched_at"),
+        Index("idx_alerts_type_severity_fetched_at", "alert_type", "severity", "fetched_at"),
     )
 
 
@@ -46,6 +48,10 @@ class Summary(Base):
     model_used = Column(Text)
     token_count = Column(Integer)
     created_at = Column(DateTime(timezone=True), nullable=False, default=_now)
+
+    __table_args__ = (
+        Index("idx_summaries_summary_type_generated_at", "summary_type", "generated_at"),
+    )
 
 
 class User(Base):
@@ -87,6 +93,11 @@ class ScrapeLog(Base):
     duration_ms = Column(Integer)
     started_at = Column(DateTime(timezone=True), nullable=False)
     completed_at = Column(DateTime(timezone=True), nullable=False, default=_now)
+
+    __table_args__ = (
+        Index("idx_scrape_log_source_started_at", "source", "started_at"),
+        Index("idx_scrape_log_status_completed_at", "status", "completed_at"),
+    )
 
 
 class AlertArchive(Base):
@@ -179,6 +190,10 @@ class CleanupRun(Base):
     started_at = Column(DateTime(timezone=True), nullable=False, default=_now)
     completed_at = Column(DateTime(timezone=True), nullable=False, default=_now)
 
+    __table_args__ = (
+        Index("idx_cleanup_runs_status_started_at", "status", "started_at"),
+    )
+
 
 class NotificationDispatchLog(Base):
     __tablename__ = "notification_dispatch_log"
@@ -193,3 +208,7 @@ class NotificationDispatchLog(Base):
     status = Column(Text, nullable=False, default="success")
     error_message = Column(Text)
     created_at = Column(DateTime(timezone=True), nullable=False, default=_now)
+
+    __table_args__ = (
+        Index("idx_notification_dispatch_status_created_at", "status", "created_at"),
+    )
