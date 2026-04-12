@@ -31,6 +31,7 @@ def test_safety_gate_uses_non_strict_preflight_when_configured(monkeypatch):
     monkeypatch.setattr(safety_gate, "run_validation", lambda: 0)
     monkeypatch.setattr(safety_gate, "run_monitoring", lambda: 0)
     monkeypatch.setenv("MIGRATION_PREFLIGHT_STRICT", "false")
+    monkeypatch.delenv("MIGRATION_NORMALIZATION_CONTRACT_REQUIRED", raising=False)
 
     assert safety_gate.run_safety_gate() == 0
     assert observed_preflight_args == [(False, False)]

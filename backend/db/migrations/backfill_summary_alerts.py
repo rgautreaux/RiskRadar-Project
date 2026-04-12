@@ -3,8 +3,14 @@
 import json
 from datetime import datetime, timezone
 from importlib import import_module
+import sys
+from pathlib import Path
 
 from sqlalchemy import text
+
+BACKEND_DIR = Path(__file__).resolve().parents[2]
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
 
 models_module = import_module("db.models")
 database_module = import_module("db.database")
