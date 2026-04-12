@@ -110,3 +110,30 @@ Local coordination verification run completed to refresh migration safety eviden
 Coordination note:
 - This evidence run is documentation-grade verification for current local state.
 - Preflight/validator non-zero outcomes indicate migration baseline is not fully applied in this local snapshot and should be treated as a staging/prod readiness gate, not as a code regression.
+
+## Local Closure Evidence (2026-04-12)
+
+Full local closure run completed against `backend/riskradar.db` after creating a timestamped backup.
+
+- Backup created:
+	- `backend/riskradar.db.preclosure_20260412_155543.bak`
+- Local DB rebuild:
+	- `python -m db.init_db`
+	- `Database ready: sqlite:///C:\Team6Project\backend\riskradar.db`
+- Normalization and parity sequence:
+	- `python db/migrations/migrate_email_encryption.py` -> `Migration complete.`
+	- `python db/migrations/backfill_summary_alerts.py` -> `processed=0`
+	- `python db/migrations/backfill_user_alert_type_preferences.py` -> `processed=0`
+	- `python db/migrations/parity_validator_summaries_alerts.py` -> `mismatches=0`
+	- `python db/migrations/parity_validator_user_alert_types.py` -> `mismatches=0`
+- Readiness checks:
+	- `python db/migrations/preflight.py` -> `status=ok`
+	- `python db/migrations/schema_drift_check.py` -> `status=ok`
+	- `MIGRATION_PREFLIGHT_STRICT=true MIGRATION_NORMALIZATION_CONTRACT_REQUIRED=true python db/migrations/safety_gate.py` -> `status=ok`
+- Backend regression suite:
+	- `python -m pytest -q backend/tests`
+	- `185 passed, 3 skipped, 66 warnings`
+
+Result:
+- Local environment is in closure-ready state with no blocking migration or schema drift findings.
+- Remaining stage closure is operational rollout work and should run the same sequence against staging MariaDB credentials.
