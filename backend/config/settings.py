@@ -63,6 +63,12 @@ class Settings(BaseSettings):
     NWS_USER_AGENT: str = "RiskRadar/1.0 (school-project)"
     SOURCES_CONFIG_PATH: str = str(BASE_DIR / "config" / "sources.yaml")
 
+    # --- Normalization rollout flags ---
+    SUMMARIES_USE_JUNCTION_TABLE: bool = True
+    USERS_USE_PREFERENCE_JUNCTION_TABLE: bool = True
+    NORMALIZATION_DUAL_WRITE_LEGACY_JSON: bool = True
+    GEO_USE_ZIP_LOOKUP: bool = True
+
     def resolved_llm_api_key(self) -> str:
         return self.LLM_API_KEY.strip() or self.OPENROUTER_API_KEY.strip()
 

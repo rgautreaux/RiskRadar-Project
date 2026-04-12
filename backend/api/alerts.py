@@ -1,11 +1,12 @@
 import math
-import json
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
 from db.database import get_db
-from db.models import Alert, User
+from db.models import Alert, User, ZipGeo
+from db.normalization import get_user_alert_types
+from config.settings import settings
 from auth.security import get_current_user_optional
 from schemas.alert import AlertOut, AlertStats
 
@@ -104,13 +105,9 @@ def list_alerts(
     has_explicit_filters = any([alert_type, severity, source, zip_code])
 
     if current_user and not has_explicit_filters:
-        if not alert_type and current_user.alert_types:
-            try:
-                preferred_types = json.loads(current_user.alert_types)
-            except json.JSONDecodeError:
-                preferred_types = ["all"]
-
-            if isinstance(preferred_types, list) and "all" not in preferred_types:
+        if not alert_type:
+            preferred_types = get_user_alert_types(db, current_user)
+            if "all" not in preferred_types:
                 filtered_types = [item for item in preferred_types if item in valid_alert_types]
                 if filtered_types:
                     q = q.filter(Alert.alert_type.in_(filtered_types))
@@ -132,7 +129,13 @@ def list_alerts(
         q = q.filter(Alert.source == source)
 
     if zip_code and len(zip_code) == 5:
-        coords = _zip_to_coords(zip_code)
+        coords = None
+        if settings.GEO_USE_ZIP_LOOKUP:
+            zip_match = db.query(ZipGeo).filter(ZipGeo.zip_code == zip_code).first()
+            if zip_match:
+                coords = (zip_match.latitude, zip_match.longitude)
+        if coords is None:
+            coords = _zip_to_coords(zip_code)
         state = _zip_to_state(zip_code)
         if coords:
             lat, lon = coords

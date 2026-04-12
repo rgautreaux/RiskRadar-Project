@@ -9,6 +9,7 @@ import openai
 
 from config.settings import settings
 from db.models import Alert, Summary
+from db.normalization import ensure_alert_location, ensure_alert_raw_payload, set_summary_alert_ids
 import llm.prompts as prompts
 
 
@@ -101,12 +102,22 @@ class Summarizer:
             title=f"Environmental Digest — {date.today().strftime('%b %d, %Y')}",
             content=text,
             summary_type="daily",
-            alert_ids=json.dumps([a.id for a in alerts]),
+            alert_ids=json.dumps([a.id for a in alerts]) if settings.NORMALIZATION_DUAL_WRITE_LEGACY_JSON else None,
             region="US",
             model_used=model,
             token_count=tokens,
         )
         db.add(summary)
+        db.flush()
+        set_summary_alert_ids(
+            db,
+            summary,
+            [a.id for a in alerts],
+            dual_write_legacy=settings.NORMALIZATION_DUAL_WRITE_LEGACY_JSON,
+        )
+        for alert in alerts:
+            ensure_alert_location(db, alert)
+            ensure_alert_raw_payload(db, alert)
         db.commit()
         db.refresh(summary)
         logger.info("Daily digest generated: %s alerts, %s tokens", len(alerts), tokens)
@@ -149,12 +160,22 @@ class Summarizer:
             title=f"Local Digest for {city}, {state} — {date.today().strftime('%b %d, %Y')}",
             content=text,
             summary_type="local",
-            alert_ids=json.dumps([a.id for a in alerts]),
+            alert_ids=json.dumps([a.id for a in alerts]) if settings.NORMALIZATION_DUAL_WRITE_LEGACY_JSON else None,
             region=f"{city}, {state} {zip_code}",
             model_used=model,
             token_count=tokens,
         )
         db.add(summary)
+        db.flush()
+        set_summary_alert_ids(
+            db,
+            summary,
+            [a.id for a in alerts],
+            dual_write_legacy=settings.NORMALIZATION_DUAL_WRITE_LEGACY_JSON,
+        )
+        for alert in alerts:
+            ensure_alert_location(db, alert)
+            ensure_alert_raw_payload(db, alert)
         db.commit()
         db.refresh(summary)
         logger.info("Local digest for %s, %s: %s alerts, %s tokens", city, state, len(alerts), tokens)

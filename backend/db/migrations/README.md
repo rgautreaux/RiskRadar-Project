@@ -7,6 +7,18 @@ This folder will contain migration scripts for email encryption and password has
 
 ## Phase 3 (Migration Logging & Monitoring) Scripts
 
+- `2026-04-12_phase1_typo_schema_fixes.sql`
+  - Applies legacy schema typo remediations for MariaDB snapshots:
+    - Renames `user_prefernces` -> `user_preferences`
+    - Renames `user_reads.articlle_id` -> `user_reads.article_id`
+  - Revalidates primary key shapes for the corrected legacy tables.
+
+- `2026-04-12_phase1_typo_schema_fixes_rollback.sql`
+  - Rollback companion for typo remediation:
+    - Renames `user_preferences` -> `user_prefernces`
+    - Renames `user_reads.article_id` -> `user_reads.articlle_id`
+  - Restores legacy primary key shapes if rollback is required.
+
 - `2026-04-12_phase0_index_hardening.sql`
   - Adds idempotent baseline indexes that preflight now requires:
     - `alerts`: `idx_alerts_source_fetched_at`, `idx_alerts_type_severity_fetched_at`
@@ -85,12 +97,13 @@ This folder will contain migration scripts for email encryption and password has
 4. Apply `2026-04-12_phase0_index_hardening.sql`
 5. Apply `2026-04-12_foreign_key_integrity_hardening.sql`
 6. Apply `2026-04-12_mariadb_email_hmac_index_fix.sql` (MariaDB only)
-7. `python db/migrations/preflight.py`
-8. `python db/migrations/schema_drift_check.py`
-9. `python db/migrations/safety_gate.py`
-10. `python db/migrations/migrate_email_encryption.py`
-11. `python db/migrations/validate_email_migration.py`
-12. `python db/migrations/monitor_migration_log.py`
+7. Apply `2026-04-12_phase1_typo_schema_fixes.sql` (legacy schema snapshots only)
+8. `python db/migrations/preflight.py`
+9. `python db/migrations/schema_drift_check.py`
+10. `python db/migrations/safety_gate.py`
+11. `python db/migrations/migrate_email_encryption.py`
+12. `python db/migrations/validate_email_migration.py`
+13. `python db/migrations/monitor_migration_log.py`
 
 Record all outputs in staging validation notes before requesting backend/security lead sign-off.
 

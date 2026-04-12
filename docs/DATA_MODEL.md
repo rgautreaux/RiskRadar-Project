@@ -147,11 +147,11 @@ Per-user notification configuration.
 | `quiet_start` | `TIME` | Start of quiet hours |
 | `quiet_end` | `TIME` | End of quiet hours |
 
-### `user_prefernces`
+### `user_preferences`
 
 Junction table linking users to their preferred categories.
 
-> **Note**: Table name contains a typo (`prefernces` instead of `preferences`) in the current schema.
+> **Status**: Legacy typo (`user_prefernces`) is remediated by migration `2026-04-12_phase1_typo_schema_fixes.sql`.
 
 | Column | Type | Description |
 |---|---|---|
@@ -163,12 +163,12 @@ Junction table linking users to their preferred categories.
 
 Tracks which articles a user has read and their progress.
 
-> **Note**: The `articlle_id` column contains a typo (`articlle_id` instead of `article_id`) in the current schema.
+> **Status**: Legacy typo (`articlle_id`) is remediated by migration `2026-04-12_phase1_typo_schema_fixes.sql`.
 
 | Column | Type | Description |
 |---|---|---|
 | `user_id` | `INT` PK, FK | References `users.user_id` |
-| `articlle_id` | `INT` PK, FK | References `articles.article_id` |
+| `article_id` | `INT` PK, FK | References `articles.article_id` |
 | `read_at` | `TIMESTAMP` | When the user read the article |
 | `progress_pct` | `SMALLINT` | Reading progress percentage (0–100) |
 
@@ -214,13 +214,13 @@ Stores AI-generated summaries that aggregate multiple alerts.
 | `content` | `TEXT` | Generated summary text |
 | `summary_type` | `TEXT` | Type of summary |
 | `alert_ids` | `JSON` | Array of alert IDs included (validated via `json_valid()`) |
-| `reigon` | `TEXT` | Geographic region covered |
+| `region` | `TEXT` | Geographic region covered |
 | `generated_at` | `TEXT` | When the summary was generated |
 | `model_used` | `TEXT` | AI model identifier (e.g., `gpt-4o-mini`) |
 | `token_count` | `INT` | Number of tokens used for generation |
 | `created_at` | `TEXT` | Record creation time |
 
-> **Note**: The `reigon` column contains a typo (`reigon` instead of `region`) in the current schema.
+> **Status**: Previously fixed by migration `2026-03-03_mariadb_scraper_alignment.sql`.
 
 **Unique constraint**: `alert_ids`
 
@@ -263,10 +263,10 @@ Audit log for each scraping run.
 | `articles` | `alerts` | One-to-one | `article_id` |
 | `users` | `device_tokens` | One-to-one | `user_id` |
 | `users` | `notification_settings` | One-to-one | `user_id` |
-| `users` | `user_prefernces` | Many-to-many (via junction) | `user_id` |
-| `categories` | `user_prefernces` | Many-to-many (via junction) | `category_id` |
+| `users` | `user_preferences` | Many-to-many (via junction) | `user_id` |
+| `categories` | `user_preferences` | Many-to-many (via junction) | `category_id` |
 | `users` | `user_reads` | Many-to-many (via junction) | `user_id` |
-| `articles` | `user_reads` | Many-to-many (via junction) | `articlle_id` |
+| `articles` | `user_reads` | Many-to-many (via junction) | `article_id` |
 
 ## Database Schema
 
@@ -340,7 +340,7 @@ erDiagram
     TEXT content
     TEXT summary_type
     JSON alert_ids
-    TEXT reigon
+    TEXT region
     TEXT generated_at
     TEXT model_used
     INT token_count
@@ -381,7 +381,7 @@ erDiagram
     TIME quiet_end
   }
 
-  USER_PREFERNCES {
+  USER_PREFERENCES {
     INT user_id PK, FK
     INT category_id PK, FK
     TINYINT is_enabled
@@ -389,7 +389,7 @@ erDiagram
 
   USER_READS {
     INT user_id PK, FK
-    INT articlle_id PK, FK
+    INT article_id PK, FK
     TIMESTAMP read_at
     SMALLINT progress_pct
   }
@@ -417,10 +417,10 @@ erDiagram
   TAGS ||--o{ ARTICLE_TAGS : tag_id
   USERS ||--|| DEVICE_TOKENS : user_id
   USERS ||--|| NOTIFICATION_SETTINGS : user_id
-  USERS ||--o{ USER_PREFERNCES : user_id
-  CATEGORIES ||--o{ USER_PREFERNCES : category_id
+  USERS ||--o{ USER_PREFERENCES : user_id
+  CATEGORIES ||--o{ USER_PREFERENCES : category_id
   USERS ||--o{ USER_READS : user_id
-  ARTICLES ||--o{ USER_READS : articlle_id
+  ARTICLES ||--o{ USER_READS : article_id
 ```
 
 > Note: `SUMMARIES.alert_ids` stores alert linkage as JSON rather than a normalized junction table, so no direct FK edge is present.
@@ -446,10 +446,10 @@ The current schema **does not fully satisfy Third Normal Form (3NF)** due to the
 
 ## Known Schema Issues
 
-The following typos exist in the current `riskradar_db.sql` and should be addressed in a future migration:
+The following schema typo issues are tracked with remediation status:
 
 | Table | Column/Name | Issue |
 |---|---|---|
-| `user_prefernces` | (table name) | Misspelled — should be `user_preferences` |
-| `user_reads` | `articlle_id` | Misspelled — should be `article_id` |
-| `summaries` | `reigon` | Misspelled — should be `region` |
+| `user_prefernces` | (table name) | Remediated by `2026-04-12_phase1_typo_schema_fixes.sql` |
+| `user_reads` | `articlle_id` | Remediated by `2026-04-12_phase1_typo_schema_fixes.sql` |
+| `summaries` | `reigon` | Remediated by `2026-03-03_mariadb_scraper_alignment.sql` |

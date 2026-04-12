@@ -11,6 +11,9 @@ Use `2026-04-11_notification_channels_dispatch_log.sql` to add persisted notific
 - `summaries.reigon` typo to `summaries.region`
 - `users` shape to match `db.models.User`
 - Removes constraints/indexes that block recurring scraper inserts
+- Legacy typo remediations for compatibility snapshots:
+	- `user_prefernces` table renamed to `user_preferences`
+	- `user_reads.articlle_id` renamed to `user_reads.article_id`
 
 ## Apply migration
 

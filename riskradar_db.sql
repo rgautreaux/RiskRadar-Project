@@ -171,7 +171,7 @@ CREATE TABLE `summaries` (
   `content` text NOT NULL,
   `summary_type` text NOT NULL,
   `alert_ids` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`alert_ids`)),
-  `reigon` text NOT NULL,
+  `region` text NOT NULL,
   `generated_at` text NOT NULL,
   `model_used` text NOT NULL,
   `token_count` int(11) NOT NULL,
@@ -215,10 +215,10 @@ CREATE TABLE `users` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `user_prefernces`
+-- Table structure for table `user_preferences`
 --
 
-CREATE TABLE `user_prefernces` (
+CREATE TABLE `user_preferences` (
   `user_id` int(11) NOT NULL,
   `category_id` int(11) NOT NULL,
   `is_enabled` tinyint(1) NOT NULL
@@ -232,7 +232,7 @@ CREATE TABLE `user_prefernces` (
 
 CREATE TABLE `user_reads` (
   `user_id` int(11) NOT NULL,
-  `articlle_id` int(11) NOT NULL,
+  `article_id` int(11) NOT NULL,
   `read_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `progress_pct` smallint(6) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -318,9 +318,9 @@ ALTER TABLE `users`
   ADD UNIQUE KEY `email` (`email`) USING HASH;
 
 --
--- Indexes for table `user_prefernces`
+-- Indexes for table `user_preferences`
 --
-ALTER TABLE `user_prefernces`
+ALTER TABLE `user_preferences`
   ADD PRIMARY KEY (`user_id`,`category_id`),
   ADD UNIQUE KEY `user_id` (`user_id`,`category_id`);
 
@@ -328,8 +328,8 @@ ALTER TABLE `user_prefernces`
 -- Indexes for table `user_reads`
 --
 ALTER TABLE `user_reads`
-  ADD PRIMARY KEY (`user_id`,`articlle_id`),
-  ADD UNIQUE KEY `user_id` (`user_id`,`articlle_id`);
+  ADD PRIMARY KEY (`user_id`,`article_id`),
+  ADD UNIQUE KEY `user_id` (`user_id`,`article_id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

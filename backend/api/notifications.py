@@ -5,6 +5,7 @@ import logging
 from auth.security import get_current_user
 from db.database import get_db, db_write
 from db.models import Alert, User, NotificationDispatchLog
+from db.normalization import get_user_alert_types
 from logging_utils import log_event
 from notifications.provider import get_notification_provider
 
@@ -19,14 +20,13 @@ _SEVERITY_ORDER = {
 }
 
 
-def _user_wants_alert(user: User, alert: Alert) -> bool:
+def _user_wants_alert(db: Session, user: User, alert: Alert) -> bool:
     """Return True when a user's saved preferences include the given alert."""
     if not user.device_token:
         return False
 
-    # Default allow-all behavior for unset preferences keeps backward compatibility.
-    alert_types_raw = (user.alert_types or '["all"]').lower()
-    if "all" not in alert_types_raw and alert.alert_type.lower() not in alert_types_raw:
+    preferred_types = [item.lower() for item in get_user_alert_types(db, user)]
+    if "all" not in preferred_types and alert.alert_type.lower() not in preferred_types:
         return False
 
     user_floor = _SEVERITY_ORDER.get((user.notify_severity or "high").lower(), 2)
@@ -53,7 +53,7 @@ def notify_subscribers_for_alert(
         raise HTTPException(status_code=404, detail="Alert not found")
 
     users = db.query(User).filter(User.device_token.isnot(None)).all()
-    recipients = [u for u in users if _user_wants_alert(u, alert)]
+    recipients = [u for u in users if _user_wants_alert(db, u, alert)]
     provider = get_notification_provider()
 
     title = f"RiskRadar: {alert.title}"

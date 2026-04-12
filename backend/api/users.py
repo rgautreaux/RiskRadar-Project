@@ -27,6 +27,8 @@ from sqlalchemy import or_
 
 from db.database import get_db, db_write
 from db.models import User
+from db.normalization import get_effective_user_coords, get_user_alert_types, set_user_alert_types, upsert_zip_geo
+from config.settings import settings
 from auth.security import hash_password, verify_password, create_access_token, get_current_user, encrypt_email, decrypt_email, email_hmac
 from logging_utils import log_event
 from schemas.user import (
@@ -52,6 +54,13 @@ def _user_out_with_email(user: User) -> UserOut:
     elif user.email:
         user_out.email = user.email  # fallback for legacy plaintext records
     return user_out
+
+
+def _set_user_out_alert_types(db: Session, user_out: UserOut, user: User) -> None:
+    if settings.USERS_USE_PREFERENCE_JUNCTION_TABLE:
+        user_out.alert_types = json.dumps(get_user_alert_types(db, user))
+        return
+    user_out.alert_types = user.alert_types
 
 
 # ---------------------------------------------------------------------------
@@ -117,9 +126,17 @@ def login_user(body: UserLogin, db: Session = Depends(get_db)):
 # ---------------------------------------------------------------------------
 
 @router.get("/me", response_model=UserOut)
-def get_me(current_user: User = Depends(get_current_user)):
+def get_me(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     """Return the profile of the currently authenticated user."""
-    return _user_out_with_email(current_user)
+    user_out = _user_out_with_email(current_user)
+    _set_user_out_alert_types(db, user_out, current_user)
+    lat, lon = get_effective_user_coords(db, current_user)
+    user_out.latitude = lat
+    user_out.longitude = lon
+    return user_out
 
 
 @router.get("/{user_id}/preferences", response_model=UserOut)
@@ -134,7 +151,12 @@ def get_preferences(
     """
     if current_user.id != user_id:
         raise HTTPException(status_code=403, detail="Cannot access another user's preferences")
-    return _user_out_with_email(current_user)
+    user_out = _user_out_with_email(current_user)
+    _set_user_out_alert_types(db, user_out, current_user)
+    lat, lon = get_effective_user_coords(db, current_user)
+    user_out.latitude = lat
+    user_out.longitude = lon
+    return user_out
 
 
 @router.put("/{user_id}/preferences", response_model=UserOut)
@@ -158,6 +180,11 @@ def update_preferences(
     if body.zip_code is not None:
         user.zip_code = body.zip_code
         changed_fields.append("zip_code")
+        if settings.GEO_USE_ZIP_LOOKUP:
+            lat, lon = get_effective_user_coords(db, user)
+            if lat is not None and lon is not None and body.latitude is None and body.longitude is None:
+                user.latitude = lat
+                user.longitude = lon
     if body.latitude is not None:
         user.latitude = body.latitude
         changed_fields.append("latitude")
@@ -165,8 +192,12 @@ def update_preferences(
         user.longitude = body.longitude
         changed_fields.append("longitude")
     if body.alert_types is not None:
-        # Store as JSON text for compatibility with existing schema.
-        user.alert_types = json.dumps(body.alert_types)
+        set_user_alert_types(
+            db,
+            user,
+            body.alert_types,
+            dual_write_legacy=settings.NORMALIZATION_DUAL_WRITE_LEGACY_JSON,
+        )
         changed_fields.append("alert_types")
     if body.notify_severity is not None:
         user.notify_severity = body.notify_severity
@@ -185,7 +216,8 @@ def update_preferences(
         changed_fields.append("device_token")
 
     with db_write(db):
-        pass
+        if body.zip_code is not None and user.latitude is not None and user.longitude is not None:
+            upsert_zip_geo(db, user.zip_code, user.latitude, user.longitude)
     db.refresh(user)
     log_event(
         logger,
@@ -193,7 +225,12 @@ def update_preferences(
         user_id=user.id,
         changed_fields=changed_fields,
     )
-    return _user_out_with_email(user)
+    user_out = _user_out_with_email(user)
+    _set_user_out_alert_types(db, user_out, user)
+    lat, lon = get_effective_user_coords(db, user)
+    user_out.latitude = lat
+    user_out.longitude = lon
+    return user_out
 
 
 @router.post("/{user_id}/device-token", response_model=NotificationSettingsOut)
