@@ -33,6 +33,7 @@ Notes
 import os
 import pytest
 import yaml
+import httpx
 from pathlib import Path
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -75,6 +76,16 @@ def _load_source_config(name: str) -> dict:
         if source.get("name") == name:
             return source
     raise KeyError(f"Source '{name}' not found in sources.yaml")
+
+
+def _fetch_live_or_skip_timeout(scraper, label: str):
+    """Fetch live data and skip only transient network timeout failures."""
+    try:
+        return scraper.fetch_raw_data()
+    except (httpx.TimeoutException, httpx.NetworkError) as exc:
+        pytest.skip(f"[{label}] transient network issue during live fetch: {exc}")
+    except Exception as exc:
+        pytest.fail(f"[{label}] fetch_raw_data() raised an error: {exc}")
 
 
 # ---------------------------------------------------------------------------
@@ -142,10 +153,7 @@ class TestNWSScraper:
         from scrapers.nws_scraper import NWSScraper
 
         scraper = NWSScraper()
-        try:
-            items = scraper.fetch_raw_data()
-        except Exception as exc:
-            pytest.fail(f"[NWS] fetch_raw_data() raised an error: {exc}")
+        items = _fetch_live_or_skip_timeout(scraper, "NWS")
 
         assert isinstance(items, list), f"[NWS] Expected list, got {type(items)}"
         print(f"\n  [NWS] SUCCESS — fetched {len(items)} active weather alert(s)")
@@ -159,10 +167,7 @@ class TestEPAScraper:
         from scrapers.epa_scraper import EPAScraper
 
         scraper = EPAScraper()
-        try:
-            items = scraper.fetch_raw_data()
-        except Exception as exc:
-            pytest.fail(f"[EPA] fetch_raw_data() raised an error: {exc}")
+        items = _fetch_live_or_skip_timeout(scraper, "EPA")
 
         assert isinstance(items, list) and len(items) > 0, (
             f"[EPA] Expected at least one TRI facility record, got {items!r}"
@@ -180,10 +185,7 @@ class TestAirNowScraper:
         from scrapers.airnow_scraper import AirNowScraper
 
         scraper = AirNowScraper()
-        try:
-            items = scraper.fetch_raw_data()
-        except Exception as exc:
-            pytest.fail(f"[AirNow] fetch_raw_data() raised an error: {exc}")
+        items = _fetch_live_or_skip_timeout(scraper, "AirNow")
 
         assert isinstance(items, list), f"[AirNow] Expected list, got {type(items)}"
         print(f"\n  [AirNow] SUCCESS — fetched {len(items)} air quality observation(s)")
@@ -199,10 +201,7 @@ class TestFIRMSScraper:
         from scrapers.firms_scraper import FIRMSScraper
 
         scraper = FIRMSScraper()
-        try:
-            items = scraper.fetch_raw_data()
-        except Exception as exc:
-            pytest.fail(f"[FIRMS] fetch_raw_data() raised an error: {exc}")
+        items = _fetch_live_or_skip_timeout(scraper, "FIRMS")
 
         assert isinstance(items, list), f"[FIRMS] Expected list, got {type(items)}"
         print(f"\n  [FIRMS] SUCCESS — fetched {len(items)} fire hotspot record(s)")
@@ -221,10 +220,7 @@ class TestUSGSEarthquakesScraper:
 
         config = _load_source_config("usgs_earthquakes")
         scraper = GenericAPIScraper(config)
-        try:
-            items = scraper.fetch_raw_data()
-        except Exception as exc:
-            pytest.fail(f"[USGS Earthquakes] fetch_raw_data() raised an error: {exc}")
+        items = _fetch_live_or_skip_timeout(scraper, "USGS Earthquakes")
 
         assert isinstance(items, list), (
             f"[USGS Earthquakes] Expected list, got {type(items)}"
@@ -243,10 +239,7 @@ class TestWorldBankESGScraper:
 
         config = _load_source_config("world_bank_esg")
         scraper = GenericAPIScraper(config)
-        try:
-            items = scraper.fetch_raw_data()
-        except Exception as exc:
-            pytest.fail(f"[World Bank ESG] fetch_raw_data() raised an error: {exc}")
+        items = _fetch_live_or_skip_timeout(scraper, "World Bank ESG")
 
         assert isinstance(items, list) and len(items) > 0, (
             f"[World Bank ESG] Expected at least one record, got {items!r}"
@@ -265,10 +258,7 @@ class TestGBIFOccurrencesScraper:
 
         config = _load_source_config("gbif_occurrences")
         scraper = GenericAPIScraper(config)
-        try:
-            items = scraper.fetch_raw_data()
-        except Exception as exc:
-            pytest.fail(f"[GBIF Occurrences] fetch_raw_data() raised an error: {exc}")
+        items = _fetch_live_or_skip_timeout(scraper, "GBIF Occurrences")
 
         assert isinstance(items, list), (
             f"[GBIF Occurrences] Expected list, got {type(items)}"
@@ -289,10 +279,7 @@ class TestOpenAQScraper:
 
         config = _load_source_config("openaq_air_quality")
         scraper = GenericAPIScraper(config)
-        try:
-            items = scraper.fetch_raw_data()
-        except Exception as exc:
-            pytest.fail(f"[OpenAQ] fetch_raw_data() raised an error: {exc}")
+        items = _fetch_live_or_skip_timeout(scraper, "OpenAQ")
 
         assert isinstance(items, list), f"[OpenAQ] Expected list, got {type(items)}"
         print(
