@@ -1,6 +1,6 @@
 """Tests for the source registry."""
 
-from unittest.mock import patch, mock_open
+from unittest.mock import patch
 import yaml
 
 from scrapers.registry import load_all_scrapers, _load_yaml_config
@@ -108,3 +108,25 @@ class TestLoadAllScrapers:
 
         ids = [s["id"] for s in scrapers]
         assert "web_test_web" not in ids
+
+    def test_loads_web_source_with_llm_settings(self, monkeypatch):
+        config = {
+            "api_sources": [],
+            "web_sources": [{
+                "name": "test_web",
+                "enabled": True,
+                "alert_type": "test",
+                "url": "http://example.com",
+            }],
+        }
+
+        monkeypatch.setattr("scrapers.registry._load_yaml_config", lambda: config)
+        monkeypatch.setattr("scrapers.registry.WebScraper", lambda cfg: {"config": cfg})
+        monkeypatch.setattr("scrapers.registry.settings.FIRECRAWL_API_KEY", "firecrawl-key")
+        monkeypatch.setattr("scrapers.registry.settings.LLM_PROVIDER", "openrouter")
+        monkeypatch.setattr("scrapers.registry.settings.LLM_API_KEY", "llm-key")
+
+        scrapers = load_all_scrapers()
+
+        ids = [s["id"] for s in scrapers]
+        assert "web_test_web" in ids

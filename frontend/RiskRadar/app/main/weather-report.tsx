@@ -58,10 +58,33 @@ export default function WeatherReport() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const loadWeatherReport = async () => {
+    const isValidZip = zipCode.length === 5 && /^\d{5}$/.test(zipCode);
+
+    if (!isValidZip) {
+      setSummary(null);
+      setLocationInfo(null);
+      setAlerts([]);
+      setError('Please enter a valid 5-digit zip code.');
+      return;
+    }
+
+    const [locInfo, alertsData, summaryData] = await Promise.all([
+      apiFetch<LocationInfo>(`/location/info?zip_code=${zipCode}`).catch(() => null),
+      apiFetch<AlertItem[]>(`/location/alerts?zip_code=${zipCode}`).catch(() => []),
+      apiFetch<Summary | null>(`/summaries/generate/local?zip_code=${zipCode}`, { method: 'POST' }).catch(() => null),
+    ]);
+
+    setSummary(summaryData);
+    setLocationInfo(locInfo);
+    setAlerts(alertsData ?? []);
+  };
+
   useEffect(() => {
     (async () => {
       try {
         setError(null);
+<<<<<<< HEAD
         const isValidZip = zipCode.length === 5 && /^\d{5}$/.test(zipCode);
 
         if (isValidZip) {
@@ -75,6 +98,9 @@ export default function WeatherReport() {
           setLocationInfo(locInfo);
           setAlerts(alertsData ?? []);
         }
+=======
+        await loadWeatherReport();
+>>>>>>> f56f88a8231a189175e094e92f2de6c9a9ff3527
       } catch {
         setError('Failed to load weather report. Please check your connection.');
       } finally {
@@ -110,24 +136,7 @@ export default function WeatherReport() {
             // Retry the fetch
             (async () => {
               try {
-                const isValidZip = zipCode.length === 5 && /^\d{5}$/.test(zipCode);
-                const promises: Promise<any>[] = [
-                  apiFetch<Summary | null>(`/summaries/latest/local?zip_code=${zipCode}`).catch(() => null)
-                ];
-                if (isValidZip) {
-                  promises.push(
-                    apiFetch<LocationInfo>(`/location/info?zip_code=${zipCode}`).catch(() => null),
-                    apiFetch<AlertItem[]>(`/location/alerts?zip_code=${zipCode}`).catch(() => []),
-                    apiFetch<Summary | null>(`/summaries/generate/local?zip_code=${zipCode}`, { method: 'POST' }).catch(() => null),
-                    apiFetch<Summary | null>(`/summaries/latest/local?zip_code=${zipCode}`).catch(() => null)
-                  );
-                } else {
-                  promises.push(Promise.resolve(null), Promise.resolve([]));
-                }
-                const [summaryData, locInfo, alertsData] = await Promise.all(promises);
-                setSummary(summaryData);
-                setLocationInfo(locInfo);
-                setAlerts(alertsData ?? []);
+                await loadWeatherReport();
               } catch {
                 setError('Failed to load weather report. Please check your connection.');
               } finally {

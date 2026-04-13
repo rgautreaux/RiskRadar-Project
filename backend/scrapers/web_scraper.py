@@ -62,8 +62,6 @@ class WebScraper(BaseScraper):
 
     def fetch_raw_data(self) -> list[dict]:
         from firecrawl import FirecrawlApp
-
-        from config.settings import settings
         firecrawl = FirecrawlApp(api_key=settings.FIRECRAWL_API_KEY)
 
         scrape_params = {"formats": ["markdown"]}
@@ -77,7 +75,7 @@ class WebScraper(BaseScraper):
         page_content = result.get("markdown", "") or result.get("content", "")
 
         if not page_content:
-            logger.warning(f"[{self.source_name}] Firecrawl returned no content")
+            logger.warning("[%s] Firecrawl returned no content", self.source_name)
             return []
 
         # Truncate to avoid blowing LLM context limits
@@ -108,46 +106,56 @@ class WebScraper(BaseScraper):
                 alerts = [alerts]
             return alerts
         except json.JSONDecodeError as e:
-            logger.error(f"[{self.source_name}] LLM returned invalid JSON: {e}")
+            logger.error("[%s] LLM returned invalid JSON: %s", self.source_name, e)
             return []
 
     def _call_llm(self, system: str, user: str) -> str:
         """Call the configured LLM provider."""
-        if settings.LLM_PROVIDER in ("openai", "deepseek"):
+        provider = settings.resolved_llm_provider()
+        api_key = settings.resolved_llm_api_key()
+        model = settings.LLM_MODEL.strip() or "gpt-4o-mini"
+        max_tokens = max(1, settings.LLM_MAX_TOKENS)
+
+        if provider in ("openrouter", "openai", "deepseek"):
             import openai
 
-            if settings.LLM_PROVIDER == "deepseek":
+            if provider == "deepseek":
                 client = openai.OpenAI(
-                    api_key=settings.LLM_API_KEY,
+                    api_key=api_key,
                     base_url="https://api.deepseek.com",
                 )
+            elif provider == "openrouter":
+                client = openai.OpenAI(
+                    api_key=api_key,
+                    base_url="https://openrouter.ai/api/v1",
+                )
             else:
-                client = openai.OpenAI(api_key=settings.LLM_API_KEY)
+                client = openai.OpenAI(api_key=api_key)
 
             resp = client.chat.completions.create(
-                model=settings.LLM_MODEL,
+                model=model,
                 messages=[
                     {"role": "system", "content": system},
                     {"role": "user", "content": user},
                 ],
-                max_tokens=4000,
+                max_tokens=max_tokens,
                 temperature=0.1,
             )
             return resp.choices[0].message.content
 
-        elif settings.LLM_PROVIDER == "anthropic":
+        elif provider == "anthropic":
             import anthropic
 
-            client = anthropic.Anthropic(api_key=settings.LLM_API_KEY)
+            client = anthropic.Anthropic(api_key=api_key)
             resp = client.messages.create(
-                model=settings.LLM_MODEL,
-                max_tokens=4000,
+                model=model,
+                max_tokens=max_tokens,
                 system=system,
                 messages=[{"role": "user", "content": user}],
             )
             return resp.content[0].text
 
-        raise RuntimeError(f"Unknown LLM provider: {settings.LLM_PROVIDER}")
+        raise RuntimeError(f"Unknown LLM provider: {provider}")
 
     def normalize(self, raw: dict) -> dict:
         """LLM already returns structured data, so normalization is light."""

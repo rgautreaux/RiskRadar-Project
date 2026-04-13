@@ -21,22 +21,22 @@
 {% block navbar %}
 <div class="navbar">
     <a href="/dashboard" class="brand">RiskRadar</a>
-    <nav>
+    <nav aria-label="Primary navigation">
         <a href="/dashboard">Alerts</a>
         <a href="/summaries">Summaries</a>
         <a href="/settings" class="active">Settings</a>
-        <button id="logout-btn" onclick="logout()">Logout</button>
+        <button id="logout-btn" type="button" onclick="logout()">Logout</button>
     </nav>
 </div>
 {% endblock %}
 
 {% block content %}
 <div class="page-container">
-    <h1 style="margin-bottom: 1.5rem;">Settings</h1>
+    <h1 class="stack-gap-lg">Settings</h1>
 
     <!-- User profile / preferences -->
-    <div class="settings-form" style="margin-bottom: 1.5rem;">
-        <h2 style="margin-bottom: 1rem;">Profile & Preferences</h2>
+    <div class="settings-form stack-gap-lg">
+        <h2 class="section-heading">Profile & Preferences</h2>
         <form id="prefs-form">
             <div class="form-group">
                 <label for="display_name">Display Name</label>
@@ -59,19 +59,19 @@
                     <option value="critical">Critical only</option>
                 </select>
             </div>
-            <p class="error-msg" id="prefs-error"></p>
-            <p id="prefs-success" style="color: var(--success); display: none;">Preferences saved!</p>
-            <button type="submit" class="btn btn-primary" style="width: auto;">Save Preferences</button>
+            <p class="error-msg" id="prefs-error" role="alert" aria-live="assertive"></p>
+            <p id="prefs-success" class="status-success" hidden>Preferences saved!</p>
+            <button type="submit" class="btn btn-primary auto-width">Save Preferences</button>
         </form>
     </div>
 
     <!-- System health -->
     <div class="settings-form">
-        <h2 style="margin-bottom: 1rem;">System Health</h2>
-        <div id="health-info">
+        <h2 class="section-heading">System Health</h2>
+        <div id="health-info" aria-live="polite">
             <div class="loading">Checking system health...</div>
         </div>
-        <button class="btn btn-secondary" style="margin-top: 1rem;" onclick="loadHealth()">
+        <button class="btn btn-secondary mt-lg" onclick="loadHealth()">
             Refresh
         </button>
     </div>
@@ -109,21 +109,21 @@
         try {
             const res = await apiFetch('/api/v1/health');
             if (!res || !res.ok) {
-                container.innerHTML = '<p style="color:var(--danger)">Could not reach health endpoint.</p>';
+                container.innerHTML = '<p class="status-error panel-note">Could not reach health endpoint.</p>';
                 return;
             }
             const health = await res.json();
             container.innerHTML = `
-                <p><strong>Status:</strong> ${health.status}</p>
-                <p><strong>Database:</strong> ${health.database}</p>
-                <p><strong>Total Alerts:</strong> ${health.alert_count}</p>
+                <p class="health-item"><strong>Status:</strong> ${health.status}</p>
+                <p class="health-item"><strong>Database:</strong> ${health.database}</p>
+                <p class="health-item"><strong>Total Alerts:</strong> ${health.alert_count}</p>
                 ${health.last_scrape ? `
-                    <p><strong>Last Scrape:</strong> ${health.last_scrape.source}
+                    <p class="health-item"><strong>Last Scrape:</strong> ${health.last_scrape.source}
                     (${health.last_scrape.status}) at ${health.last_scrape.completed_at}</p>
-                ` : '<p><strong>Last Scrape:</strong> None yet</p>'}
+                ` : '<p class="health-item"><strong>Last Scrape:</strong> None yet</p>'}
             `;
         } catch (err) {
-            container.innerHTML = '<p style="color:var(--danger)">Error checking health.</p>';
+            container.innerHTML = '<p class="status-error panel-note">Error checking health.</p>';
         }
     }
 
@@ -132,8 +132,8 @@
         e.preventDefault();
         const errorEl = document.getElementById('prefs-error');
         const successEl = document.getElementById('prefs-success');
-        errorEl.style.display = 'none';
-        successEl.style.display = 'none';
+        errorEl.dataset.visible = 'false';
+        successEl.hidden = true;
 
         if (!currentUserId) return;
 
@@ -146,16 +146,16 @@
             // PUT /api/v1/users/{id}/preferences
             const res = await apiFetch(`/api/v1/users/${currentUserId}/preferences`, 'PUT', body);
             if (res && res.ok) {
-                successEl.style.display = 'block';
-                setTimeout(() => { successEl.style.display = 'none'; }, 3000);
+                successEl.hidden = false;
+                setTimeout(() => { successEl.hidden = true; }, 3000);
             } else {
                 const err = await res.json();
                 errorEl.textContent = err.detail || 'Failed to save';
-                errorEl.style.display = 'block';
+                errorEl.dataset.visible = 'true';
             }
         } catch (err) {
             errorEl.textContent = 'Network error';
-            errorEl.style.display = 'block';
+            errorEl.dataset.visible = 'true';
         }
     });
 

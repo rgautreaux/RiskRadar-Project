@@ -103,6 +103,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 # tokenUrl points to the login endpoint so Swagger UI knows where to
 # authenticate.
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/users/login", auto_error=True)
+oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="/api/v1/users/login", auto_error=False)
 
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
@@ -164,3 +165,26 @@ def get_current_user(
     if user is None:
         raise credentials_exception
     return user
+
+
+def get_current_user_optional(
+    token: str | None = Depends(oauth2_scheme_optional),
+    db: Session = Depends(get_db),
+) -> User | None:
+    """Best-effort auth dependency for endpoints that support guest access."""
+    if not token:
+        return None
+
+    try:
+        payload = jwt.decode(
+            token,
+            settings.JWT_SECRET_KEY,
+            algorithms=[settings.JWT_ALGORITHM],
+        )
+        user_id: str | None = payload.get("sub")
+        if user_id is None:
+            return None
+    except JWTError:
+        return None
+
+    return db.query(User).filter(User.id == int(user_id)).first()

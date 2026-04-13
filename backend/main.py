@@ -29,6 +29,7 @@ from db.init_db import init_database
 from scrapers.scheduler import start_scheduler
 from api.router import api_router
 from frontend.routes import router as frontend_router
+from config.settings import settings
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s")
 
@@ -47,11 +48,15 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="RiskRadar API", version="1.0.0", lifespan=lifespan)
 
 # --- CORS middleware -------------------------------------------------------
-# Allows the React Native app (or any frontend) to call the API.
-# TODO: Before production, replace "*" with your actual frontend origins.
+origins_raw = settings.CORS_ALLOWED_ORIGINS.strip()
+if origins_raw == "*":
+  cors_origins = ["*"]
+else:
+  cors_origins = [origin.strip() for origin in origins_raw.split(",") if origin.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+  allow_origins=cors_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )

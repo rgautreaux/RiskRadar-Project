@@ -26,7 +26,7 @@
             <label for="password">Password</label>
             <input type="password" id="password" placeholder="Your password" required>
         </div>
-        <p class="error-msg" id="error-msg"></p>
+        <p class="error-msg" id="error-msg" role="alert" aria-live="assertive"></p>
         <button type="submit" class="btn btn-primary">Sign In</button>
     </form>
 
@@ -46,7 +46,7 @@
     document.getElementById('login-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const errorEl = document.getElementById('error-msg');
-        errorEl.style.display = 'none';
+        errorEl.dataset.visible = 'false';
 
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
@@ -63,11 +63,11 @@
             } else {
                 const err = await res.json();
                 errorEl.textContent = err.detail || 'Login failed';
-                errorEl.style.display = 'block';
+                errorEl.dataset.visible = 'true';
             }
         } catch (err) {
             errorEl.textContent = 'Network error - is the server running?';
-            errorEl.style.display = 'block';
+            errorEl.dataset.visible = 'true';
         }
     });
 </script>

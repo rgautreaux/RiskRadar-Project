@@ -19,13 +19,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" content="#0b5fa5">
     <title>RiskRadar - {% block title %}Environmental Alerts{% endblock %}</title>
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
     {% block navbar %}{% endblock %}
 
+    <main id="main-content">
     {% block content %}{% endblock %}
+    </main>
 
     <script>
     /**

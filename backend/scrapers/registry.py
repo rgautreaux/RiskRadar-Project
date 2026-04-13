@@ -123,15 +123,25 @@ def load_all_scrapers() -> list[dict]:
     for web_cfg in config.get("web_sources", []):
         if not web_cfg.get("enabled", True):
             continue
+        llm_provider = settings.resolved_llm_provider()
+        llm_api_key = settings.resolved_llm_api_key()
+
         if not settings.FIRECRAWL_API_KEY:
             logger.info(
                 "Skipping web source '%s': FIRECRAWL_API_KEY not set",
                 web_cfg['name']
             )
             continue
-        if not settings.LLM_API_KEY:
+        if llm_provider not in {"openrouter", "openai", "deepseek", "anthropic"}:
             logger.info(
-                "Skipping web source '%s': LLM_API_KEY not set",
+                "Skipping web source '%s': unsupported LLM_PROVIDER '%s'",
+                web_cfg['name'],
+                llm_provider,
+            )
+            continue
+        if not llm_api_key:
+            logger.info(
+                "Skipping web source '%s': LLM_API_KEY or OPENROUTER_API_KEY not set",
                 web_cfg['name']
             )
             continue

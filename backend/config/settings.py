@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     # Database
     DATABASE_URL: str = ""
     DB_PATH: str = str(BASE_DIR / "riskradar.db")
+    CORS_ALLOWED_ORIGINS: str = "*"
 
     # --- JWT Authentication ---
     # IMPORTANT: Change JWT_SECRET_KEY in your .env file before production!
@@ -21,9 +22,12 @@ class Settings(BaseSettings):
 
     # --- LLM (OpenRouter) ---
     OPENROUTER_API_KEY: str = ""
-    LLM_MODEL: str = ""
-    LLM_MODEL_GUEST: str = ""
-    LLM_MODEL_PREMIUM: str = ""
+    LLM_API_KEY: str = ""
+    LLM_PROVIDER: str = "openrouter"
+    LLM_MODEL: str = "gpt-4o-mini"
+    LLM_MODEL_GUEST: str = "gpt-4o-mini"
+    LLM_MODEL_PREMIUM: str = "gpt-4o"
+    LLM_MAX_TOKENS: int = 4000
 
 
     # --- Scraper API Keys ---
@@ -31,6 +35,15 @@ class Settings(BaseSettings):
     NASA_FIRMS_MAP_KEY: str = ""
     FIRECRAWL_API_KEY: str = ""
     OpenAQ_API_KEY: str = ""
+
+    # --- Notifications ---
+    NOTIFICATION_PROVIDER: str = "noop"
+    NOTIFICATION_DELIVERY_ENABLED: bool = False
+    NOTIFICATION_TIMEOUT_SECONDS: float = 10.0
+    EXPO_PUSH_URL: str = "https://exp.host/--/api/v2/push/send"
+    EXPO_ACCESS_TOKEN: str = ""
+    FCM_PROJECT_ID: str = ""
+    FCM_SERVER_KEY: str = ""
 
     # --- App Defaults ---
     DEFAULT_ZIP_CODE: str = "90001"
@@ -49,5 +62,17 @@ class Settings(BaseSettings):
     RETENTION_WEEKLY_HOUR_UTC: int = 4
     NWS_USER_AGENT: str = "RiskRadar/1.0 (school-project)"
     SOURCES_CONFIG_PATH: str = str(BASE_DIR / "config" / "sources.yaml")
+
+    # --- Normalization rollout flags ---
+    SUMMARIES_USE_JUNCTION_TABLE: bool = True
+    USERS_USE_PREFERENCE_JUNCTION_TABLE: bool = True
+    NORMALIZATION_DUAL_WRITE_LEGACY_JSON: bool = True
+    GEO_USE_ZIP_LOOKUP: bool = True
+
+    def resolved_llm_api_key(self) -> str:
+        return self.LLM_API_KEY.strip() or self.OPENROUTER_API_KEY.strip()
+
+    def resolved_llm_provider(self) -> str:
+        return self.LLM_PROVIDER.strip().lower()
 
 settings = Settings()

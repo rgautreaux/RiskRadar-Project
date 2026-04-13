@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   Animated,
   ImageSourcePropType,
@@ -7,6 +7,7 @@ import {
   StyleSheet,
   ActivityIndicator,
   RefreshControl,
+  TouchableOpacity,
 } from 'react-native';
 
 
@@ -116,11 +117,26 @@ export default function AlertsScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activeFilter, setActiveFilter] = useState<'all' | 'critical' | 'weather' | 'airquality'>('all');
+
+  const buildAlertsPath = useCallback((filter: 'all' | 'critical' | 'weather' | 'airquality') => {
+    const params = new URLSearchParams({ limit: '50' });
+
+    if (filter === 'critical') {
+      params.set('severity', 'critical');
+    } else if (filter === 'weather') {
+      params.set('alert_type', 'weather');
+    } else if (filter === 'airquality') {
+      params.set('alert_type', 'air_quality');
+    }
+
+    return `/alerts/?${params.toString()}`;
+  }, []);
 
   const fetchAlerts = useCallback(async () => {
     try {
       setError(null);
-      const data = await apiFetch<AlertItem[]>('/alerts/?limit=50');
+      const data = await apiFetch<AlertItem[]>(buildAlertsPath(activeFilter));
       setAlerts(data);
     } catch {
       setError('Could not load alerts. Is the backend running?');
@@ -128,7 +144,7 @@ export default function AlertsScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [activeFilter, buildAlertsPath]);
 
   useEffect(() => {
     fetchAlerts();
@@ -158,6 +174,32 @@ export default function AlertsScreen() {
         return 'low';
     }
   };
+
+  const priorityRank = (severity: string) => {
+    switch (getSeverityLevel(severity)) {
+      case 'critical':
+        return 0;
+      case 'high':
+        return 1;
+      case 'moderate':
+        return 2;
+      default:
+        return 3;
+    }
+  };
+
+  const filteredAlerts = useMemo(() => {
+    return [...alerts].sort((left, right) => {
+      const severityDiff = priorityRank(left.severity) - priorityRank(right.severity);
+      if (severityDiff !== 0) {
+        return severityDiff;
+      }
+
+      const leftTime = new Date(left.fetched_at || left.created_at).getTime();
+      const rightTime = new Date(right.fetched_at || right.created_at).getTime();
+      return rightTime - leftTime;
+    });
+  }, [alerts]);
 
   // const formatTime = (dateStr: string) => {
   //   const date = new Date(dateStr);
@@ -195,12 +237,19 @@ export default function AlertsScreen() {
     { hazardType: 'fire', label: 'Fire', icon: hazardIconMap.fire },
   ];
 
+  const filterChips = [
+    { key: 'all', label: 'All' },
+    { key: 'critical', label: 'Critical First' },
+    { key: 'weather', label: 'Weather' },
+    { key: 'airquality', label: 'Air Quality' },
+  ] as const;
+
   return (
     <ThemedView style={styles.container}>
       {/* Branded Section Header */}
       <SectionHeader
         title="Alerts"
-        subtitle={`${alerts.length} active alert${alerts.length !== 1 ? 's' : ''}`}
+        subtitle={`${filteredAlerts.length} active alert${filteredAlerts.length !== 1 ? 's' : ''}`}
         style={styles.sectionHeader}
       />
 
@@ -222,6 +271,44 @@ export default function AlertsScreen() {
           />
         ))}
       </ScrollView>
+
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.filterChipsRow}
+        style={{ marginBottom: Spacing.sm }}
+      >
+        {filterChips.map((chip) => {
+          const isActive = activeFilter === chip.key;
+          return (
+            <TouchableOpacity
+              key={chip.key}
+              onPress={() => setActiveFilter(chip.key)}
+              style={[
+                styles.filterChip,
+                {
+                  backgroundColor: isActive ? palette.primary : palette.surfaceMuted,
+                  borderColor: isActive ? palette.primary : palette.border,
+                },
+              ]}
+            >
+              <ThemedText
+                type="meta"
+                lightColor={isActive ? palette.white : palette.textSecondary}
+                darkColor={isActive ? palette.white : palette.textSecondary}
+              >
+                {chip.label}
+              </ThemedText>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+
+      <View style={styles.priorityBanner}>
+        <ThemedText type="meta" lightColor={palette.textSecondary} darkColor={palette.textSecondary}>
+          Demo priority view: critical alerts and major hazards appear first when a filter is active.
+        </ThemedText>
+      </View>
 
       {/* Alerts List */}
       <ScrollView
@@ -252,9 +339,9 @@ export default function AlertsScreen() {
               </ThemedText>
             </View>
           </View>
-        ) : alerts.length > 0 ? (
+        ) : filteredAlerts.length > 0 ? (
           <View style={styles.alertsContainer}>
-            {alerts.map((alert, i) => {
+            {filteredAlerts.map((alert, i) => {
               // Map alert_type to icon asset
               const typeKey = (alert.alert_type || '').toLowerCase().replace(/[^a-z]/g, '');
               const iconSource =
@@ -310,6 +397,29 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.sm,
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  filterChipsRow: {
+    paddingHorizontal: Spacing.md,
+    paddingBottom: Spacing.xs,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  filterChip: {
+    marginRight: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 10,
+    borderRadius: Radius.pill,
+    borderWidth: 1,
+  },
+  priorityBanner: {
+    marginHorizontal: Spacing.md,
+    marginBottom: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: Radius.md,
+    backgroundColor: 'rgba(11, 95, 165, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(11, 95, 165, 0.18)',
   },
   scrollView: {
     flex: 1,

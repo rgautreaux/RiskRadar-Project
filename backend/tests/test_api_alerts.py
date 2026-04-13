@@ -1,5 +1,14 @@
 """Tests for alert API endpoints."""
 
+import json
+
+from auth.security import create_access_token
+
+
+def _auth_headers(user_id: int) -> dict[str, str]:
+    token = create_access_token(data={"sub": str(user_id)})
+    return {"Authorization": f"Bearer {token}"}
+
 
 class TestListAlerts:
     def test_list_all(self, test_client, sample_alerts):
@@ -41,6 +50,39 @@ class TestListAlerts:
         resp = test_client.get("/api/v1/alerts")
         assert resp.status_code == 200
         assert resp.json() == []
+
+    def test_invalid_alert_type_rejected(self, test_client):
+        resp = test_client.get("/api/v1/alerts?alert_type=bad")
+        assert resp.status_code == 422
+
+    def test_invalid_severity_rejected(self, test_client):
+        resp = test_client.get("/api/v1/alerts?severity=urgent")
+        assert resp.status_code == 422
+
+    def test_negative_offset_rejected(self, test_client):
+        resp = test_client.get("/api/v1/alerts?offset=-1")
+        assert resp.status_code == 422
+
+    def test_preference_filter_applies_for_authenticated_user(self, test_client, sample_alerts, sample_user, db_session):
+        sample_user.alert_types = json.dumps(["weather"])
+        sample_user.notify_severity = "high"
+        db_session.commit()
+
+        resp = test_client.get("/api/v1/alerts", headers=_auth_headers(sample_user.id))
+        assert resp.status_code == 200
+        data = resp.json()
+        assert len(data) == 1
+        assert data[0]["alert_type"] == "weather"
+
+    def test_query_override_beats_user_preference(self, test_client, sample_alerts, sample_user, db_session):
+        sample_user.alert_types = json.dumps(["weather"])
+        db_session.commit()
+
+        resp = test_client.get("/api/v1/alerts?alert_type=pollution", headers=_auth_headers(sample_user.id))
+        assert resp.status_code == 200
+        data = resp.json()
+        assert len(data) == 1
+        assert data[0]["alert_type"] == "pollution"
 
 
 class TestAlertStats:

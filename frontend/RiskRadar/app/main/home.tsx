@@ -10,6 +10,7 @@ import {
   Platform,
   StatusBar,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/theme';
@@ -34,6 +35,8 @@ interface Summary {
   generated_at: string;
 }
 
+const DEMO_SETTINGS_KEY = 'riskradar_demo_settings';
+
 export default function Home() {
   const router = useRouter();
   const scheme = useColorScheme() ?? 'light';
@@ -50,6 +53,28 @@ export default function Home() {
 
   useEffect(() => {
     if (user?.zip_code) setZipCode(user.zip_code);
+  }, [user?.zip_code]);
+
+  useEffect(() => {
+    if (user?.zip_code) {
+      return;
+    }
+
+    (async () => {
+      try {
+        const stored = await AsyncStorage.getItem(DEMO_SETTINGS_KEY);
+        if (!stored) {
+          return;
+        }
+
+        const parsed = JSON.parse(stored) as { zipCode?: string };
+        if (parsed.zipCode) {
+          setZipCode(parsed.zipCode);
+        }
+      } catch {
+        // Keep the dashboard usable even if saved demo settings cannot be restored.
+      }
+    })();
   }, [user?.zip_code]);
 
   useEffect(() => {

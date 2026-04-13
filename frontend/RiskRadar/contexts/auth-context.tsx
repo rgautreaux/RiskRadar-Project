@@ -13,6 +13,15 @@ interface User {
   created_at: string;
 }
 
+interface UserPrefsUpdate {
+  zip_code?: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  alert_types?: string[] | null;
+  notify_severity?: string | null;
+  device_token?: string | null;
+}
+
 interface AuthState {
   user: User | null;
   isLoading: boolean;
@@ -21,6 +30,7 @@ interface AuthState {
   toggleDevUserMode: () => void;
   login: (email: string, password: string) => Promise<void>;
   register: (displayName: string, email: string, password: string, zipCode?: string) => Promise<void>;
+  savePreferences: (updates: Partial<UserPrefsUpdate>) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -95,6 +105,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [login],
   );
 
+  const savePreferences = useCallback(async (updates: Partial<UserPrefsUpdate>) => {
+    if (!user) {
+      throw new Error('No authenticated user');
+    }
+
+    const updatedUser = await apiFetch<User>(`/users/${user.id}/preferences`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    });
+    setUser(updatedUser);
+  }, [user]);
+
   const logout = useCallback(async () => {
     await removeToken();
     setUser(null);
@@ -110,6 +132,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         toggleDevUserMode,
         login,
         register,
+        savePreferences,
         logout,
       }}
     >

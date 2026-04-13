@@ -19,11 +19,11 @@
 {% block navbar %}
 <div class="navbar">
     <a href="/dashboard" class="brand">RiskRadar</a>
-    <nav>
+    <nav aria-label="Primary navigation">
         <a href="/dashboard" class="active">Alerts</a>
         <a href="/summaries">Summaries</a>
         <a href="/settings">Settings</a>
-        <button id="logout-btn" onclick="logout()">Logout</button>
+        <button id="logout-btn" type="button" onclick="logout()">Logout</button>
     </nav>
 </div>
 {% endblock %}
@@ -52,7 +52,7 @@
 
     <!-- Filters — these become query params on GET /api/v1/alerts -->
     <div class="filters">
-        <select id="filter-type">
+        <select id="filter-type" aria-label="Filter alerts by type">
             <option value="">All Types</option>
             <option value="weather">Weather</option>
             <option value="air_quality">Air Quality</option>
@@ -60,14 +60,14 @@
             <option value="pollution">Pollution</option>
             <option value="earthquake">Earthquake</option>
         </select>
-        <select id="filter-severity">
+        <select id="filter-severity" aria-label="Filter alerts by severity">
             <option value="">All Severities</option>
             <option value="critical">Critical</option>
             <option value="high">High</option>
             <option value="moderate">Moderate</option>
             <option value="low">Low</option>
         </select>
-        <select id="filter-source">
+        <select id="filter-source" aria-label="Filter alerts by source">
             <option value="">All Sources</option>
             <option value="nws">NWS</option>
             <option value="airnow">AirNow</option>
@@ -79,7 +79,7 @@
     </div>
 
     <!-- Alert cards list -->
-    <div id="alerts-list">
+    <div id="alerts-list" aria-live="polite">
         <div class="loading">Loading alerts...</div>
     </div>
 </div>

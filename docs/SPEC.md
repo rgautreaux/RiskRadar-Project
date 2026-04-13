@@ -67,9 +67,13 @@ Triggers LLM-based summary generation from alerts in the last 24 hours. Requires
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `LLM_API_KEY` | For summaries | — | OpenAI or Anthropic API key |
-| `LLM_PROVIDER` | No | `openai` | `openai` or `anthropic` |
+| `LLM_API_KEY` | For summaries/web scrapers | — | OpenRouter/OpenAI/DeepSeek/Anthropic API key |
+| `OPENROUTER_API_KEY` | No | — | Compatibility alias for `LLM_API_KEY` |
+| `LLM_PROVIDER` | No | `openrouter` | `openrouter`, `openai`, `deepseek`, or `anthropic` |
 | `LLM_MODEL` | No | `gpt-4o-mini` | LLM model name |
+| `LLM_MODEL_GUEST` | No | `gpt-4o-mini` | Guest/default summary model |
+| `LLM_MODEL_PREMIUM` | No | `gpt-4o` | Premium summary model |
+| `LLM_MAX_TOKENS` | No | `4000` | Max tokens for web-scraper LLM calls |
 | `NASA_FIRMS_MAP_KEY` | For FIRMS | — | NASA FIRMS MAP key |
 | `FIRECRAWL_API_KEY` | For web scraping | — | Firecrawl API key |
 | `SCRAPE_INTERVAL_MINUTES` | No | `30` | Default scrape interval |
@@ -89,7 +93,7 @@ Triggers LLM-based summary generation from alerts in the last 24 hours. Requires
 | NASA FIRMS | `FIRMSScraper` | `wildfire` | 30 min | `NASA_FIRMS_MAP_KEY` |
 | USGS Earthquakes | `GenericAPIScraper` | `earthquake` | 30 min | — |
 | Config-driven APIs | `GenericAPIScraper` | configurable | configurable | — |
-| Config-driven websites | `WebScraper` | configurable | configurable | `FIRECRAWL_API_KEY` + `LLM_API_KEY` |
+| Config-driven websites | `WebScraper` | configurable | configurable | `FIRECRAWL_API_KEY` + `LLM_API_KEY` or `OPENROUTER_API_KEY` |
 
 ---
 
