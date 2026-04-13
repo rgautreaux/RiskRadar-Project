@@ -6,16 +6,18 @@ import {
   SafeAreaView,
   ScrollView,
   TouchableOpacity,
-  Platform,
   StatusBar,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Colors } from '@/constants/theme';
+import { Colors, Spacing, Radius, Shadows, Typography, SafeArea } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useAuth } from '@/contexts/auth-context';
 import { apiFetch } from '@/utils/api';
 import { StateView } from '@/components/ui/state-view';
+
+const brandLogo = require('@/assets/icons/branding/RiskRadar_STND_Logo.png');
 
 interface Summary {
   id: number;
@@ -68,14 +70,12 @@ function forecastIcon(weatherMain: string): keyof typeof Ionicons.glyphMap {
   return 'sunny-outline';
 }
 
-function forecastIconColor(weatherMain: string): string {
+function forecastIconColor(weatherMain: string, palette: typeof Colors.light): string {
   const w = weatherMain.toLowerCase();
-  if (w === 'thunderstorm') return '#6B7280';
-  if (w === 'snow') return '#93C5FD';
-  if (w === 'rain' || w === 'drizzle') return '#3B82F6';
-  if (w === 'atmosphere') return '#9CA3AF';
-  if (w === 'clouds') return '#6B7280';
-  return '#F59E0B';
+  if (w === 'thunderstorm' || w === 'clouds') return palette.textSecondary;
+  if (w === 'snow' || w === 'rain' || w === 'drizzle') return palette.primary;
+  if (w === 'atmosphere') return palette.textSecondary;
+  return palette.warning;
 }
 
 export default function WeatherReport() {
@@ -194,21 +194,27 @@ export default function WeatherReport() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'} backgroundColor={palette.background} />
+      <StatusBar barStyle="dark-content" backgroundColor={palette.background} />
 
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => router.back()}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
         >
           <Ionicons name="arrow-back" size={24} color={palette.text} />
         </TouchableOpacity>
+        <Image source={brandLogo} style={styles.headerLogo} resizeMode="contain" />
         <Text style={styles.headerTitle}>Weather Report</Text>
         <TouchableOpacity
           style={styles.backButton}
           onPress={handleBookmark}
           disabled={isSaving}
+          accessibilityRole="button"
+          accessibilityLabel={isSaved ? 'Location saved' : 'Save location'}
+          accessibilityState={{ disabled: isSaving }}
         >
           <Ionicons
             name={isSaved ? 'bookmark' : 'bookmark-outline'}
@@ -233,7 +239,7 @@ export default function WeatherReport() {
                 : query}
             </Text>
             <View style={styles.tempContainer}>
-              <Ionicons name="partly-sunny" size={80} color="#F59E0B" />
+              <Ionicons name="partly-sunny" size={80} color={palette.warning} />
             </View>
           </View>
 
@@ -266,7 +272,7 @@ export default function WeatherReport() {
                 {forecast.map((period, i) => {
                   const dayLabel = period.day_name.slice(0, 3);
                   const icon = forecastIcon(period.weather_main);
-                  const iconColor = forecastIconColor(period.weather_main);
+                  const iconColor = forecastIconColor(period.weather_main, palette);
                   return (
                     <React.Fragment key={i}>
                       {i > 0 && <View style={styles.forecastDivider} />}
@@ -324,7 +330,7 @@ export default function WeatherReport() {
   );
 }
 
-function getStyles(palette: typeof Colors.light | typeof Colors.dark) {
+function getStyles(palette: typeof Colors.light) {
   return StyleSheet.create({
     safeArea: {
       flex: 1,
@@ -334,9 +340,9 @@ function getStyles(palette: typeof Colors.light | typeof Colors.dark) {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      paddingHorizontal: 16,
-      paddingTop: Platform.OS === 'android' ? 16 : 0,
-      paddingBottom: 16,
+      paddingHorizontal: Spacing.md,
+      paddingTop: SafeArea.paddingTop,
+      paddingBottom: Spacing.md,
       backgroundColor: palette.card,
       borderBottomWidth: 1,
       borderBottomColor: palette.border,
@@ -347,24 +353,27 @@ function getStyles(palette: typeof Colors.light | typeof Colors.dark) {
       justifyContent: 'center',
       alignItems: 'center',
     },
+    headerLogo: {
+      width: 32,
+      height: 32,
+    },
     headerTitle: {
-      fontSize: 18,
-      fontWeight: '700',
+      ...Typography.subtitle,
+      flex: 1,
       color: palette.text,
     },
     scrollContent: {
-      padding: 24,
-      paddingBottom: 40,
+      padding: Spacing.lg,
+      paddingBottom: Spacing.xxl,
     },
     mainWeatherCard: {
       alignItems: 'center',
-      marginBottom: 32,
+      marginBottom: Spacing.xl,
     },
     locationText: {
-      fontSize: 20,
-      fontWeight: '600',
+      ...Typography.sectionLabel,
       color: palette.text,
-      marginBottom: 16,
+      marginBottom: Spacing.md,
     },
     tempContainer: {
       flexDirection: 'row',
@@ -372,49 +381,45 @@ function getStyles(palette: typeof Colors.light | typeof Colors.dark) {
       justifyContent: 'center',
     },
     section: {
-      marginBottom: 24,
+      marginBottom: Spacing.lg,
     },
     sectionTitle: {
-      fontSize: 20,
-      fontWeight: '700',
+      ...Typography.sectionLabel,
       color: palette.text,
-      marginBottom: 12,
+      marginBottom: Spacing.sm,
     },
     summaryCard: {
       backgroundColor: palette.card,
-      borderRadius: 20,
-      padding: 20,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.05,
-      shadowRadius: 12,
-      elevation: 4,
+      borderRadius: Radius.lg,
+      padding: Spacing.md + 4,
+      ...Shadows.card,
       borderWidth: 1,
       borderColor: palette.border,
     },
     summaryHeading: {
-      fontSize: 16,
+      ...Typography.cardHeading,
       fontWeight: '700',
       color: palette.text,
-      marginBottom: 8,
+      marginBottom: Spacing.sm,
     },
     summaryText: {
+      ...Typography.body,
       fontSize: 16,
       lineHeight: 24,
       color: palette.textSecondary,
     },
     summaryMeta: {
-      fontSize: 12,
+      ...Typography.meta,
       color: palette.textSecondary,
-      marginTop: 12,
+      marginTop: Spacing.sm,
     },
     alertRow: {
       flexDirection: 'row',
       alignItems: 'center',
       backgroundColor: palette.card,
-      borderRadius: 16,
-      padding: 16,
-      marginBottom: 10,
+      borderRadius: Radius.md,
+      padding: Spacing.md,
+      marginBottom: Spacing.sm,
       borderWidth: 1,
       borderColor: palette.border,
     },
@@ -422,17 +427,18 @@ function getStyles(palette: typeof Colors.light | typeof Colors.dark) {
       width: 12,
       height: 12,
       borderRadius: 6,
-      marginRight: 12,
+      marginRight: Spacing.sm,
     },
     alertRowText: {
       flex: 1,
     },
     alertTitle: {
-      fontSize: 15,
+      ...Typography.body,
       fontWeight: '600',
       color: palette.text,
     },
     alertMeta: {
+      ...Typography.meta,
       fontSize: 13,
       color: palette.textSecondary,
       marginTop: 2,
@@ -441,14 +447,15 @@ function getStyles(palette: typeof Colors.light | typeof Colors.dark) {
     forecastRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingVertical: 12,
-      gap: 10,
+      paddingVertical: Spacing.sm + 4,
+      gap: Spacing.sm,
     },
     forecastDivider: {
       height: 1,
       backgroundColor: palette.border,
     },
     forecastDay: {
+      ...Typography.meta,
       fontSize: 14,
       fontWeight: '600',
       color: palette.text,
@@ -456,6 +463,7 @@ function getStyles(palette: typeof Colors.light | typeof Colors.dark) {
     },
     forecastDesc: {
       flex: 1,
+      ...Typography.meta,
       fontSize: 13,
       color: palette.textSecondary,
     },
@@ -463,11 +471,12 @@ function getStyles(palette: typeof Colors.light | typeof Colors.dark) {
       alignItems: 'flex-end',
     },
     forecastTemp: {
-      fontSize: 15,
+      ...Typography.body,
       fontWeight: '700',
       color: palette.text,
     },
     forecastPrecip: {
+      ...Typography.meta,
       fontSize: 11,
       color: palette.primary,
       marginBottom: 2,

@@ -6,16 +6,18 @@ import {
   SafeAreaView,
   FlatList,
   TouchableOpacity,
-  Platform,
   StatusBar,
+  Image,
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useFocusEffect } from 'expo-router';
-import { Colors } from '@/constants/theme';
+import { Colors, Spacing, Radius, Shadows, Typography, SafeArea } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useAuth } from '@/contexts/auth-context';
 import { apiFetch } from '@/utils/api';
+
+const brandLogo = require('@/assets/icons/branding/RiskRadar_STND_Logo.png');
 
 interface SavedDestination {
   id: number;
@@ -69,12 +71,17 @@ export default function SavedScreen() {
   if (!isLoggedIn) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <StatusBar barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'} backgroundColor={palette.background} />
+        <StatusBar barStyle="dark-content" backgroundColor={palette.background} />
         <View style={styles.emptyContainer}>
           <Ionicons name="bookmark-outline" size={64} color={palette.textSecondary} />
           <Text style={styles.emptyTitle}>Save Your Destinations</Text>
           <Text style={styles.emptySubtitle}>Log in to save and quickly access your favorite travel destinations.</Text>
-          <TouchableOpacity style={styles.loginButton} onPress={() => router.push('/auth/login')}>
+          <TouchableOpacity
+            style={styles.loginButton}
+            onPress={() => router.push('/auth/login')}
+            accessibilityRole="button"
+            accessibilityLabel="Log in"
+          >
             <Text style={styles.loginButtonText}>Log In</Text>
           </TouchableOpacity>
         </View>
@@ -84,9 +91,10 @@ export default function SavedScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'} backgroundColor={palette.background} />
+      <StatusBar barStyle="dark-content" backgroundColor={palette.background} />
 
       <View style={styles.header}>
+        <Image source={brandLogo} style={styles.headerLogo} resizeMode="contain" />
         <Text style={styles.headerTitle}>Saved Destinations</Text>
       </View>
 
@@ -112,6 +120,8 @@ export default function SavedScreen() {
                   params: { query: `${item.city}, ${item.state}` },
                 })
               }
+              accessibilityRole="button"
+              accessibilityLabel={`View weather for ${item.city}${item.state ? `, ${item.state}` : ''}`}
             >
               <View style={styles.cardLeft}>
                 <Ionicons name="location" size={24} color={palette.primary} />
@@ -127,6 +137,8 @@ export default function SavedScreen() {
               <TouchableOpacity
                 style={styles.deleteButton}
                 onPress={() => handleDelete(item.id)}
+                accessibilityRole="button"
+                accessibilityLabel={`Remove ${item.city}`}
               >
                 <Ionicons name="trash-outline" size={20} color={palette.danger} />
               </TouchableOpacity>
@@ -145,37 +157,38 @@ function getStyles(palette: typeof Colors.light) {
       backgroundColor: palette.background,
     },
     header: {
-      paddingHorizontal: 24,
-      paddingTop: Platform.OS === 'android' ? 16 : 0,
-      paddingBottom: 16,
+      paddingHorizontal: Spacing.lg,
+      paddingTop: SafeArea.paddingTop,
+      paddingBottom: Spacing.md,
       backgroundColor: palette.card,
       borderBottomWidth: 1,
       borderBottomColor: palette.border,
     },
+    headerLogo: {
+      width: 32,
+      height: 32,
+      marginRight: Spacing.sm,
+    },
     headerTitle: {
+      ...Typography.title,
       fontSize: 24,
-      fontWeight: '700',
       color: palette.text,
     },
     listContent: {
-      padding: 24,
-      paddingBottom: 40,
+      padding: Spacing.lg,
+      paddingBottom: Spacing.xxl,
     },
     card: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
       backgroundColor: palette.card,
-      borderRadius: 16,
-      padding: 16,
-      marginBottom: 12,
+      borderRadius: Radius.md,
+      padding: Spacing.md,
+      marginBottom: Spacing.sm,
       borderWidth: 1,
       borderColor: palette.border,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.05,
-      shadowRadius: 6,
-      elevation: 2,
+      ...Shadows.card,
     },
     cardLeft: {
       flexDirection: 'row',
@@ -183,22 +196,22 @@ function getStyles(palette: typeof Colors.light) {
       flex: 1,
     },
     cardText: {
-      marginLeft: 12,
+      marginLeft: Spacing.sm,
       flex: 1,
     },
     cardCity: {
-      fontSize: 16,
-      fontWeight: '600',
+      ...Typography.cardHeading,
       color: palette.text,
     },
     cardZip: {
+      ...Typography.meta,
       fontSize: 13,
       color: palette.textSecondary,
       marginTop: 2,
     },
     deleteButton: {
-      width: 40,
-      height: 40,
+      width: 44,
+      height: 44,
       justifyContent: 'center',
       alignItems: 'center',
     },
@@ -206,31 +219,31 @@ function getStyles(palette: typeof Colors.light) {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      padding: 40,
+      padding: Spacing.xxl,
     },
     emptyTitle: {
-      fontSize: 20,
-      fontWeight: '700',
+      ...Typography.sectionLabel,
       color: palette.text,
-      marginTop: 16,
-      marginBottom: 8,
+      marginTop: Spacing.md,
+      marginBottom: Spacing.sm,
     },
     emptySubtitle: {
+      ...Typography.meta,
       fontSize: 14,
       color: palette.textSecondary,
       textAlign: 'center',
       lineHeight: 20,
     },
     loginButton: {
-      marginTop: 24,
+      marginTop: Spacing.lg,
       backgroundColor: palette.primary,
-      paddingHorizontal: 32,
+      paddingHorizontal: Spacing.xl,
       paddingVertical: 14,
-      borderRadius: 16,
+      borderRadius: Radius.md,
     },
     loginButtonText: {
-      color: '#FFFFFF',
-      fontSize: 16,
+      color: palette.white,
+      ...Typography.cardHeading,
       fontWeight: '700',
     },
   });

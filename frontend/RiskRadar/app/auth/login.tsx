@@ -10,9 +10,11 @@ import {
   SafeAreaView,
   Pressable,
   Alert as RNAlert,
+  Image,
 } from 'react-native';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
-import { BrandHeader } from '@/components/brand-header';
+
+const brandLogo = require('@/assets/icons/branding/RiskRadar_STND_Logo.png');
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/theme';
@@ -59,14 +61,14 @@ export default function LoginScreen() {
     try {
       await login(email, password);
       router.replace('/(tabs)');
-    } catch (err: any) {
-      console.error('Login error:', err);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : '';
       let message = 'Invalid email or password. Please try again.';
-      if (err.message?.includes('Failed to fetch') || err.message?.includes('Network request failed')) {
+      if (errorMessage.includes('Failed to fetch') || errorMessage.includes('Network request failed')) {
         message = 'Cannot connect to server. Make sure the backend is running.';
-      } else if (err.message?.includes('Invalid email or password')) {
+      } else if (errorMessage.includes('Invalid email or password')) {
         message = 'Invalid email or password. Please try again.';
-      } else if (err.message?.includes('Too many requests')) {
+      } else if (errorMessage.includes('Too many requests')) {
         message = 'Too many login attempts. Please wait a moment and try again.';
       }
       // Don't pass raw backend errors to the UI — use the safe default above
@@ -78,7 +80,6 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <BrandHeader style={{ paddingTop: 12, paddingBottom: 8 }} />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.container}
@@ -86,11 +87,14 @@ export default function LoginScreen() {
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => router.replace('/')}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
         >
           <Ionicons name="arrow-back" size={24} color={palette.text} />
         </TouchableOpacity>
 
         <View style={styles.headerContainer}>
+          <Image source={brandLogo} style={{ width: 80, height: 80, marginBottom: 20 }} resizeMode="contain" />
           <Text style={styles.title}>Welcome Back</Text>
           <Text style={styles.subtitle}>Sign in to continue to RiskRadar</Text>
         </View>
@@ -133,7 +137,12 @@ export default function LoginScreen() {
                   if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }));
                 }}
               />
-              <Pressable onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
+              <Pressable
+                onPress={() => setShowPassword(!showPassword)}
+                style={styles.eyeIcon}
+                accessibilityRole="button"
+                accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+              >
                 <Ionicons
                   name={showPassword ? 'eye-off-outline' : 'eye-outline'}
                   size={20}
@@ -276,27 +285,6 @@ function getStyles(palette: typeof Colors.light | typeof Colors.dark) {
       color: palette.primary,
       fontSize: 14,
       fontWeight: '600',
-    },
-    loginButton: {
-      backgroundColor: palette.primary,
-      borderRadius: 16,
-      height: 56,
-      justifyContent: 'center',
-      alignItems: 'center',
-      shadowColor: palette.primary,
-      shadowOffset: {
-        width: 0,
-        height: 4,
-      },
-      shadowOpacity: 0.3,
-      shadowRadius: 4.65,
-      elevation: 8,
-    },
-    loginButtonText: {
-      color: palette.white,
-      fontSize: 16,
-      fontWeight: '600',
-      letterSpacing: 0.5,
     },
     footerContainer: {
       flexDirection: 'row',

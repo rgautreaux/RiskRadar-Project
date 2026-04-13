@@ -7,19 +7,21 @@ import {
   StyleSheet,
   SafeAreaView,
   ScrollView,
-  Platform,
   StatusBar,
   TextInput,
   Alert,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as Notifications from 'expo-notifications';
-import { Colors } from '@/constants/theme';
+import { Colors, Spacing, Radius, Shadows, Typography, SafeArea } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useAuth } from '@/contexts/auth-context';
 import { apiFetch } from '@/utils/api';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
+
+const brandLogo = require('@/assets/icons/branding/RiskRadar_STND_Logo.png');
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -88,18 +90,21 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'} backgroundColor={palette.background} />
-      
+      <StatusBar barStyle="dark-content" backgroundColor={palette.background} />
+
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => router.back()}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
         >
           <Ionicons name="arrow-back" size={24} color={palette.text} />
         </TouchableOpacity>
+        <Image source={brandLogo} style={styles.headerLogo} resizeMode="contain" />
         <Text style={styles.headerTitle}>Settings</Text>
-        <View style={{ width: 40 }} /> {/* Spacer for alignment */}
+        <View style={styles.headerSpacer} />
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -119,7 +124,7 @@ export default function SettingsScreen() {
                 value={pushEnabled}
                 onValueChange={handlePushToggle}
                 trackColor={{ false: palette.border, true: palette.primary }}
-                thumbColor={Platform.OS === 'ios' ? '#FFFFFF' : pushEnabled ? palette.primary : '#f4f3f4'}
+                thumbColor={palette.white}
               />
             </View>
             <View style={styles.divider} />
@@ -132,7 +137,7 @@ export default function SettingsScreen() {
                 value={emailEnabled}
                 onValueChange={setEmailEnabled}
                 trackColor={{ false: palette.border, true: palette.primary }}
-                thumbColor={Platform.OS === 'ios' ? '#FFFFFF' : emailEnabled ? palette.primary : '#f4f3f4'}
+                thumbColor={palette.white}
               />
             </View>
             <View style={styles.divider} />
@@ -145,7 +150,7 @@ export default function SettingsScreen() {
                 value={smsEnabled}
                 onValueChange={setSmsEnabled}
                 trackColor={{ false: palette.border, true: palette.primary }}
-                thumbColor={Platform.OS === 'ios' ? '#FFFFFF' : smsEnabled ? palette.primary : '#f4f3f4'}
+                thumbColor={palette.white}
               />
             </View>
           </View>
@@ -167,14 +172,14 @@ export default function SettingsScreen() {
                   value={useGps}
                   onValueChange={setUseGps}
                   trackColor={{ false: palette.border, true: palette.primary }}
-                  thumbColor={Platform.OS === 'ios' ? '#FFFFFF' : useGps ? palette.primary : '#f4f3f4'}
+                  thumbColor={palette.white}
                 />
               </View>
               
               {!useGps && (
                 <>
                   <View style={styles.divider} />
-                  <View style={{ paddingVertical: 12 }}>
+                  <View style={{ paddingVertical: Spacing.sm + 4 }}>
                     <Text style={styles.label}>Home Zip Code</Text>
                     <View style={styles.inputContainer}>
                       <Ionicons name="location-outline" size={20} color={palette.textSecondary} style={styles.inputIcon} />
@@ -209,7 +214,7 @@ export default function SettingsScreen() {
                 value={isDevUserMode}
                 onValueChange={toggleDevUserMode}
                 trackColor={{ false: palette.border, true: palette.primary }}
-                thumbColor={Platform.OS === 'ios' ? '#FFFFFF' : isDevUserMode ? palette.primary : '#f4f3f4'}
+                thumbColor={palette.white}
               />
             </View>
           </View>
@@ -220,7 +225,7 @@ export default function SettingsScreen() {
           <PrimaryButton
             label={isLoggedIn ? "Log Out (Return to Home)" : "Return to Home"}
             onPress={handleLogout}
-            style={isLoggedIn ? ({ backgroundColor: palette.danger, shadowColor: palette.danger } as any) : undefined}
+            style={isLoggedIn ? { backgroundColor: palette.danger } : undefined}
           />
         </View>
 
@@ -229,7 +234,7 @@ export default function SettingsScreen() {
   );
 }
 
-function getStyles(palette: typeof Colors.light | typeof Colors.dark) {
+function getStyles(palette: typeof Colors.light) {
   return StyleSheet.create({
     safeArea: {
       flex: 1,
@@ -239,73 +244,76 @@ function getStyles(palette: typeof Colors.light | typeof Colors.dark) {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      paddingHorizontal: 24,
-      paddingTop: Platform.OS === 'android' ? 16 : 0,
-      paddingBottom: 16,
+      paddingHorizontal: Spacing.lg,
+      paddingTop: SafeArea.paddingTop,
+      paddingBottom: Spacing.md,
       backgroundColor: palette.card,
       borderBottomWidth: 1,
       borderBottomColor: palette.border,
     },
     backButton: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
+      width: 44,
+      height: 44,
+      borderRadius: 22,
       backgroundColor: palette.surfaceMuted,
       justifyContent: 'center',
       alignItems: 'center',
     },
+    headerLogo: {
+      width: 32,
+      height: 32,
+      marginRight: Spacing.sm,
+    },
     headerTitle: {
-      fontSize: 20,
-      fontWeight: '700',
+      ...Typography.sectionLabel,
       color: palette.text,
     },
+    headerSpacer: {
+      width: 44,
+    },
     scrollContent: {
-      padding: 24,
+      padding: Spacing.lg,
       paddingBottom: 60,
     },
     section: {
-      marginBottom: 32,
+      marginBottom: Spacing.xl,
     },
     sectionTitle: {
-      fontSize: 18,
-      fontWeight: '700',
+      ...Typography.subtitle,
       color: palette.text,
-      marginBottom: 4,
+      marginBottom: Spacing.xs,
     },
     sectionSubtitle: {
+      ...Typography.meta,
       fontSize: 14,
       color: palette.textSecondary,
-      marginBottom: 16,
+      marginBottom: Spacing.md,
     },
     card: {
       backgroundColor: palette.card,
-      borderRadius: 16,
-      paddingHorizontal: 16,
+      borderRadius: Radius.md,
+      paddingHorizontal: Spacing.md,
       borderWidth: 1,
       borderColor: palette.border,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.03,
-      shadowRadius: 8,
-      elevation: 2,
+      ...Shadows.card,
     },
     row: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      paddingVertical: 16,
+      paddingVertical: Spacing.md,
     },
     rowTextContainer: {
       flex: 1,
-      paddingRight: 16,
+      paddingRight: Spacing.md,
     },
     rowTitle: {
-      fontSize: 16,
-      fontWeight: '600',
+      ...Typography.cardHeading,
       color: palette.text,
-      marginBottom: 4,
+      marginBottom: Spacing.xs,
     },
     rowSubtitle: {
+      ...Typography.meta,
       fontSize: 13,
       color: palette.textSecondary,
     },
@@ -314,10 +322,11 @@ function getStyles(palette: typeof Colors.light | typeof Colors.dark) {
       backgroundColor: palette.border,
     },
     label: {
+      ...Typography.meta,
       fontSize: 14,
       fontWeight: '500',
       color: palette.text,
-      marginBottom: 8,
+      marginBottom: Spacing.sm,
     },
     inputContainer: {
       flexDirection: 'row',
@@ -325,21 +334,22 @@ function getStyles(palette: typeof Colors.light | typeof Colors.dark) {
       backgroundColor: palette.surfaceMuted,
       borderWidth: 1,
       borderColor: palette.border,
-      borderRadius: 12,
-      paddingHorizontal: 16,
+      borderRadius: Radius.sm,
+      paddingHorizontal: Spacing.md,
       height: 50,
     },
     inputIcon: {
-      marginRight: 10,
+      marginRight: Spacing.sm,
     },
     input: {
       flex: 1,
-      fontSize: 16,
+      ...Typography.cardHeading,
+      fontWeight: '400',
       color: palette.text,
       height: '100%',
     },
     footerSection: {
-      marginTop: 16,
+      marginTop: Spacing.md,
     },
   });
 }

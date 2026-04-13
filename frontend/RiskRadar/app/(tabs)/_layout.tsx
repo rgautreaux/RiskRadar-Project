@@ -37,7 +37,7 @@ export default function TabLayout() {
 
   const tabBarStyle = [
     styles.tabBar,
-    { backgroundColor: palette.card, borderTopColor: palette.border },
+    { backgroundColor: palette.primaryDark, borderTopColor: palette.primaryDark },
   ];
 
   return (
@@ -47,9 +47,9 @@ export default function TabLayout() {
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarShowLabel: true,
-        tabBarActiveTintColor: palette.primary,
-        tabBarInactiveTintColor: palette.textSecondary,
-        tabBarActiveBackgroundColor: palette.secondary,
+        tabBarActiveTintColor: palette.white,
+        tabBarInactiveTintColor: 'rgba(255, 255, 255, 0.6)',
+        tabBarActiveBackgroundColor: palette.primary,
         tabBarStyle,
         tabBarItemStyle: styles.tabBarItem,
         tabBarLabelStyle: styles.tabBarLabel,

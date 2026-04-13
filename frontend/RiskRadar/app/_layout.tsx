@@ -17,7 +17,7 @@ export default function RootLayout() {
 
   const navigationTheme: Theme = {
     ...DefaultTheme,
-    dark: scheme === 'dark',
+    dark: false,
     colors: {
       ...DefaultTheme.colors,
       primary: palette.primary,
@@ -50,7 +50,7 @@ export default function RootLayout() {
             }}
           />
         </Stack>
-        <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} backgroundColor={palette.primaryDark} />
+        <StatusBar style="dark" backgroundColor={palette.primaryDark} />
       </ThemeProvider>
     </AuthProvider>
   );

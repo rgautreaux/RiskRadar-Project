@@ -20,7 +20,6 @@ import { Colors, Spacing, Radius, Shadows } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 // Import notification panel art
 const alertNotifArt = require('@/assets/icons/navigation/RiskRadar_ALERT_NotifWindow.png');
-// const standardNotifArt = require('@/assets/icons/navigation/RiskRadar_STND_NotifWIndow.png');
 
 /**
  * ModalScreen presents a branded notification details surface.
@@ -84,6 +83,8 @@ export default function ModalScreen() {
                 { backgroundColor: palette.surfaceMuted },
               ]}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Close alert details"
             >
               <ThemedText type="meta" lightColor={palette.text} darkColor={palette.text}>
                 ✕
@@ -317,7 +318,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.lg,
     paddingBottom: Spacing.lg,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0, 0, 0, 0.06)',
+    borderBottomColor: Colors.light.border,
   },
   sectionTitle: {
     marginBottom: Spacing.md,
