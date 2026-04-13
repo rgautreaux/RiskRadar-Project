@@ -1,5 +1,4 @@
-"""
-Migration Script: Encrypt and HMAC Existing User Emails
+"""Migration Script: Encrypt and HMAC Existing User Emails.
 
 This script migrates all users in the database:
 - Encrypts the plaintext email into email_encrypted
@@ -11,15 +10,30 @@ Run this script in a safe environment after backing up the database.
 """
 
 from datetime import datetime, timezone
+from importlib import import_module
 import os
 import re
 import sys
+from pathlib import Path
+from typing import cast
 
+from sqlalchemy import inspect
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from auth.security import encrypt_email, email_hmac
-from db.database import SessionLocal
-from db.models import MigrationLog, User
+BACKEND_DIR = Path(__file__).resolve().parents[2]
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
+
+security_module = import_module("auth.security")
+database_module = import_module("db.database")
+models_module = import_module("db.models")
+
+encrypt_email = security_module.encrypt_email
+email_hmac = security_module.email_hmac
+SessionLocal = database_module.SessionLocal
+MigrationLog = models_module.MigrationLog
+User = models_module.User
 
 
 EMAIL_RE = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
@@ -59,6 +73,39 @@ def _log(
     )
 
 
+def _ensure_phase3_schema(db: Session) -> None:
+    """Ensure only Phase 3 prerequisites exist before migrating data."""
+    bind = db.get_bind()
+    MigrationLog.__table__.create(bind=bind, checkfirst=True)
+
+    inspector = inspect(bind)
+    user_columns = {column["name"] for column in inspector.get_columns("users")}
+    missing_columns = [
+        column_name for column_name in ("email_encrypted", "email_hmac") if column_name not in user_columns
+    ]
+    if missing_columns:
+        raise RuntimeError(
+            "Phase 3 schema prerequisites missing on users table "
+            f"({', '.join(missing_columns)}). "
+            "Apply backend/db/migrations/2026-04-10_phase3_email_security_schema.sql first."
+        )
+
+    has_unique_email_hmac = any(
+        index.get("unique") and index.get("column_names") == ["email_hmac"]
+        for index in inspector.get_indexes("users")
+    ) or any(
+        unique.get("column_names") == ["email_hmac"]
+        for unique in inspector.get_unique_constraints("users")
+    )
+    if not has_unique_email_hmac:
+        raise RuntimeError(
+            "Phase 3 schema prerequisite missing: unique key on users.email_hmac. "
+            "Apply backend/db/migrations/2026-04-10_phase3_email_security_schema.sql first."
+        )
+
+    db.commit()
+
+
 def migrate_emails() -> int:
     db: Session = SessionLocal()
     processed = 0
@@ -66,6 +113,8 @@ def migrate_emails() -> int:
     failed = 0
 
     try:
+        _ensure_phase3_schema(db)
+
         _log(db, action="email_encryption_batch", status="started")
         db.commit()
 
@@ -83,20 +132,20 @@ def migrate_emails() -> int:
 
             for user in batch:
                 processed += 1
-                user_id = user.id
+                user_id = cast(int, user.id)
                 try:
                     with db.begin_nested():
-                        original_email = user.email
-                        if not original_email:
+                        original_email = cast(str | None, user.email)
+                        if original_email is None or original_email == "":
                             raise ValueError("User email is empty")
 
-                        user.email_encrypted = encrypt_email(original_email)
-                        user.email_hmac = email_hmac(original_email)
-                        user.email = None
+                        setattr(user, "email_encrypted", encrypt_email(original_email))
+                        setattr(user, "email_hmac", email_hmac(original_email))
+                        setattr(user, "email", None)
 
                         _log(db, action="email_encryption", status="success", user_id=user_id)
                     succeeded += 1
-                except Exception as exc:  # noqa: BLE001 - capture migration/user-level failures safely
+                except (ValueError, TypeError, OSError, RuntimeError, SQLAlchemyError) as exc:
                     failed += 1
                     _log(
                         db,
@@ -115,7 +164,7 @@ def migrate_emails() -> int:
         _log(db, action="email_encryption_batch", status="completed", error_message=summary)
         db.commit()
         return 0 if failed == 0 else 2
-    except Exception as exc:  # noqa: BLE001 - capture batch-level failure and persist audit record
+    except (ValueError, TypeError, OSError, RuntimeError, SQLAlchemyError) as exc:
         db.rollback()
         _log(
             db,

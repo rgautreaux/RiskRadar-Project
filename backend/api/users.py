@@ -20,8 +20,11 @@ HOW IT CONNECTS TO THE DATABASE:
 
 import json
 import logging
+<<<<<<< HEAD
+=======
 import time
 from collections import defaultdict
+>>>>>>> QuiV2
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 
@@ -29,6 +32,14 @@ logger = logging.getLogger(__name__)
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 
+<<<<<<< HEAD
+from db.database import get_db, db_write
+from db.models import User
+from db.normalization import get_effective_user_coords, get_user_alert_types, set_user_alert_types, upsert_zip_geo
+from config.settings import settings
+from auth.security import hash_password, verify_password, create_access_token, get_current_user, encrypt_email, decrypt_email, email_hmac
+from logging_utils import log_event
+=======
 from db.database import get_db
 from db.models import User, SavedDestination
 from auth.security import hash_password, verify_password, create_access_token, get_current_user, encrypt_email, decrypt_email, email_hmac
@@ -55,10 +66,12 @@ def _check_rate_limit(request: Request) -> None:
             detail="Too many requests. Please try again later.",
         )
     _rate_limit_store[client_ip].append(now)
+>>>>>>> QuiV2
 from schemas.user import (
     UserCreate,
     UserLogin,
     UserPrefsUpdate,
+    DeviceTokenUpdate,
     UserOut,
     TokenOut,
     NotificationSettingsUpdate,
@@ -68,6 +81,7 @@ from schemas.user import (
 )
 
 router = APIRouter(prefix="/users", tags=["Users"])
+logger = logging.getLogger(__name__)
 
 
 def _user_out_with_email(user: User) -> UserOut:
@@ -80,6 +94,13 @@ def _user_out_with_email(user: User) -> UserOut:
     else:
         logger.warning("User %s has no email_encrypted or email on record", user.id)
     return user_out
+
+
+def _set_user_out_alert_types(db: Session, user_out: UserOut, user: User) -> None:
+    if settings.USERS_USE_PREFERENCE_JUNCTION_TABLE:
+        user_out.alert_types = json.dumps(get_user_alert_types(db, user))
+        return
+    user_out.alert_types = user.alert_types
 
 
 # ---------------------------------------------------------------------------
@@ -105,14 +126,18 @@ def register_user(body: UserCreate, request: Request, db: Session = Depends(get_
 
     user = User(
         display_name=body.display_name,
+<<<<<<< HEAD
+        # New records should avoid plaintext email persistence.
+=======
+>>>>>>> QuiV2
         email=None,
         email_encrypted=encrypt_email(body.email),
         email_hmac=hmac_val,
         password_hash=hash_password(body.password),
         zip_code=body.zip_code,
     )
-    db.add(user)
-    db.commit()
+    with db_write(db):
+        db.add(user)
     db.refresh(user)
     # Return user with decrypted email for API response
     user_out = UserOut.model_validate(user)
@@ -131,9 +156,10 @@ def login_user(body: UserLogin, request: Request, db: Session = Depends(get_db))
     """
     _check_rate_limit(request)
     hmac_val = email_hmac(body.email)
-    user = db.query(User).filter(
-        or_(User.email_hmac == hmac_val, User.email == body.email)
-    ).first()
+    # Prefer HMAC lookup; allow plaintext fallback only for legacy rows.
+    user = db.query(User).filter(User.email_hmac == hmac_val).first()
+    if not user:
+        user = db.query(User).filter(User.email == body.email).first()
     if not user or not verify_password(body.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid email or password")
     token = create_access_token(data={"sub": str(user.id)})
@@ -145,9 +171,17 @@ def login_user(body: UserLogin, request: Request, db: Session = Depends(get_db))
 # ---------------------------------------------------------------------------
 
 @router.get("/me", response_model=UserOut)
-def get_me(current_user: User = Depends(get_current_user)):
+def get_me(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     """Return the profile of the currently authenticated user."""
-    return _user_out_with_email(current_user)
+    user_out = _user_out_with_email(current_user)
+    _set_user_out_alert_types(db, user_out, current_user)
+    lat, lon = get_effective_user_coords(db, current_user)
+    user_out.latitude = lat
+    user_out.longitude = lon
+    return user_out
 
 
 @router.get("/{user_id}/preferences", response_model=UserOut)
@@ -162,7 +196,12 @@ def get_preferences(
     """
     if current_user.id != user_id:
         raise HTTPException(status_code=403, detail="Cannot access another user's preferences")
-    return _user_out_with_email(current_user)
+    user_out = _user_out_with_email(current_user)
+    _set_user_out_alert_types(db, user_out, current_user)
+    lat, lon = get_effective_user_coords(db, current_user)
+    user_out.latitude = lat
+    user_out.longitude = lon
+    return user_out
 
 
 @router.put("/{user_id}/preferences", response_model=UserOut)
@@ -182,22 +221,104 @@ def update_preferences(
         raise HTTPException(status_code=403, detail="Cannot modify another user's preferences")
 
     user = current_user
+    changed_fields: list[str] = []
     if body.zip_code is not None:
         user.zip_code = body.zip_code
+        changed_fields.append("zip_code")
+        if settings.GEO_USE_ZIP_LOOKUP:
+            lat, lon = get_effective_user_coords(db, user)
+            if lat is not None and lon is not None and body.latitude is None and body.longitude is None:
+                user.latitude = lat
+                user.longitude = lon
     if body.latitude is not None:
         user.latitude = body.latitude
+        changed_fields.append("latitude")
     if body.longitude is not None:
         user.longitude = body.longitude
+        changed_fields.append("longitude")
     if body.alert_types is not None:
-        user.alert_types = json.dumps(body.alert_types)
+        set_user_alert_types(
+            db,
+            user,
+            body.alert_types,
+            dual_write_legacy=settings.NORMALIZATION_DUAL_WRITE_LEGACY_JSON,
+        )
+        changed_fields.append("alert_types")
     if body.notify_severity is not None:
         user.notify_severity = body.notify_severity
+        changed_fields.append("notify_severity")
+    if body.notify_push is not None:
+        user.notify_push = body.notify_push
+        changed_fields.append("notify_push")
+    if body.notify_email is not None:
+        user.notify_email = body.notify_email
+        changed_fields.append("notify_email")
+    if body.notify_sms is not None:
+        user.notify_sms = body.notify_sms
+        changed_fields.append("notify_sms")
     if body.device_token is not None:
         user.device_token = body.device_token
+        changed_fields.append("device_token")
 
-    db.commit()
+    with db_write(db):
+        if body.zip_code is not None and user.latitude is not None and user.longitude is not None:
+            upsert_zip_geo(db, user.zip_code, user.latitude, user.longitude)
     db.refresh(user)
-    return _user_out_with_email(user)
+    log_event(
+        logger,
+        "users.preferences_updated",
+        user_id=user.id,
+        changed_fields=changed_fields,
+    )
+    user_out = _user_out_with_email(user)
+    _set_user_out_alert_types(db, user_out, user)
+    lat, lon = get_effective_user_coords(db, user)
+    user_out.latitude = lat
+    user_out.longitude = lon
+    return user_out
+
+
+@router.post("/{user_id}/device-token", response_model=NotificationSettingsOut)
+def register_device_token(
+    user_id: int,
+    body: DeviceTokenUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Register or refresh the current user's push notification token."""
+    if current_user.id != user_id:
+        raise HTTPException(status_code=403, detail="Cannot modify another user's device token")
+
+    current_user.device_token = body.device_token
+    with db_write(db):
+        pass
+    db.refresh(current_user)
+    log_event(logger, "users.device_token_registered", user_id=current_user.id)
+    return NotificationSettingsOut(
+        notify_severity=current_user.notify_severity,
+        device_token=current_user.device_token,
+    )
+
+
+@router.post("/{user_id}/device-token/revoke", response_model=NotificationSettingsOut)
+def revoke_device_token(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Clear the stored push notification token (e.g., on logout)."""
+    if current_user.id != user_id:
+        raise HTTPException(status_code=403, detail="Cannot modify another user's device token")
+
+    current_user.device_token = None
+    with db_write(db):
+        pass
+    db.refresh(current_user)
+    log_event(logger, "users.device_token_revoked", user_id=current_user.id)
+    return NotificationSettingsOut(
+        notify_severity=current_user.notify_severity,
+        device_token=current_user.device_token,
+    )
 
 
 @router.get("/notifications", response_model=NotificationSettingsOut)
@@ -205,6 +326,9 @@ def get_notifications(current_user: User = Depends(get_current_user)):
     """Get the current user's notification settings."""
     return NotificationSettingsOut(
         notify_severity=current_user.notify_severity,
+        notify_push=current_user.notify_push,
+        notify_email=current_user.notify_email,
+        notify_sms=current_user.notify_sms,
         device_token=current_user.device_token,
     )
 
@@ -218,13 +342,23 @@ def update_notifications(
     """Update notification preferences for the current user."""
     if body.notify_severity is not None:
         current_user.notify_severity = body.notify_severity
+    if body.notify_push is not None:
+        current_user.notify_push = body.notify_push
+    if body.notify_email is not None:
+        current_user.notify_email = body.notify_email
+    if body.notify_sms is not None:
+        current_user.notify_sms = body.notify_sms
     if body.device_token is not None:
         current_user.device_token = body.device_token
 
-    db.commit()
+    with db_write(db):
+        pass
     db.refresh(current_user)
     return NotificationSettingsOut(
         notify_severity=current_user.notify_severity,
+        notify_push=current_user.notify_push,
+        notify_email=current_user.notify_email,
+        notify_sms=current_user.notify_sms,
         device_token=current_user.device_token,
     )
 

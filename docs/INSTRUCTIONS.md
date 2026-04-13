@@ -1,16 +1,19 @@
-# RiskRadar App Instructions
 
+# RiskRadar App Instructions
 Welcome to the RiskRadar App! This guide will help you get started and make the most of the app's features.
 
 ## Table of Contents
-1. [Overview](#overview)
-2. [Getting Started](#getting-started)
-3. [User Registration & Login](#user-registration--login)
-4. [Dashboard Overview](#dashboard-overview)
-5. [Viewing Summaries & Alerts](#viewing-summaries--alerts)
-6. [Settings & Customization](#settings--customization)
-7. [Troubleshooting](#troubleshooting)
-8. [Support](#support)
+- [RiskRadar App Instructions](#riskradar-app-instructions)
+  - [Table of Contents](#table-of-contents)
+  - [Overview](#overview)
+  - [Getting Started](#getting-started)
+  - [User Registration \& Login](#user-registration--login)
+  - [Dashboard Overview](#dashboard-overview)
+  - [Viewing Summaries \& Alerts](#viewing-summaries--alerts)
+  - [Settings \& Customization](#settings--customization)
+  - [Troubleshooting](#troubleshooting)
+  - [Support](#support)
+- [April 2026 Synchronization Note](#april-2026-synchronization-note)
 
 ---
 
@@ -51,6 +54,9 @@ RiskRadar is designed to help you monitor, summarize, and stay informed about en
   - Tracked locations
   - Data sources
 - Save your changes to update your preferences.
+- Use **Backend Demo Tools** in Settings for presentation-safe backend verification:
+  - Check backend health status
+  - Trigger scrape runs and review source-level outcomes
 
 ## Troubleshooting
 - **Can't log in?**
@@ -69,6 +75,15 @@ RiskRadar is designed to help you monitor, summarize, and stay informed about en
 ---
 
 # April 2026 Synchronization Note
-All instructions, onboarding, and feature documentation are fully synchronized as of April 2, 2026. The Apr 2 verification follow-up refreshed the related tracking docs and left the validated code state unchanged.
+All instructions, onboarding, and feature documentation are fully synchronized as of April 12, 2026.
+
+Apr 12 update highlights:
+- Completed final web frontend visual-refresh pass for the template-based UI with accessibility hardening.
+- Updated shared shell guidance now reflects skip-link/main landmark semantics and improved keyboard/screen-reader support.
+- Verification state is synchronized with the latest backend test closeout (`165 passed, 3 skipped`).
+
+Apr 11 update highlights:
+- Added guidance for in-app backend demonstration actions now available from Settings.
+- Documentation now aligns with the current demo-readiness implementation and API validation state.
 
 ---

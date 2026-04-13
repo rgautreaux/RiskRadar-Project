@@ -30,6 +30,7 @@ from db.init_db import init_database
 from scrapers.scheduler import start_scheduler
 from api.router import api_router
 from frontend.routes import router as frontend_router
+from config.settings import settings
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s")
 
@@ -60,6 +61,19 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="RiskRadar API", version="1.0.0", lifespan=lifespan)
 
 # --- CORS middleware -------------------------------------------------------
+<<<<<<< HEAD
+origins_raw = settings.CORS_ALLOWED_ORIGINS.strip()
+if origins_raw == "*":
+  cors_origins = ["*"]
+else:
+  cors_origins = [origin.strip() for origin in origins_raw.split(",") if origin.strip()]
+
+app.add_middleware(
+    CORSMiddleware,
+  allow_origins=cors_origins,
+    allow_methods=["*"],
+    allow_headers=["*"],
+=======
 # Allows the React Native app and web frontend to call the API.
 # Includes the machine's LAN IP so physical Expo devices on the same
 # network are not blocked.  Add your production domain when deploying.
@@ -82,6 +96,7 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type"],
     allow_credentials=True,
+>>>>>>> QuiV2
 )
 
 # --- Static files (CSS, JS) -----------------------------------------------

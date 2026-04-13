@@ -12,6 +12,7 @@ from sqlalchemy.pool import StaticPool
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
+from auth.security import hash_password
 from db.database import Base, get_db
 from db.models import Alert, Summary, User, ScrapeLog
 
@@ -146,12 +147,10 @@ def sample_alerts(db_session):
 @pytest.fixture
 def sample_user(db_session):
     """Insert a test user."""
-    import hashlib
-
     user = User(
         display_name="Test User",
         email="test@example.com",
-        password_hash=hashlib.sha256("password123".encode()).hexdigest(),
+        password_hash=hash_password("password123"),
         zip_code="90001",
         created_at=NOW,
         updated_at=NOW,

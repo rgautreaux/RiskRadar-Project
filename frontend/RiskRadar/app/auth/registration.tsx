@@ -92,9 +92,15 @@ export default function RegistrationScreen() {
     setIsSubmitting(true);
     try {
       await register(fullName, email, password, zipCode || undefined);
+<<<<<<< HEAD
+      router.replace('/main/home');
+    } catch (err: any) {
+      console.error('Registration error:', err);
+=======
       router.replace('/(tabs)');
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : '';
+>>>>>>> QuiV2
       let message = 'Registration failed. Please try again.';
       if (errorMessage.includes('already registered')) {
         message = 'An account with this email already exists.';

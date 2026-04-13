@@ -1,4 +1,4 @@
-## Contributions and Roles (as of Apr 2, 2026)
+## Contributions and Roles (as of Apr 12, 2026)
 
 - All member roles and contributions have been updated to reflect the April 2, 2026 documentation synchronization and audit.
 - All top-level documentation, progress logs, and transcripts are now in sync and audit-ready.
@@ -6,6 +6,14 @@
 - Phase 3 (User Email & Password Security: migration logging + monitoring) implementation and evidence packaging are complete; backend/security lead sign-off remains an external approval gate.
 - The Apr 2, 2026 documentation follow-up and verification pass refreshed the transcript, progress log, reflection, TODO, README, and planning docs without changing the validated implementation state.
 - Rebecca also completed the Apr 2, 2026 documentation sync follow-up, keeping the transcript, progress log, reflection, TODO, README, and sprint tracking aligned.
+- The Apr 10, 2026 audit-trail sync and status-confirmation pass refreshed the transcript, progress log, reflection, TODO, README, and sprint tracking so Rebecca’s current closure boundary remains explicit.
+- The Apr 10, 2026 migration-verification sync pass captured successful migration test/script evidence and propagated it across all audit-facing docs.
+- The Apr 10, 2026 critical regression expansion pass added backend coverage for location, summary, system, and auth/notification paths and validated full backend pytest status at `107 passed`.
+- The Apr 11, 2026 demo-readiness implementation pass delivered server-driven alerts filtering, in-app backend demo tooling, and final users+alerts root command validation (`40 passed, 0 failed`).
+- The Apr 12, 2026 coordination verification refresh captured the latest backend baseline (`172 passed, 3 skipped`), migration-focused suite (`13 passed`), and local readiness-gate status so the audit trail reflects the current promotion boundary.
+- The Apr 12, 2026 Phase 2/3 coordination passes added shared-task owner/evidence artifacts, unblocked frontend verification tooling (`npm install`), and recorded frontend-owner escalation paths for remaining static-check code issues.
+- The Apr 12, 2026 Rebecca-safe closeout pass finalized the remaining coordination/documentation tasks and left only owner-dependent follow-ups open.
+- The Apr 12, 2026 implementation follow-up pass completed additive DB safety enhancements (`schema_drift_check.py`, `safety_gate.py`, and new-user plaintext-email protection with legacy-login compatibility), validated full backend status at `176 passed, 3 skipped`, and synchronized a categorized push-ready commit stack.
 
 ### Qui Huynh
 - Project lead, backend architecture, database design, API development, code review, documentation.
@@ -37,6 +45,16 @@
 - Resolved the April 2, 2026 frontend parser/type cleanup pass and synchronized the documentation updates that followed.
 - Coordinated the April 2, 2026 documentation follow-up pass so the transcript, progress log, reflection, TODO, sprint tracking, QA note, README, and AUTHORS remained synchronized.
 - Carried the latest documentation follow-up through to completion so the session history and top-level audit trail remained consistent.
+- Confirmed on Apr 10, 2026 that Rebecca has no further implementation steps on her side; only external backend/security sign-off remains.
+- Recorded the Apr 10, 2026 migration verification results and synchronized the documentation bundle to keep the audit trail current.
+- Implemented and validated Apr 10, 2026 backend critical regression expansion across location, summary, system, and user/auth flows, followed by a full backend suite pass (`107 passed`, warnings only).
+- Implemented Apr 11, 2026 demo-readiness updates (`docs/PROJECT_DEMO.md`, persisted demo settings, backend-driven alert filters, in-app backend health/scrape demo actions), then completed final root users+alerts API cleanup validation (`40 passed, 0 failed`).
+- Completed Apr 11, 2026 migration verification evidence reruns and full backend confirmation (`159 passed, 3 skipped`), then synchronized audit-tracking docs and closed the scraper/DB/summary regression-checklist task.
+- Completed Apr 11, 2026 merge-blocker remediation for branch integration by fixing migration schema/index portability, restricting Phase 3 migration bootstrap scope, tightening migration test patch strictness, and synchronizing branch/doc state after conflict-resolution merge from `main`.
+- Completed Apr 12, 2026 coordination verification refresh and evidence sync by capturing backend/migration evidence, appending timestamped readiness artifacts, and keeping the audit-facing docs aligned with the current non-passing local preflight snapshot.
+- Completed Apr 12, 2026 Phase 2/3 Rebecca-safe coordination implementation: added owner/evidence tracking artifacts, cleared frontend dependency blocker, and documented owner-routed static-check follow-up without touching teammate-owned implementation files.
+- Completed Apr 12, 2026 Rebecca-safe closeout synchronization by finalizing top-level tracking updates and explicitly scoping remaining items to non-Rebecca owners.
+- Completed Apr 12, 2026 database safety follow-up implementation by adding schema-drift and unified safety-gate tooling, hardening new-user email persistence behavior, expanding compatibility regressions, and pushing categorized commit groups for easier PR review.
 
 ### Celeste George
 - Frontend developer, UI/UX research, and QA.
@@ -96,6 +114,9 @@
   - Implemented and documented safe, preparatory work for User Security Plan (migration, rollback, logging, monitoring, staging)
   - Created and maintained project documentation, progress logs, and transcripts
   - Supported backend test coverage, validation, and documentation synchronization
+  - Captured the Apr 12, 2026 coordination verification refresh, including backend/migration evidence and readiness artifacts, while preserving append-only documentation chronology
+  - Implemented Apr 12, 2026 Phase 2/3 coordination artifacts and owner-safe frontend verification escalation tracking
+  - Implemented Apr 12, 2026 DB safety follow-up enhancements (schema drift checker, unified migration safety gate, new-user plaintext-email protection with legacy login compatibility) and coordinated categorized PR-ready push synchronization
 
 ### **Celeste George**
 - ULID: C00465845

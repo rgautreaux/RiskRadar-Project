@@ -1,3 +1,107 @@
+### Apr 12, 2026: Database Safety Lane Follow-up + Categorized Push Sync
+- Continued the Rebecca-safe implementation lane with additive database protection improvements and migration-readiness tooling.
+- Added schema-drift and unified safety-gate utilities with regression coverage, hardened new-user registration to avoid plaintext email storage, and preserved legacy-login compatibility.
+- Completed a categorized commit split and pushed the branch so PR review can evaluate security, DB safety, docs/evidence, and generated artifacts in clearer boundaries.
+- Verified the full backend suite after follow-up implementation (`176 passed, 3 skipped`).
+
+#### Why These Developments Were Made
+- To improve user-information protection while minimizing merge/ownership risk.
+- To provide a single command path for migration readiness checks and reduce operator error.
+- To improve review quality by organizing commits around subsystem impact.
+
+#### How This Betters the Project
+- Raises baseline privacy protection by removing plaintext persistence for new user emails.
+- Improves deployment safety by combining preflight, drift, validation, and monitoring gates.
+- Reduces PR review ambiguity through category-based commit organization and push synchronization.
+
+---
+
+### Apr 12, 2026: Database Safety Hardening Implementation + Full Verification
+- Completed a full database hardening implementation cycle focused on safe-by-default migration execution, additive integrity improvements, and transaction-guarded writes.
+- Added migration preflight enforcement for required schema/index/FK conditions and orphan detection before migration execution.
+- Added operational index and FK hardening artifacts plus endpoint-level guarded commit/rollback usage for high-risk write paths.
+- Verified the implementation with both focused suites and a full backend run (`165 passed, 3 skipped`).
+
+#### Why These Developments Were Made
+- To reduce migration and data-integrity hazards before production-like rollout.
+- To prevent silent write-path partial-failure states by standardizing guarded transaction boundaries.
+- To keep schema evolution safe and auditable with explicit preflight gates and idempotent migration artifacts.
+
+#### How This Betters the Project
+- Improves operational safety by blocking risky migration runs when prerequisites are missing.
+- Improves reliability by enforcing stronger relational integrity and better query-path indexing.
+- Improves auditability by pairing implementation changes with full verification evidence and synchronized documentation.
+
+---
+
+### Apr 11, 2026: Merge Blocker Remediation and PR Conflict Resolution
+- Resolved GitHub-reported merge blockers by fixing migration schema/index compatibility, narrowing migration bootstrap behavior, tightening monkeypatch strictness in tests, and aligning handoff metadata.
+- Merged `main` into the feature branch and reran focused migration suites to confirm the conflict-resolution path remained stable.
+- Synchronized top-level documentation so the remediation pass is captured in transcript/progress records for auditability.
+
+#### Why These Developments Were Made
+- To remove concrete blockers preventing branch integration and review progress.
+- To ensure migration behavior remains explicit, reproducible, and aligned with the reviewed SQL artifact.
+- To prevent silent regression masking in tests where `SessionLocal` is a required module attribute.
+
+#### How This Betters the Project
+- Reduces merge risk by resolving branch-level conflict and migration portability concerns.
+- Improves operational safety by avoiding unintended schema creation side effects during migration runs.
+- Strengthens regression signal quality by ensuring tests fail loudly when expected patch targets drift.
+
+---
+
+### Apr 11, 2026: Migration Verification Evidence + Full Suite Confirmation
+- Completed a verification closeout pass by rerunning migration execution, validation, and monitoring commands after local schema alignment.
+- Confirmed full backend stability with a fresh full-suite run (`159 passed, 3 skipped`) and documented the evidence in migration notes.
+- Closed the remaining Rebecca-safe tracker item by adding a concrete scraper/DB/summary regression checklist and synchronizing the top-level audit docs.
+
+#### Why These Developments Were Made
+- To provide reviewer-ready proof instead of relying on prior session memory.
+- To reduce rollout ambiguity by recording migration and test verification outputs in durable project docs.
+- To close the remaining safe task under Rebecca ownership without overlapping other team members' active implementation scope.
+
+#### How This Betters the Project
+- Improves confidence in migration reliability and backend stability for handoff review.
+- Converts an open planning checkbox into a repeatable verification checklist.
+- Keeps the documentation trail synchronized and easier to audit.
+
+---
+
+### Apr 11, 2026: Demo Readiness Implementation + Final Cleanup
+- Converted the demo plan into implemented functionality by adding backend-driven alert filtering, persisted demo settings behavior, and in-app backend demonstration actions.
+- Added source-level scrape trigger outcome rendering to make backend pipeline demonstrations clearer in presentation contexts.
+- Completed cleanup validation with the same root users+alerts API test command and confirmed a green pass.
+
+#### Why These Developments Were Made
+- To shift from documentation-only demo preparation into demonstrable, reliable product behavior.
+- To prioritize low-risk, high-value changes that align with existing backend capabilities.
+- To close the session with reproducible test verification on the exact command path used during cleanup.
+
+#### How This Betters the Project
+- Improves demo reliability and credibility for academic/business presentations.
+- Reduces mismatch between planned demos and implemented user-visible behavior.
+- Strengthens confidence in backend API behavior through explicit cleanup validation.
+
+---
+
+### Apr 10, 2026: Rebecca Task Status Confirmation
+- Confirmed that Rebecca’s UI/UX branding work is complete and that her email-encryption implementation work is finished on the code side but still waiting on external backend/security sign-off.
+- Recorded the updated status in the transcript and reflection so the documentation reflects the current ownership boundary without implying unapproved production rollout.
+- Kept the audit trail aligned with the actual implementation state for handoff and review clarity.
+
+#### Why These Developments Were Made
+- To distinguish completed implementation from remaining external approval gates.
+- To keep Rebecca’s documentation current now that there are no further code changes required on her end.
+- To preserve a reliable audit trail for anyone checking the remaining project ownership.
+
+#### How This Betters the Project
+- Reduces ambiguity about what Rebecca has finished and what is still pending approval.
+- Keeps the documentation consistent with the codebase and the sprint tracker.
+- Supports clean handoff and review by making the remaining blocker explicit.
+
+---
+
 ### Apr 2, 2026: Frontend Warning Cleanup & Validation
 - Repaired the shared themed view component that was causing frontend parser failures, then revalidated the app with lint and TypeScript until the touched files were clean.
 - Focused the cleanup on the damaging issues first so harmless warnings did not distract from the actual build blockers.

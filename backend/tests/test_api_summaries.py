@@ -6,6 +6,22 @@ from unittest.mock import patch, MagicMock
 from db.models import Summary
 
 
+def _mock_local_alert(source: str, source_id: str, title: str) -> dict:
+    return {
+        "source": source,
+        "source_id": source_id,
+        "alert_type": "weather" if source == "nws" else "air_quality",
+        "severity": "high" if source == "nws" else "moderate",
+        "title": title,
+        "description": f"{title} description",
+        "latitude": 34.05,
+        "longitude": -118.24,
+        "location_name": "Los Angeles, CA",
+        "event_start": "2026-04-10T12:00:00Z",
+        "event_end": None,
+    }
+
+
 class TestListSummaries:
     def test_list_all(self, test_client, sample_summary):
         resp = test_client.get("/api/v1/summaries")
@@ -88,56 +104,70 @@ class TestGenerateSummary:
         resp = test_client.post("/api/v1/summaries/generate")
         assert resp.status_code == 404
 
+    def test_generate_falls_back_when_llm_fails(self, test_client, sample_alerts):
+        with patch("llm.summarizer.Summarizer._call_llm", side_effect=RuntimeError("provider down")):
+            resp = test_client.post("/api/v1/summaries/generate")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["summary_type"] == "daily"
+        assert "Fallback" in data["content"]
+        assert data["model_used"] == "fallback-no-llm"
 
-class TestGenerateLocalSummary:
-    def test_generate_local_with_alerts(self, test_client, sample_alerts):
-        mock_location = (34.05, -118.24, "Los Angeles", "CA")
-        mock_nws = [
-            {
-                "source": "nws",
-                "source_id": "nws_local_001",
-                "alert_type": "weather",
-                "severity": "high",
-                "title": "Heat Advisory",
-                "description": "Excessive heat expected.",
-                "latitude": 34.05,
-                "longitude": -118.24,
-                "location_name": "Los Angeles, CA",
-            }
-        ]
-        mock_llm_return = ("## Local Digest\nHeat advisory for Los Angeles.", 75, "openai/gpt-5.2")
 
-        with (
-            patch("api.location._zip_to_coords", return_value=mock_location),
-            patch("api.location._fetch_nws_alerts", return_value=mock_nws),
-            patch("api.location._fetch_airnow", return_value=[]),
-            patch("llm.summarizer.Summarizer._call_llm", return_value=mock_llm_return),
-        ):
+class TestLocalSummaryFlow:
+    def test_generate_local_summary(self, test_client, db_session, monkeypatch):
+        monkeypatch.setattr("api.location._zip_to_coords", lambda zip_code: (34.05, -118.24, "Los Angeles", "CA"))
+        monkeypatch.setattr(
+            "api.location._fetch_nws_alerts",
+            lambda lat, lon, state: [_mock_local_alert("nws", "nws_001", "Local Severe Weather")],
+        )
+        monkeypatch.setattr(
+            "api.location._fetch_airnow",
+            lambda zip_code: [_mock_local_alert("airnow", f"{zip_code}_PM25_2026-04-10", "Local Air Quality")],
+        )
+
+        mock_return = ("## Local Digest\nTest local summary.", 42, "openai/gpt-5.2")
+        with patch("llm.summarizer.Summarizer._call_llm", return_value=mock_return):
             resp = test_client.post("/api/v1/summaries/generate/local?zip_code=90001")
 
         assert resp.status_code == 200
         data = resp.json()
         assert data["summary_type"] == "local"
-        assert "Los Angeles" in data["title"]
-        assert "Local Digest" in data["content"]
+        assert data["region"] == "Los Angeles, CA 90001"
+        assert "Local Digest for Los Angeles, CA" in data["title"]
+        assert data["content"] == "## Local Digest\nTest local summary."
+        assert db_session.query(Summary).count() == 1
 
-    def test_generate_local_invalid_zip(self, test_client):
-        with patch("api.location._zip_to_coords", return_value=None):
-            resp = test_client.post("/api/v1/summaries/generate/local?zip_code=00000")
+        latest = test_client.get("/api/v1/summaries/latest/local?zip_code=90001")
+        assert latest.status_code == 200
+        latest_data = latest.json()
+        assert latest_data["id"] == data["id"]
+        assert latest_data["summary_type"] == "local"
+
+    def test_generate_local_summary_not_found(self, test_client, monkeypatch):
+        monkeypatch.setattr("api.location._zip_to_coords", lambda zip_code: None)
+
+        resp = test_client.post("/api/v1/summaries/generate/local?zip_code=99999")
         assert resp.status_code == 404
+        assert "Could not find location" in resp.json()["detail"]
 
-    def test_generate_local_no_alerts(self, test_client):
-        mock_location = (34.05, -118.24, "Los Angeles", "CA")
-        with (
-            patch("api.location._zip_to_coords", return_value=mock_location),
-            patch("api.location._fetch_nws_alerts", return_value=[]),
-            patch("api.location._fetch_airnow", return_value=[]),
-        ):
-            resp = test_client.post("/api/v1/summaries/generate/local?zip_code=90001")
-        assert resp.status_code == 404
-
-
+    def test_latest_local_summary_returns_none_when_missing(self, test_client):
+        resp = test_client.get("/api/v1/summaries/latest/local?zip_code=90001")
+        assert resp.status_code == 200
+        assert resp.json() is None
 class TestCallLlm:
+    def test_resolve_model_falls_back_to_safe_default(self):
+        from llm.summarizer import Summarizer
+
+        with (
+            patch("config.settings.settings.LLM_MODEL", ""),
+            patch("config.settings.settings.LLM_MODEL_GUEST", ""),
+            patch("config.settings.settings.LLM_MODEL_PREMIUM", ""),
+        ):
+            summarizer = Summarizer()
+            assert summarizer._resolve_model() == "gpt-4o-mini"
+            assert summarizer._resolve_model(is_premium=True) == "gpt-4o-mini"
+
     def test_call_llm_returns_text_and_tokens(self):
         from llm.summarizer import Summarizer
 
@@ -154,6 +184,8 @@ class TestCallLlm:
         with (
             patch("config.settings.settings.OPENROUTER_API_KEY", "test-key"),
             patch("config.settings.settings.LLM_MODEL", "test-model"),
+            patch("config.settings.settings.LLM_MODEL_GUEST", ""),
+            patch("config.settings.settings.LLM_MODEL_PREMIUM", ""),
             patch("openai.OpenAI") as mock_client_cls,
         ):
             mock_client_cls.return_value.chat.completions.create.return_value = mock_completion
@@ -187,6 +219,8 @@ class TestCallLlm:
         with (
             patch("config.settings.settings.OPENROUTER_API_KEY", "test-key"),
             patch("config.settings.settings.LLM_MODEL", "test-model"),
+            patch("config.settings.settings.LLM_MODEL_GUEST", ""),
+            patch("config.settings.settings.LLM_MODEL_PREMIUM", ""),
             patch("openai.OpenAI") as mock_client_cls,
         ):
             mock_client_cls.return_value.chat.completions.create.return_value = mock_completion

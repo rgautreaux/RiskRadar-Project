@@ -23,6 +23,44 @@ This system ensures that the backend database does not grow indefinitely, improv
 
 ---
 
+## Notification Adapter Rollout (Ops)
+
+RiskRadar now uses a provider adapter abstraction for notification dispatch. The default provider is `noop`, which performs no outbound push calls and is safe for all non-production environments.
+
+### Provider Modes
+- `noop` (default): deterministic no-op dispatch for safe testing.
+- `expo` (scaffold): selected only when `EXPO_ACCESS_TOKEN` is set.
+- `fcm` (scaffold): selected only when both `FCM_PROJECT_ID` and `FCM_SERVER_KEY` are set.
+
+When required credentials are missing, the backend automatically falls back to `noop` and logs a provider fallback event.
+
+Outbound delivery is additionally controlled by `NOTIFICATION_DELIVERY_ENABLED` (default `false`). This gate must be explicitly enabled to allow real provider calls.
+
+### Required Settings
+Configure in `.env`:
+
+```
+NOTIFICATION_PROVIDER=noop
+NOTIFICATION_DELIVERY_ENABLED=false
+NOTIFICATION_TIMEOUT_SECONDS=10
+EXPO_ACCESS_TOKEN=
+EXPO_PUSH_URL=https://exp.host/--/api/v2/push/send
+FCM_PROJECT_ID=
+FCM_SERVER_KEY=
+```
+
+### Endpoint Behavior
+- Dispatch endpoint: `POST /api/v1/notifications/alerts/{alert_id}/notify-subscribers`
+- Response includes:
+  - `provider`
+  - `recipient_count`
+  - `sent_count`
+
+### Structured Audit Logs
+User preference and device-token updates, plus notification dispatch operations, are emitted as single-line JSON logs for SIEM-friendly ingestion.
+
+---
+
 ## Backend Component Overview
 
 ### 1. `main.py`

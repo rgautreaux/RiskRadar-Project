@@ -1,8 +1,52 @@
+
 # RiskRadar — Group 6 Senior Project
 
 Environmental risk monitoring mobile app with real-time alerts, air quality data, and AI-powered summaries.
 
 RiskRadar helps residents and travelers identify environmental risks by scraping government APIs (NWS weather, AirNow air quality, NASA wildfires, EPA pollution, USGS earthquakes), storing alerts in a database, and generating AI daily digests.
+
+---
+
+## Synchronization Notes (Chronological)
+
+### April 10, 2026 Synchronization Note
+
+- Critical backend regression coverage was expanded this session for location ingestion, local summaries, system trigger/health behavior, and user auth/notification paths.
+- Full backend validation completed in this session: 107 passed, 0 failed (warnings only).
+- Documentation, transcript, and progress-tracking records are synchronized around this validation state; backend/security lead sign-off remains the external non-code approval gate.
+
+---
+
+### April 11, 2026 Synchronization Note
+
+- GitHub merge blockers were resolved in this session: migration SQL indexability fix (`email_hmac` bounded type), Phase 3 migration prerequisite hardening (no broad schema bootstrap), strict migration test monkeypatching, and handoff metadata date alignment.
+- Branch conflict state was cleared by merging `main` into the active branch, followed by focused migration test verification (`6 passed`).
+- Demo-readiness implementation work was completed this session for presentation support paths.
+- `docs/PROJECT_DEMO.md` now tracks implemented demos, to-be-implemented demos, recommended screen order, fallback rules, and presenter notes.
+- Mobile demo flow improvements now include persisted demo settings, backend-driven alert filters, in-app backend health checks, and scrape-trigger summary output.
+- Backend alert preference behavior was hardened so explicit query filters override user defaults, and targeted backend API suites were revalidated.
+- Root command verification for users + alerts API tests completed green in this session (`40 passed, 0 failed`).
+- Migration verification reruns and monitoring checks were completed successfully in this session environment.
+- Full backend suite confirmation rerun is green: `159 passed, 3 skipped`.
+- Scraper/DB/summary regression checklist is now documented and validated in `docs/QA_CHECKLIST.md`.
+
+---
+
+### April 12, 2026 Synchronization Note
+
+- Completed the final pass for the web frontend visual-refresh plan in the template-based web UI (`backend/templates/*`, `backend/static/css/style.css`).
+- Implemented accessibility hardening in shared web templates: skip link + `main` landmark, ARIA labels/live regions, keyboard-visible focus states, and consistent error/success messaging patterns.
+- Aligned web visual styling with RiskRadar branding tokens while preserving backend route/API behavior.
+- Replaced remaining inline template presentation styles with reusable stylesheet classes to reduce drift and maintenance risk.
+- During final verification, a transient live external-data timeout was encountered and resolved by making live timeout/network transport failures skip-safe in `backend/tests/test_live_data_fetch.py`.
+- Final verification rerun for this session is green: full backend pytest suite `165 passed, 3 skipped`.
+- Coordination verification refresh updated backend baseline evidence to `172 passed, 3 skipped` after additional migration/schema safety tests landed.
+- Frontend static-check environment blocker was cleared (`npm install` in `frontend/RiskRadar`), and remaining lint/typecheck issues were documented as frontend-owner follow-ups (`app/main/weather-report.tsx`, `app/(tabs)/explore.tsx`).
+- Rebecca-safe coordination/documentation closeout tasks are complete; remaining open items are owner-dependent follow-ups.
+- Apr 12 follow-up (database safety implementation lane): added and validated `schema_drift_check.py`, unified `safety_gate.py`, registration plaintext-email hardening for new users, and legacy-login compatibility regression coverage.
+- Apr 12 follow-up verification: full backend pytest baseline advanced to `176 passed, 3 skipped` after safety-lane additions.
+- Apr 12 follow-up review prep: remaining local/unpushed work was split into categorized commits (security, DB safety commands/tests, migration evidence docs, top-level sync docs, frontend generated artifacts) and pushed to `origin/Rebecca-Gautreaux-Work-Branch` for clearer PR review.
+- Apr 12 documentation follow-up: added a full Mermaid ER `Database Schema` graph in `docs/DATA_MODEL.md` under `Key Relationships`, capturing all 13 tables, key PK/FK fields, and current FK relationship edges.
 
 ---
 
@@ -143,8 +187,8 @@ Then press:
 Team6Project/
 ├── .env.example              # Template for environment variables
 ├── .env                      # Your local config (not committed)
-│
 ├── backend/                  # Python FastAPI server
+
 │   ├── main.py               # App entry point
 │   ├── requirements.txt      # Python dependencies
 │   ├── riskradar.db          # SQLite database (auto-created)
@@ -234,7 +278,7 @@ Team6Project/
 
 ---
 
-## Project Stages & Progress (as of Apr 2, 2026)
+## Project Stages & Progress (as of Apr 10, 2026)
 
 ### Stage 1: Security & Migration
 - Comprehensive User Security Plan implemented (encryption, key management, audit logging planned)
@@ -247,7 +291,7 @@ Team6Project/
 - All retention logic, migrations, and tests are documented and validated
 
 ### Stage 3: End-to-End Testing & Validation
-- Full backend pytest suite (87/87 passing) covers API, database, scrapers, retention logic, and user registration/login regressions
+- Full backend pytest suite is green in the latest Apr 11 verification pass (`159 passed, 3 skipped`) and covers API, database, scrapers, retention logic, and user registration/login regressions
 - Integration tests ensure scraper-to-database pipeline is robust and reliable
 - Backend smoke verification script now completes cleanly, including config-driven scraper loading and conditional summary generation when no LLM provider is configured
 - CI/local pre-push checklist ensures code quality and reproducibility
@@ -261,14 +305,18 @@ Team6Project/
 - All major sessions and developments are logged in REBECCA-TRANSCRIPT.md and GROUP_PROGRESS_LOG
 - AUTHORS.md details each member's contributions and roles
 - README, TODO, and top-level planning/tracking docs are kept synchronized for auditability and onboarding
+- Apr 10 update: migration verification evidence from this environment was recorded (targeted migration tests passed and migration script execution completed successfully), and the documentation bundle was refreshed in lockstep
+- Apr 10 update: Rebecca’s code-side implementation work is complete; the remaining dependency is backend/security lead sign-off, and the documentation bundle now reflects that boundary explicitly
 - Apr 2 update: Phase 3 security implementation evidence and backend/security review-request content are now documented and ready for lead sign-off workflow
 - Apr 2 update: backend pytest, frontend lint, and scraper smoke verification were rerun; the backend suite passed cleanly, frontend lint/typecheck completed cleanly, and the smoke script completed without summary-generation errors
 - Apr 2 follow-up: documentation sync records were refreshed again so the latest transcript, progress, reflection, TODO, sprint tracking, QA, and AUTHORS entries remain in lockstep
 - Apr 2 follow-up request: the newest transcript/progress/reflection/update pass is now recorded so the documentation audit trail reflects this session as well
+- Apr 12 update: database safety hardening implementation completed for this cycle, including connection pre-ping, migration preflight checks (tables/columns/indexes/foreign keys/orphans), operational index hardening, and FK integrity migration artifacts
+- Apr 12 update: backend write-path transaction guards were standardized in high-risk endpoints and validated with a full backend pass (`165 passed, 3 skipped`)
 
 ---
 
-## Major Developments & Implementation Highlights (as of Apr 2, 2026)
+## Major Developments & Implementation Highlights (as of Apr 12, 2026)
 
 - All stage-specific progress notes and updates are now organized at the end of the README for clarity and auditability.
 - Top-level documentation (README, TODO, AUTHORS, GROUP_PROGRESS_LOG, REBECCA-TRANSCRIPT, REFLECTION) is synchronized and audit-ready.
@@ -281,6 +329,9 @@ Team6Project/
 - April 2 verification pass confirmed backend pytest at 87/87, frontend lint/typecheck clean, and successful smoke execution of backend/test_scrape_and_summarize.py after registry/import and generic API extraction fixes.
 - The April 2 documentation follow-up added a fresh transcript entry and refreshed all audit-facing planning/progress docs without changing the verified code state.
 - The Apr 2 follow-up verification pass also refreshed the transcript/progress/reflection/TODO chain so the top-level records continue to match the validated codebase state.
+- The Apr 10 documentation pass preserved the same audit trail while making Rebecca’s remaining approval gate explicit.
+- The Apr 10 migration-verification sync pass recorded successful migration test/script results and propagated the session update across transcript, progress, reflection, TODO, AUTHORS, README, and sprint tracking.
+- The Apr 12 DB hardening pass implemented migration preflight enforcement (including index/FK prerequisites), transaction-safe endpoint writes, and additive integrity/index migrations with full backend verification (`165 passed, 3 skipped`).
 
 ---
 

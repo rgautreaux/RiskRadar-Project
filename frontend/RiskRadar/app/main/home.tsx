@@ -14,6 +14,7 @@ import {
   Animated,
   Dimensions,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
@@ -60,6 +61,8 @@ function weatherConditionText(main: string, desc: string): string {
   if (desc) return desc.charAt(0).toUpperCase() + desc.slice(1);
   return main;
 }
+
+const DEMO_SETTINGS_KEY = 'riskradar_demo_settings';
 
 // ── Animated card wrapper ────────────────────────────────────────────
 
@@ -117,6 +120,28 @@ export default function Home() {
   useEffect(() => { return () => { if (autocompleteTimer.current) clearTimeout(autocompleteTimer.current); }; }, []);
 
   // Load global stats on mount
+  useEffect(() => {
+    if (user?.zip_code) {
+      return;
+    }
+
+    (async () => {
+      try {
+        const stored = await AsyncStorage.getItem(DEMO_SETTINGS_KEY);
+        if (!stored) {
+          return;
+        }
+
+        const parsed = JSON.parse(stored) as { zipCode?: string };
+        if (parsed.zipCode) {
+          setZipCode(parsed.zipCode);
+        }
+      } catch {
+        // Keep the dashboard usable even if saved demo settings cannot be restored.
+      }
+    })();
+  }, [user?.zip_code]);
+
   useEffect(() => {
     (async () => {
       try { setErrorStats(null); const data = await apiFetch<AlertStats>('/alerts/stats'); setStats(data); }

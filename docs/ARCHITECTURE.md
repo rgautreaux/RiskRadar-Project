@@ -163,7 +163,7 @@ Time ─────────────────────────
 2. **Normalization**: Each scraper normalizes raw data into a standard Alert schema, computes severity, and extracts coordinates.
 3. **Deduplication**: Alerts are deduplicated by `(source, source_id)` unique constraint before insertion.
 4. **Storage**: Processed data is persisted in **MySQL (MariaDB)** via **SQLAlchemy ORM** (`riskradar_db`).
-5. **Analysis**: The **OpenAI** or **Anthropic** LLM API generates daily digest summaries from recent alerts.
+5. **Analysis**: The LLM API generates daily digest summaries from recent alerts, with support for **OpenRouter**, **OpenAI**, **DeepSeek**, and **Anthropic** providers.
 6. **Presentation**: The **React Native (Expo)** mobile app fetches data from the FastAPI REST API.
 
 ---

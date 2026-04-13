@@ -1,10 +1,11 @@
 # RiskRadar Data Model
-
 ---
 
 ## Overview
 
 RiskRadar uses a **MariaDB 10.4** relational database (`riskradar_db`) managed via **SQLAlchemy ORM**, consisting of **13 tables** organized into four functional groups: **Content**, **Users**, **Alerts & AI**, and **Operations**.
+
+> **Closure status (Apr 12, 2026):** Local database closure sequence is fully verified (`preflight=ok`, `schema_drift=ok`, strict contract `safety_gate=ok`, backend tests `185 passed, 3 skipped`). Staging/production closure remains **pending environment access** and must be executed by team members with staging/prod DB credentials and deployment permissions.
 
 ---
 
@@ -147,11 +148,11 @@ Per-user notification configuration.
 | `quiet_start` | `TIME` | Start of quiet hours |
 | `quiet_end` | `TIME` | End of quiet hours |
 
-### `user_prefernces`
+### `user_preferences`
 
 Junction table linking users to their preferred categories.
 
-> **Note**: Table name contains a typo (`prefernces` instead of `preferences`) in the current schema.
+> **Status**: Legacy typo (`user_prefernces`) is remediated by migration `2026-04-12_phase1_typo_schema_fixes.sql`.
 
 | Column | Type | Description |
 |---|---|---|
@@ -163,12 +164,12 @@ Junction table linking users to their preferred categories.
 
 Tracks which articles a user has read and their progress.
 
-> **Note**: The `articlle_id` column contains a typo (`articlle_id` instead of `article_id`) in the current schema.
+> **Status**: Legacy typo (`articlle_id`) is remediated by migration `2026-04-12_phase1_typo_schema_fixes.sql`.
 
 | Column | Type | Description |
 |---|---|---|
 | `user_id` | `INT` PK, FK | References `users.user_id` |
-| `articlle_id` | `INT` PK, FK | References `articles.article_id` |
+| `article_id` | `INT` PK, FK | References `articles.article_id` |
 | `read_at` | `TIMESTAMP` | When the user read the article |
 | `progress_pct` | `SMALLINT` | Reading progress percentage (0–100) |
 
@@ -214,13 +215,13 @@ Stores AI-generated summaries that aggregate multiple alerts.
 | `content` | `TEXT` | Generated summary text |
 | `summary_type` | `TEXT` | Type of summary |
 | `alert_ids` | `JSON` | Array of alert IDs included (validated via `json_valid()`) |
-| `reigon` | `TEXT` | Geographic region covered |
+| `region` | `TEXT` | Geographic region covered |
 | `generated_at` | `TEXT` | When the summary was generated |
 | `model_used` | `TEXT` | AI model identifier (e.g., `gpt-4o-mini`) |
 | `token_count` | `INT` | Number of tokens used for generation |
 | `created_at` | `TEXT` | Record creation time |
 
-> **Note**: The `reigon` column contains a typo (`reigon` instead of `region`) in the current schema.
+> **Status**: Previously fixed by migration `2026-03-03_mariadb_scraper_alignment.sql`.
 
 **Unique constraint**: `alert_ids`
 
@@ -263,36 +264,204 @@ Audit log for each scraping run.
 | `articles` | `alerts` | One-to-one | `article_id` |
 | `users` | `device_tokens` | One-to-one | `user_id` |
 | `users` | `notification_settings` | One-to-one | `user_id` |
-| `users` | `user_prefernces` | Many-to-many (via junction) | `user_id` |
-| `categories` | `user_prefernces` | Many-to-many (via junction) | `category_id` |
+| `users` | `user_preferences` | Many-to-many (via junction) | `user_id` |
+| `categories` | `user_preferences` | Many-to-many (via junction) | `category_id` |
 | `users` | `user_reads` | Many-to-many (via junction) | `user_id` |
-| `articles` | `user_reads` | Many-to-many (via junction) | `articlle_id` |
+| `articles` | `user_reads` | Many-to-many (via junction) | `article_id` |
+
+## Database Schema
+
+```mermaid
+erDiagram
+  SOURCES {
+    INT source_id PK
+    VARCHAR source_name
+    VARCHAR base_url
+    INT scrape_freq_min
+    TINYINT is_active
+    TIMESTAMP created_at
+  }
+
+  CATEGORIES {
+    INT category_id PK
+    VARCHAR category_name
+    TEXT description
+  }
+
+  ARTICLES {
+    INT article_id PK
+    INT source_id FK
+    INT category_id FK
+    VARCHAR title
+    VARCHAR source_url
+    TEXT raw_content
+    TEXT formatted_body
+    VARCHAR summary
+    SMALLINT read_time_min
+    VARCHAR status
+    DATE scraped_at
+    DATE published_at
+    DATE created_at
+  }
+
+  TAGS {
+    INT tag_id PK
+    VARCHAR tag_name
+  }
+
+  ARTICLE_TAGS {
+    INT article_id PK, FK
+    INT tag_id PK, FK
+  }
+
+  ALERTS {
+    INT alert_id PK
+    INT article_id FK
+    TEXT source
+    TEXT source_id
+    TEXT alert_type
+    TEXT severity
+    TEXT title
+    TEXT description
+    VARCHAR priority
+    JSON raw_data
+    FLOAT latitude
+    FLOAT longitude
+    TEXT location_name
+    TEXT event_start
+    TEXT event_end
+    TEXT fetched_at
+    TIMESTAMP created_at
+    TEXT updated_at
+  }
+
+  SUMMARIES {
+    INT id PK
+    TEXT title
+    TEXT content
+    TEXT summary_type
+    JSON alert_ids
+    TEXT region
+    TEXT generated_at
+    TEXT model_used
+    INT token_count
+    TEXT created_at
+  }
+
+  USERS {
+    INT user_id PK
+    INT token_id FK
+    TEXT display_name
+    TEXT email
+    TEXT password_hash
+    TEXT zip_code
+    FLOAT latitude
+    FLOAT longitude
+    JSON alert_types
+    TEXT notify_severity
+    TINYINT is_active
+    TIMESTAMP last_login_at
+    TEXT created_at
+    TEXT updated_at
+  }
+
+  DEVICE_TOKENS {
+    INT token_id PK
+    INT user_id FK
+    VARCHAR device_token
+    VARCHAR platform
+    TINYINT is_active
+    TIMESTAMP created_at
+  }
+
+  NOTIFICATION_SETTINGS {
+    INT user_id PK, FK
+    TINYINT alerts_enabled
+    TINYINT daily_digest
+    TIME quiet_start
+    TIME quiet_end
+  }
+
+  USER_PREFERENCES {
+    INT user_id PK, FK
+    INT category_id PK, FK
+    TINYINT is_enabled
+  }
+
+  USER_READS {
+    INT user_id PK, FK
+    INT article_id PK, FK
+    TIMESTAMP read_at
+    SMALLINT progress_pct
+  }
+
+  SCRAPE_LOG {
+    INT log_id PK
+    TEXT source
+    TEXT status
+    INT alerts_fetched
+    INT alerts_new
+    TIMESTAMP scraped_at
+    SMALLINT http_status
+    INT articles_found
+    INT articles_inserted
+    TEXT error_message
+    INT duration_ms
+    TEXT started_at
+    TEXT completed_at
+  }
+
+  SOURCES ||--o{ ARTICLES : source_id
+  CATEGORIES ||--o{ ARTICLES : category_id
+  ARTICLES ||--|| ALERTS : article_id
+  ARTICLES ||--o{ ARTICLE_TAGS : article_id
+  TAGS ||--o{ ARTICLE_TAGS : tag_id
+  USERS ||--|| DEVICE_TOKENS : user_id
+  USERS ||--|| NOTIFICATION_SETTINGS : user_id
+  USERS ||--o{ USER_PREFERENCES : user_id
+  CATEGORIES ||--o{ USER_PREFERENCES : category_id
+  USERS ||--o{ USER_READS : user_id
+  ARTICLES ||--o{ USER_READS : article_id
+```
+
+> Note: `SUMMARIES.alert_ids` stores alert linkage as JSON rather than a normalized junction table, so no direct FK edge is present.
 
 ---
 
 ## Normalization Analysis
 
-The current schema **does not fully satisfy Third Normal Form (3NF)** due to the following violations:
+> **Current status (2026-04-12):** Normalization remediation is implemented and locally verified. Remaining project-wide closure work is operational rollout in staging/production and optional contract retirement of legacy compatibility columns after environment-level safety-gate approval.
 
-### First Normal Form (1NF) Violations
+### Verified Closure State (Local)
 
-- **`alerts.raw_data`** (`JSON`): Stores the entire raw alert payload as a single JSON object rather than in normalized relational columns or a related table.
-- **`summaries.alert_ids`** (`JSON`): Stores an array of alert IDs as JSON instead of using a junction table (e.g., `summary_alerts`).
-- **`users.alert_types`** (`JSON`): Stores user alert-type preferences as a JSON array instead of a relational structure.
+- `python backend/db/migrations/preflight.py` -> `status=ok`
+- `python backend/db/migrations/schema_drift_check.py` -> `status=ok`
+- `MIGRATION_PREFLIGHT_STRICT=true MIGRATION_NORMALIZATION_CONTRACT_REQUIRED=true python backend/db/migrations/safety_gate.py` -> `status=ok`
+- `python -m pytest -q backend/tests` -> `185 passed, 3 skipped`
 
-### Third Normal Form (3NF) Violations — Transitive Dependencies
+### Staging/Production Closure State
 
-- **`users.zip_code` → `latitude`, `longitude`**: A zip code determines geographic coordinates. These should be in a separate `zip_codes` lookup table.
-- **`alerts.latitude`, `alerts.longitude` → `location_name`**: Geographic coordinates determine the location name. This could be extracted to a `locations` table.
+- Not executed from this workspace session because no staging/prod database access credentials were present in the environment.
+- Required next action: run the exact verified closure sequence in staging and production with deployment-access owners, then attach pass/fail evidence to `backend/db/migrations/MIGRATION_NOTES.md` and `docs/GROUP_PROGRESS_LOG`.
+
+### Remaining Open Items
+
+- Staging/production closure execution is pending required DB/deployment access in those environments.
+- Contract retirement migration (`2026-04-12_phase5_contract_retire_legacy_columns.sql`) is pending final environment-level safety-gate approval.
 
 ---
 
-## Known Schema Issues
+## Resolved Database Issues
 
-The following typos exist in the current `riskradar_db.sql` and should be addressed in a future migration:
+The following schema and normalization issues are resolved in the codebase/local verified closure path:
 
 | Table | Column/Name | Issue |
 |---|---|---|
-| `user_prefernces` | (table name) | Misspelled — should be `user_preferences` |
-| `user_reads` | `articlle_id` | Misspelled — should be `article_id` |
-| `summaries` | `reigon` | Misspelled — should be `region` |
+| `user_prefernces` | (table name) | Remediated by `2026-04-12_phase1_typo_schema_fixes.sql` |
+| `user_reads` | `articlle_id` | Remediated by `2026-04-12_phase1_typo_schema_fixes.sql` |
+| `summaries` | `reigon` | Remediated by `2026-03-03_mariadb_scraper_alignment.sql` |
+| `summaries` | `alert_ids` JSON linkage | Relational replacement implemented via `summary_alerts` + backfill/parity tooling (Phase 2) |
+| `users` | `alert_types` JSON linkage | Relational replacement implemented via `user_alert_type_preferences` + backfill/parity tooling (Phase 3) |
+| `users` | `zip_code -> latitude/longitude` transitive dependency | Lookup remediation implemented via `zip_geo` with override-compatible runtime behavior (Phase 4) |
+| `alerts` | `latitude/longitude -> location_name` transitive dependency | Canonical location mapping implemented via `locations` + `alerts.location_id` (Phase 4) |
+| `alerts` | `raw_data` JSON payload in base row | Canonical payload extraction implemented via `alert_raw_payloads` (Phase 4) |

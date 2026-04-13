@@ -60,9 +60,15 @@ export default function LoginScreen() {
     setIsSubmitting(true);
     try {
       await login(email, password);
+<<<<<<< HEAD
+      router.replace('/main/home');
+    } catch (err: any) {
+      console.error('Login error:', err);
+=======
       router.replace('/(tabs)');
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : '';
+>>>>>>> QuiV2
       let message = 'Invalid email or password. Please try again.';
       if (errorMessage.includes('Failed to fetch') || errorMessage.includes('Network request failed')) {
         message = 'Cannot connect to server. Make sure the backend is running.';

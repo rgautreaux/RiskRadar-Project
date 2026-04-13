@@ -1,9 +1,42 @@
 """Create all database tables. Safe to run multiple times — only creates missing tables."""
 
+<<<<<<< HEAD
+import sys
+from pathlib import Path
+
+BACKEND_DIR = Path(__file__).resolve().parents[1]
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
+=======
 import sqlite3
+>>>>>>> QuiV2
 
 from db.database import engine, Base
-from db.models import Alert, Summary, User, ScrapeLog  # noqa: F401 (import so models register)
+from db.models import (
+    Alert,
+    AlertArchive,
+    CleanupRun,
+    MigrationLog,
+    NotificationDispatchLog,
+    ScrapeLog,
+    ScrapeLogArchive,
+    Summary,
+    SummaryArchive,
+    User,
+)
+
+REGISTERED_MODELS = (
+    Alert,
+    AlertArchive,
+    CleanupRun,
+    MigrationLog,
+    NotificationDispatchLog,
+    ScrapeLog,
+    ScrapeLogArchive,
+    Summary,
+    SummaryArchive,
+    User,
+)
 
 
 def _migrate_users_table():
@@ -31,6 +64,7 @@ def _migrate_users_table():
 
 
 def init_database():
+    _ = REGISTERED_MODELS
     Base.metadata.create_all(bind=engine)
     _migrate_users_table()
     print(f"Database ready: {engine.url}")

@@ -20,11 +20,11 @@
 {% block navbar %}
 <div class="navbar">
     <a href="/dashboard" class="brand">RiskRadar</a>
-    <nav>
+    <nav aria-label="Primary navigation">
         <a href="/dashboard">Alerts</a>
         <a href="/summaries" class="active">Summaries</a>
         <a href="/settings">Settings</a>
-        <button id="logout-btn" onclick="logout()">Logout</button>
+        <button id="logout-btn" type="button" onclick="logout()">Logout</button>
     </nav>
 </div>
 {% endblock %}
@@ -38,7 +38,7 @@
         </button>
     </div>
 
-    <div id="summaries-list">
+    <div id="summaries-list" aria-live="polite">
         <div class="loading">Loading summaries...</div>
     </div>
 </div>

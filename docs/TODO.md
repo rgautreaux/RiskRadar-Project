@@ -1,4 +1,45 @@
-# Documentation Synchronization Note (Apr 2, 2026)
+# Documentation Synchronization Note (Apr 12, 2026)
+
+[ ] 🟡 Project-Wide DB Closure (Staging/Prod) Assignment (Apr 12, 2026): execute the verified local closure sequence in staging/prod by access-enabled owners. Local evidence baseline is complete (`preflight=ok`, `schema_drift=ok`, strict contract `safety_gate=ok`, backend `185 passed, 3 skipped`), while staging/prod execution remains pending due unavailable DB access in this workspace.
+
+Owners:
+- Qui Huynh (primary execution/deployment owner)
+- Noah Benoit (security sign-off owner)
+- Rebecca Gautreaux (DBA evidence synchronization owner)
+
+Required outputs to close this item:
+- Staging run logs for backfill/parity/preflight/schema drift/safety gate
+- Production run logs for the same sequence
+- Updated `backend/db/migrations/MIGRATION_NOTES.md` evidence block
+- Updated `docs/GROUP_PROGRESS_LOG` session entry with pass/fail outcomes
+
+[x] 🟢 Data Model Schema Graph Documentation Update (Apr 12, 2026): added a full Mermaid `Database Schema` section in `docs/DATA_MODEL.md` directly under `Key Relationships`, documenting all 13 tables, key PK/FK fields, and current FK relationship edges with an explicit JSON-linkage note for `summaries.alert_ids`.
+
+[x] 🟢 Database Safety Lane Follow-up + Categorized Push Sync (Apr 12, 2026): implemented and verified schema drift + unified migration safety-gate utilities, hardened new-user email handling to avoid plaintext persistence with legacy-login compatibility retained, updated migration runbook sequencing, split remaining local/unpushed changes into subsystem-aligned commits, and pushed the categorized stack for cleaner PR review (`176 passed, 3 skipped` backend baseline).
+
+[x] 🟢 Rebecca-Safe Plan Closeout Sync (Apr 12, 2026): completed the remaining Rebecca-owned low-risk coordination tasks (shared owner snapshot maintenance, evidence-index upkeep, and final-review checklist scaffolding) and left only owner-dependent follow-ups open (frontend static-check code fixes + external security approval gate).
+
+[x] 🟢 Phase 3 Coordination Verification Attempt (Apr 12, 2026): cleared frontend environment/tooling blocker via `npm install` in `frontend/RiskRadar`, reran `npm run lint; npx tsc --noEmit`, and recorded ownership-safe escalation for remaining frontend code issues (`app/main/weather-report.tsx` parse/type errors, `app/(tabs)/explore.tsx` hook dependency warning).
+
+[x] 🟢 Phase 1 Coordination Verification Refresh (Apr 12, 2026): captured fresh backend baseline (`172 passed, 3 skipped`), reran migration execution/validation/monitor sequence, recorded healthy monitor threshold status, and documented current frontend static-check blocker (`eslint` missing and interactive `tsc` install prompt) as an ownership-safe follow-up.
+
+[x] 🟢 LLM Settings Contract Finalization and Documentation Sync (Apr 12, 2026): canonicalized LLM provider selector with multi-provider support (openrouter default, openai, deepseek, anthropic), added dual API key fields and guest/premium model differentiation, updated `.env.example` with safe demo defaults, synchronized environment variable definitions across `docs/SPEC.md` and `docs/PROJECT_DESCRIPTION.md`, updated `docs/ARCHITECTURE.md` data-flow section for multi-provider support, and fixed flaky model-resolution test for environment-independent validation.
+
+# Documentation Synchronization Note (Apr 10, 2026)
+
+[x] 🟢 Web Frontend Visual Refresh Final Pass + Verification Sync (Apr 12, 2026): completed shared web template/CSS accessibility-and-branding refresh (skip-link/landmark shell, ARIA/live-region updates, consistent visual tokens/classes, inline-style cleanup), hardened live scraper timeout handling for transient external network failures, and revalidated full backend suite at `165 passed, 3 skipped`.
+
+[x] 🟢 Merge Blocker Remediation + Branch Conflict Resolution Sync (Apr 11, 2026): resolved GitHub-reported merge blockers by fixing `email_hmac` migration type/index compatibility, constraining Phase 3 schema bootstrap behavior to migration prerequisites, tightening migration-test monkeypatch strictness, aligning handoff metadata date context, and validating focused migration suites (`6 passed`) after merging `main` into the branch.
+
+[x] 🟢 Demo Readiness Implementation + Validation Sync (Apr 11, 2026): created `docs/PROJECT_DEMO.md`, implemented server-driven alerts filtering + settings/backend demo tooling enhancements, and validated root users+alerts API test command with `40 passed, 0 failed`.
+
+UI/UX, planning, and progress-tracking docs are synchronized as of April 10, 2026. The latest transcript and progress-log entries remain in chronological order, and the repository stays audit-ready for onboarding continuity.
+
+[x] 🟢 Migration Verification and Documentation Sync (Apr 10, 2026): transcript, progress log, reflection, TODO, AUTHORS, README, and sprint tracking refreshed for this session; targeted migration tests and migration script execution completed successfully in this environment.
+
+[x] 🟢 Critical Regression Expansion + Full Backend Validation (Apr 10, 2026): implemented backend critical-flow regression coverage updates (location, summaries, system, users), stabilized migration regression tests, and completed full backend validation with `107 passed, 0 failed` (warnings only).
+
+[x] 🟢 Audit Trail Sync and Status Confirmation (Apr 10, 2026): refreshed the transcript, progress log, reflection, README, AUTHORS, and sprint tracking so Rebecca’s current status and the remaining sign-off boundary stay aligned.
 
 UI/UX, planning, and progress-tracking docs are synchronized as of April 2, 2026. Latest transcript and progress-log entries are in chronological order, and documentation is audit-ready for onboarding continuity. QA checklist is validated and Rebecca's UI/UX tasks are complete.
 
@@ -83,6 +124,36 @@ Week-by-week sprint board for tracking delivery to the goal of having most imple
   - full backend test suite explanation and run guide
   - scheduled data cleanup (retention) architecture + operations notes
   - current smoke-run status and frontend lint/typecheck baseline
+
+## Current Verification Snapshot (Apr 10, 2026)
+
+- Critical regression coverage was expanded this session for location ingestion, local summaries, system health/trigger behavior, and user auth/notification flows.
+- Migration-focused regression checks pass after in-session stabilization updates.
+- Full backend pytest suite is green in this session: `107 passed, 0 failed` (warnings only).
+- Documentation source-of-truth files are synchronized to this same status state.
+
+## Current Verification Snapshot (Apr 11, 2026)
+
+- Migration verification rerun completed successfully after local schema sync:
+  - `migrate_email_encryption.py`: completed
+  - `validate_email_migration.py`: passed with zero current-batch failed/error logs
+  - `monitor_migration_log.py`: passed, threshold not reached
+- SQL query-plan spot-checks confirmed index usage for `notification_dispatch_log` on `alert_id` and `created_at` access patterns.
+- Full backend pytest suite is green in this session: `159 passed, 3 skipped`.
+- Documentation and migration evidence notes were updated in lockstep.
+
+## Current Verification Snapshot (Apr 12, 2026)
+
+- Final web frontend visual-refresh pass completed for the template-driven web UI (`backend/templates/*` + `backend/static/css/style.css`) with accessibility hardening and RiskRadar-branded token alignment.
+- Shell-level accessibility updates are in place: skip-link, `main` content landmark, ARIA labels/live regions, keyboard-visible focus states, and reusable error/success display classes.
+- Inline template presentation styles were removed in favor of reusable CSS classes.
+- Live external-data test stability was improved by treating transient timeout/network exceptions as skip conditions in `backend/tests/test_live_data_fetch.py`.
+- Full backend pytest suite is green in this session: `165 passed, 3 skipped`.
+- Phase 1 coordination rerun updated the backend baseline to `172 passed, 3 skipped` after newly added migration/schema safety tests.
+- Migration-focused suite rerun is green in this session: `13 passed` (`test_migrate_email_encryption`, `test_migration_preflight`, `test_migration_validation_monitoring`, `test_migration_rollback_email_encryption`).
+- Local preflight gate is currently non-passing in this snapshot (`blocking_issue_count=9`), indicating required index/FK baseline migrations need to be applied in the local DB before readiness can be marked pass.
+- Migration sequence rerun in this session reported monitor-threshold healthy status (`error_count=0`) while validator output captured `migration_failed_or_error_logs=1` with `users_total=0`.
+- Frontend static-check rerun completed after dependency unblock (`npm install`) and now surfaces owner-routed code issues instead of tooling blockers (`app/main/weather-report.tsx` parse/type errors, `app/(tabs)/explore.tsx` hook dependency warning).
 
 ---
 
@@ -179,12 +250,14 @@ Week-by-week sprint board for tracking delivery to the goal of having most imple
 **Owners:** All
 
 ### To Do
- - [ ] 🟡 Add regression checklist for scraper + DB + summary flow
+ - [x] 🟢 Add regression checklist for scraper + DB + summary flow (implemented and verified Apr 11, 2026)
  - [x] 🟢 All documentation, QA, and planning docs synchronized and validated as of April 2, 2026 (Rebecca)
 
 ### In Progress
 
 ### Done
+- [x] 🟢 Complete DB safety hardening cycle (preflight + index/FK integrity + guarded write transactions) and verify with full backend suite (`165 passed, 3 skipped`) (Apr 12, 2026)
+- [x] 🟢 Complete DB safety follow-up lane (schema drift + unified safety gate + new-user plaintext-email protection + categorized push split) with full backend verification (`176 passed, 3 skipped`) (Apr 12, 2026)
 
 ---
 
@@ -196,8 +269,11 @@ Week-by-week sprint board for tracking delivery to the goal of having most imple
 - [ ] 🟡 Confirm impact metrics and recommendations
 - [ ] 🟡 Complete final team review and submission checks
 ### In Progress
-- [ ] 🟡 Move active tasks here
+- [ ] 🟡 Frontend static-check clean pass pending Ben/Celeste fixes in `frontend/RiskRadar/app/main/weather-report.tsx` and `frontend/RiskRadar/app/(tabs)/explore.tsx`
 ### Done
+- [x] 🟢 Maintain shared-task owner snapshot with explicit next check dates (Rebecca-safe coordination only)
+- [x] 🟢 Keep evidence index pointers current for shared open tasks (tests, QA matrix, migration monitor outputs)
+- [x] 🟢 Prepare final review/submission packet checklist with command-backed proof links and owner routing
 
 ---
   - [ ] 🔴

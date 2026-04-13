@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
   Alert,
   Image,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as Notifications from 'expo-notifications';
@@ -20,6 +21,16 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useAuth } from '@/contexts/auth-context';
 import { apiFetch } from '@/utils/api';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
+import { apiFetch } from '@/utils/api';
+
+const DEMO_SETTINGS_KEY = 'riskradar_demo_settings';
+
+interface ScrapeResultItem {
+  source: string;
+  status: string;
+  alerts_stored?: number;
+  error?: string;
+}
 
 const brandLogo = require('@/assets/icons/branding/RiskRadar_STND_Logo.png');
 
@@ -29,13 +40,111 @@ export default function SettingsScreen() {
   const palette = Colors[scheme];
   const styles = getStyles(palette);
   
-  const { user, isLoggedIn, logout, isDevUserMode, toggleDevUserMode } = useAuth();
+  const { user, isLoggedIn, logout, isDevUserMode, toggleDevUserMode, savePreferences } = useAuth();
 
   const [pushEnabled, setPushEnabled] = useState(false);
   const [emailEnabled, setEmailEnabled] = useState(false);
   const [smsEnabled, setSmsEnabled] = useState(false);
   const [useGps, setUseGps] = useState(false);
   const [zipCode, setZipCode] = useState(user?.zip_code || '');
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [healthStatus, setHealthStatus] = useState<'idle' | 'checking' | 'healthy' | 'unhealthy'>('idle');
+  const [healthDetail, setHealthDetail] = useState('');
+  const [scrapeStatus, setScrapeStatus] = useState<'idle' | 'triggering' | 'done' | 'error'>('idle');
+  const [scrapeDetail, setScrapeDetail] = useState('');
+  const [scrapeResults, setScrapeResults] = useState<ScrapeResultItem[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const stored = await AsyncStorage.getItem(DEMO_SETTINGS_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored) as {
+            pushEnabled?: boolean;
+            emailEnabled?: boolean;
+            smsEnabled?: boolean;
+            useGps?: boolean;
+            zipCode?: string;
+          };
+          if (typeof parsed.pushEnabled === 'boolean') setPushEnabled(parsed.pushEnabled);
+          if (typeof parsed.emailEnabled === 'boolean') setEmailEnabled(parsed.emailEnabled);
+          if (typeof parsed.smsEnabled === 'boolean') setSmsEnabled(parsed.smsEnabled);
+          if (typeof parsed.useGps === 'boolean') setUseGps(parsed.useGps);
+          if (typeof parsed.zipCode === 'string') setZipCode(parsed.zipCode);
+        } else if (user?.zip_code) {
+          setZipCode(user.zip_code);
+        }
+      } catch {
+        // Keep the screen usable even if local demo settings cannot be loaded.
+      }
+    })();
+  }, [user?.zip_code]);
+
+  useEffect(() => {
+    if (user?.zip_code && !zipCode) {
+      setZipCode(user.zip_code);
+    }
+  }, [user?.zip_code, zipCode]);
+
+  const handleSaveDemoSettings = async () => {
+    setSaveStatus('saving');
+    try {
+      const nextSettings = {
+        pushEnabled,
+        emailEnabled,
+        smsEnabled,
+        useGps,
+        zipCode: zipCode.trim(),
+      };
+
+      await AsyncStorage.setItem(DEMO_SETTINGS_KEY, JSON.stringify(nextSettings));
+
+      const shouldSaveRemoteZip = isLoggedIn && !isDevUserMode && nextSettings.zipCode.length === 5;
+      if (shouldSaveRemoteZip) {
+        await savePreferences({ zip_code: nextSettings.zipCode });
+      }
+
+      setSaveStatus('saved');
+    } catch {
+      setSaveStatus('error');
+    }
+  };
+
+  const handleCheckHealth = async () => {
+    setHealthStatus('checking');
+    setHealthDetail('');
+    try {
+      const response = await apiFetch<{ status: string; alert_count?: number; database?: string }>('/health');
+      setHealthStatus(response.status === 'healthy' ? 'healthy' : 'unhealthy');
+      setHealthDetail(
+        response.status === 'healthy'
+          ? `Backend healthy${typeof response.alert_count === 'number' ? `, ${response.alert_count} alerts indexed` : ''}.`
+          : 'Backend reported an unhealthy state.'
+      );
+    } catch (error) {
+      setHealthStatus('unhealthy');
+      setHealthDetail(error instanceof Error ? error.message : 'Unable to reach the backend health endpoint.');
+    }
+  };
+
+  const handleTriggerScrape = async () => {
+    setScrapeStatus('triggering');
+    setScrapeDetail('');
+    setScrapeResults([]);
+    try {
+      const response = await apiFetch<{ triggered_at: string; results: ScrapeResultItem[] }>('/scrape/trigger', {
+        method: 'POST',
+      });
+      const successCount = response.results.filter((item) => item.status === 'success').length;
+      const errorCount = response.results.filter((item) => item.status === 'error').length;
+      setScrapeStatus('done');
+      setScrapeDetail(`Triggered ${response.results.length} scrapers: ${successCount} success, ${errorCount} error.`);
+      setScrapeResults(response.results);
+    } catch (error) {
+      setScrapeStatus('error');
+      setScrapeDetail(error instanceof Error ? error.message : 'Could not trigger the scrape pipeline.');
+    }
+  };
 
   const handlePushToggle = async (value: boolean) => {
     if (!value) {
@@ -220,8 +329,75 @@ export default function SettingsScreen() {
           </View>
         </View>
 
+        {/* Backend Demo Tools */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Backend Demo Tools</Text>
+          <Text style={styles.sectionSubtitle}>Show system health and data refresh capability</Text>
+          <View style={styles.card}>
+            <View style={styles.backendActionRow}>
+              <PrimaryButton
+                label={healthStatus === 'checking' ? 'Checking...' : 'Check Backend Health'}
+                onPress={handleCheckHealth}
+                loading={healthStatus === 'checking'}
+                style={styles.backendButton}
+              />
+              <PrimaryButton
+                label={scrapeStatus === 'triggering' ? 'Triggering...' : 'Trigger Scrape'}
+                onPress={handleTriggerScrape}
+                loading={scrapeStatus === 'triggering'}
+                style={styles.backendButton}
+                disabled={!isLoggedIn || isDevUserMode}
+              />
+            </View>
+            <Text style={styles.backendNote}>
+              Backend health is public. Scrape trigger requires a real authenticated session.
+            </Text>
+            {healthDetail ? (
+              <Text style={[styles.backendResult, healthStatus === 'healthy' ? styles.backendSuccess : styles.backendError]}>
+                {healthDetail}
+              </Text>
+            ) : null}
+            {scrapeDetail ? (
+              <Text style={[styles.backendResult, scrapeStatus === 'done' ? styles.backendSuccess : styles.backendError]}>
+                {scrapeDetail}
+              </Text>
+            ) : null}
+            {scrapeResults.length > 0 ? (
+              <View style={styles.scrapeResultsList}>
+                {scrapeResults.map((item) => (
+                  <View key={item.source} style={styles.scrapeResultRow}>
+                    <Text style={styles.scrapeSource}>{item.source}</Text>
+                    <Text style={[styles.scrapeOutcome, item.status === 'success' ? styles.backendSuccess : styles.backendError]}>
+                      {item.status === 'success'
+                        ? `stored ${item.alerts_stored ?? 0}`
+                        : item.error || 'error'}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            ) : null}
+          </View>
+        </View>
+
         {/* Logout */}
         <View style={styles.footerSection}>
+          <PrimaryButton
+            label={saveStatus === 'saving' ? 'Saving...' : 'Save Demo Settings'}
+            onPress={handleSaveDemoSettings}
+            style={{ marginBottom: 12 }}
+            disabled={saveStatus === 'saving'}
+            loading={saveStatus === 'saving'}
+          />
+          {saveStatus === 'saved' ? (
+            <Text style={[styles.sectionSubtitle, { textAlign: 'center', marginBottom: 12 }]}>
+              Demo settings saved.
+            </Text>
+          ) : null}
+          {saveStatus === 'error' ? (
+            <Text style={[styles.sectionSubtitle, { textAlign: 'center', marginBottom: 12, color: palette.danger }]}>
+              Could not save settings. Local demo preferences were still updated.
+            </Text>
+          ) : null}
           <PrimaryButton
             label={isLoggedIn ? "Log Out (Return to Home)" : "Return to Home"}
             onPress={handleLogout}
@@ -306,6 +482,52 @@ function getStyles(palette: typeof Colors.light) {
     rowTextContainer: {
       flex: 1,
       paddingRight: Spacing.md,
+    },
+    backendActionRow: {
+      marginTop: 8,
+    },
+    backendButton: {
+      marginBottom: 12,
+    },
+    backendNote: {
+      fontSize: 12,
+      color: palette.textSecondary,
+      marginTop: 4,
+    },
+    backendResult: {
+      fontSize: 13,
+      marginTop: 10,
+      lineHeight: 18,
+    },
+    scrapeResultsList: {
+      marginTop: 10,
+      borderTopWidth: 1,
+      borderTopColor: palette.border,
+      paddingTop: 10,
+      gap: 8,
+    },
+    scrapeResultRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      gap: 8,
+    },
+    scrapeSource: {
+      fontSize: 12,
+      color: palette.text,
+      fontWeight: '600',
+      textTransform: 'uppercase',
+    },
+    scrapeOutcome: {
+      flex: 1,
+      textAlign: 'right',
+      fontSize: 12,
+    },
+    backendSuccess: {
+      color: palette.success,
+    },
+    backendError: {
+      color: palette.danger,
     },
     rowTitle: {
       ...Typography.cardHeading,

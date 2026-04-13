@@ -33,7 +33,7 @@
             <label for="zip_code">ZIP Code (optional)</label>
             <input type="text" id="zip_code" placeholder="e.g. 70801" maxlength="10">
         </div>
-        <p class="error-msg" id="error-msg"></p>
+        <p class="error-msg" id="error-msg" role="alert" aria-live="assertive"></p>
         <button type="submit" class="btn btn-primary">Create Account</button>
     </form>
 
@@ -48,7 +48,7 @@
     document.getElementById('register-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const errorEl = document.getElementById('error-msg');
-        errorEl.style.display = 'none';
+        errorEl.dataset.visible = 'false';
 
         const body = {
             display_name: document.getElementById('display_name').value,
@@ -68,11 +68,11 @@
             } else {
                 const err = await res.json();
                 errorEl.textContent = err.detail || 'Registration failed';
-                errorEl.style.display = 'block';
+                errorEl.dataset.visible = 'true';
             }
         } catch (err) {
             errorEl.textContent = 'Network error - is the server running?';
-            errorEl.style.display = 'block';
+            errorEl.dataset.visible = 'true';
         }
     });
 </script>

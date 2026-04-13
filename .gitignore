@@ -36,6 +36,7 @@ build/
 .idea/tasks.xml
 .idea/dictionaries
 .idea/shelf
+.vscode/
 
 # OS files
 .DS_Store
@@ -54,6 +55,11 @@ node_modules/
 .pytest_cache/
 .coverage
 htmlcov/
+
+# Local SQLite artifacts
+*.db
+*.sqlite
+*.sqlite3
 
 # Environment files
 .env

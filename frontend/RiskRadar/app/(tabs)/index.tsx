@@ -30,7 +30,7 @@ export default function HomeScreen() {
   };
 
   const handleGuest = () => {
-    router.push("/main/home");
+    router.replace("/main/home");
   };
 
   const handleLogout = async () => {
@@ -65,7 +65,7 @@ export default function HomeScreen() {
             <View style={styles.actionContainer}>
               <TouchableOpacity
                 style={[styles.primaryButton, { backgroundColor: palette.primary, shadowColor: palette.primary }]}
-                onPress={() => router.push("/main/home")}
+                onPress={() => router.replace("/main/home")}
                 activeOpacity={0.8}
               >
                 <Ionicons name="home-outline" size={20} color={palette.white} style={styles.buttonIcon} />
