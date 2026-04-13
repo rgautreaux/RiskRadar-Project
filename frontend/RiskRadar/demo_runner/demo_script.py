@@ -37,11 +37,11 @@ async def run_demo():
         await page.goto(BASE_URL)
         await page.screenshot(path=screenshot_name("landing"))
 
-        # 2. Login (adjust selectors as needed)
-        await page.click('text=Login')
-        await page.fill('input[name="email"]', 'demo_user@example.com')
-        await page.fill('input[name="password"]', 'demopassword')
-        await page.click('button[type="submit"]')
+        # 2. Login
+        await page.goto(f"{BASE_URL}/login")
+        await page.fill('#email', 'demo_user@example.com')
+        await page.fill('#password', 'demopassword')
+        await page.click('button:has-text("Sign In")')
         await page.wait_for_selector('text=Dashboard')
         await page.screenshot(path=screenshot_name("dashboard"))
 
