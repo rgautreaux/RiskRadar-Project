@@ -1,5 +1,5 @@
-# DESIGN_SYSTEM.md
 
+# DESIGN_SYSTEM.md
 ## RiskRadar Design System Reference
 
 This document summarizes the design tokens, palette roles, typography scales, and asset usage for the RiskRadar mobile app. It is intended as a reference for all contributors to ensure consistency and ease of onboarding.

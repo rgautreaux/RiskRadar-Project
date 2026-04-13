@@ -152,8 +152,8 @@ Then press:
 Team6Project/
 ├── .env.example              # Template for environment variables
 ├── .env                      # Your local config (not committed)
-│
 ├── backend/                  # Python FastAPI server
+
 │   ├── main.py               # App entry point
 │   ├── requirements.txt      # Python dependencies
 │   ├── riskradar.db          # SQLite database (auto-created)

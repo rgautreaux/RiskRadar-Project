@@ -12,6 +12,16 @@ Usage:
 - python demo_script.py
 """
 
+
+# Credentials from environment variables
+DEMO_EMAIL = os.getenv("RISKRADAR_DEMO_EMAIL")
+DEMO_PASSWORD = os.getenv("RISKRADAR_DEMO_PASSWORD")
+
+if not DEMO_EMAIL or not DEMO_PASSWORD:
+    raise RuntimeError(
+        "Demo credentials not set. Please set RISKRADAR_DEMO_EMAIL and RISKRADAR_DEMO_PASSWORD environment variables."
+    )
+
 import asyncio
 from playwright.async_api import async_playwright
 import os
@@ -26,9 +36,9 @@ os.makedirs(SCREENSHOT_DIR, exist_ok=True)
 
 def screenshot_name(step):
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    return os.path.join(SCREENSHOT_DIR, f"step_{step}_{timestamp}.png")
-
-async def run_demo():
+        await page.click('text=Login')
+        await page.fill('input[name="email"]', DEMO_EMAIL)
+        await page.fill('input[name="password"]', DEMO_PASSWORD)
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
         page = await browser.new_page()

@@ -28,7 +28,7 @@ This Apr 12 documentation pass added a full database schema graph in `docs/DATA_
 
 ---
 
-# RiskRadar Description
+## RiskRadar Description
 
 ---
 

@@ -1,3 +1,28 @@
+---
+
+# Rebecca Gautreaux Log — 2026-04-12 (Documentation Consistency, Demo Script Security, and Evidence Sync)
+
+### Session Focus
+- Standardize Markdown doc front-matter (remove leading blank lines).
+- Fix duplicate H1 headings in PROJECT_DESCRIPTION.md.
+- Update demo_runner/README.md to reflect implemented demo_script.py.
+- Refactor demo_script.py to use environment variables for credentials.
+- Update transcript and group log with session details.
+
+### Work Completed
+- Removed leading blank lines before front-matter in all project Markdown docs for consistent rendering.
+- Changed the second H1 in PROJECT_DESCRIPTION.md to H2 for proper structure.
+- Updated demo_runner/README.md Structure section to accurately describe demo_script.py automation steps.
+- Refactored demo_script.py to read credentials from environment variables (RISKRADAR_DEMO_EMAIL, RISKRADAR_DEMO_PASSWORD) and fail fast if not set.
+- Synchronized REBECCA-TRANSCRIPT.md and GROUP_PROGRESS_LOG with session details.
+
+### Validation / Testing
+- Verified Markdown docs render cleanly and consistently.
+- Confirmed demo_script.py is secure and portable (no hard-coded credentials).
+- Documentation and evidence logs are up to date.
+
+### Outcome
+- Documentation, demo automation, and evidence records are consistent, secure, and audit-ready for this session.
 # Rebecca Gautreaux Log — 2026-04-12 (Local Closure Completion, Staging/Prod Handoff Assignment)
 
 ### Session Focus

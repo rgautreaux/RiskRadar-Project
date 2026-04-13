@@ -1,5 +1,4 @@
 # RiskRadar Data Model
-
 ---
 
 ## Overview

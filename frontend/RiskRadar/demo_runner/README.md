@@ -15,8 +15,7 @@ playwright install
 - Run the demo script(s) in this directory to execute the automated demo flow and collect screenshots/artifacts.
 - By default, scripts target a test/staging environment. **Never run against production.**
 
-### 3. Structure
-- `demo_script.py` — Main Playwright script for the demo flow (to be implemented)
+- `demo_script.py` — Main Playwright script that automates the demo flow: launches the app, logs in, navigates the dashboard, performs a zip-code search, explores alerts, opens an alert modal, visits settings, and collects screenshots at each step.
 - `screenshots/` — Collected screenshots and artifacts
 
 ### 4. Safety

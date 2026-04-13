@@ -1,5 +1,5 @@
-# RiskRadar App Instructions
 
+# RiskRadar App Instructions
 Welcome to the RiskRadar App! This guide will help you get started and make the most of the app's features.
 
 ## Table of Contents

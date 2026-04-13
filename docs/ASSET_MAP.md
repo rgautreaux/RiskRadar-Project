@@ -1,5 +1,5 @@
-# ASSET_MAP.md
 
+# ASSET_MAP.md
 ## RiskRadar Asset Usage Map
 
 This document lists all icon and image assets in the mobile app, their locations, and their intended consumers. For full mapping, see the Asset Mapping Table in UI/UX Styling Plan.

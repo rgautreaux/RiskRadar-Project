@@ -1,3 +1,28 @@
+---
+
+# GitHub Copilot Session 26 - Documentation Consistency, Demo Script Security, and Evidence Sync (Apr 12, 2026)
+
+**User:**
+- Standardize Markdown front-matter (---) placement in project docs (remove leading blank lines).
+- Fix duplicate H1 headings in PROJECT_DESCRIPTION.md.
+- Update demo_runner/README.md to reflect implemented demo_script.py.
+- Refactor demo_script.py to use environment variables for credentials instead of hard-coding.
+- Update this transcript and the group progress log with session details.
+
+**GitHub Copilot:**
+- Removed leading blank lines before front-matter in all project Markdown docs for consistent rendering.
+- Changed the second H1 in PROJECT_DESCRIPTION.md to H2 for proper structure.
+- Updated demo_runner/README.md Structure section to accurately describe demo_script.py automation steps.
+- Refactored demo_script.py to read credentials from environment variables (RISKRADAR_DEMO_EMAIL, RISKRADAR_DEMO_PASSWORD) and fail fast if not set.
+- Synchronized this transcript and GROUP_PROGRESS_LOG with session details.
+
+**Validation:**
+- Verified Markdown docs render cleanly and consistently.
+- Confirmed demo_script.py is secure and portable (no hard-coded credentials).
+- Documentation and evidence logs are up to date.
+
+**Outcome:**
+Documentation, demo automation, and evidence records are consistent, secure, and audit-ready for this session.
 # GitHub Copilot Session 25 - Database Safety Lane Follow-up, Categorized Commit Split, and Push Synchronization (Apr 12, 2026)
 
 **User:** Proceed in implementing these Best Low-Risk Tasks (Rebecca-Safe), while avoiding higher merge/ownership risks, until the plan is complete. Resolve any and all errors that arise along the way.
