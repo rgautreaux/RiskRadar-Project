@@ -1,5 +1,5 @@
-# CONTRIBUTING.md
 
+# CONTRIBUTING.md
 ## RiskRadar Frontend Contribution Guidelines
 
 Thank you for contributing to RiskRadar! Please follow these guidelines to ensure a smooth and collaborative workflow.

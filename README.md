@@ -1,3 +1,4 @@
+
 # RiskRadar — Group 6 Senior Project
 
 Environmental risk monitoring mobile app with real-time alerts, air quality data, and AI-powered summaries.
@@ -6,25 +7,17 @@ RiskRadar helps residents and travelers identify environmental risks by scraping
 
 ---
 
-## April 12, 2026 Synchronization Note
+## Synchronization Notes (Chronological)
 
-- Completed the final pass for the web frontend visual-refresh plan in the template-based web UI (`backend/templates/*`, `backend/static/css/style.css`).
-- Implemented accessibility hardening in shared web templates: skip link + `main` landmark, ARIA labels/live regions, keyboard-visible focus states, and consistent error/success messaging patterns.
-- Aligned web visual styling with RiskRadar branding tokens while preserving backend route/API behavior.
-- Replaced remaining inline template presentation styles with reusable stylesheet classes to reduce drift and maintenance risk.
-- During final verification, a transient live external-data timeout was encountered and resolved by making live timeout/network transport failures skip-safe in `backend/tests/test_live_data_fetch.py`.
-- Final verification rerun for this session is green: full backend pytest suite `165 passed, 3 skipped`.
-- Coordination verification refresh updated backend baseline evidence to `172 passed, 3 skipped` after additional migration/schema safety tests landed.
-- Frontend static-check environment blocker was cleared (`npm install` in `frontend/RiskRadar`), and remaining lint/typecheck issues were documented as frontend-owner follow-ups (`app/main/weather-report.tsx`, `app/(tabs)/explore.tsx`).
-- Rebecca-safe coordination/documentation closeout tasks are complete; remaining open items are owner-dependent follow-ups.
-- Apr 12 follow-up (database safety implementation lane): added and validated `schema_drift_check.py`, unified `safety_gate.py`, registration plaintext-email hardening for new users, and legacy-login compatibility regression coverage.
-- Apr 12 follow-up verification: full backend pytest baseline advanced to `176 passed, 3 skipped` after safety-lane additions.
-- Apr 12 follow-up review prep: remaining local/unpushed work was split into categorized commits (security, DB safety commands/tests, migration evidence docs, top-level sync docs, frontend generated artifacts) and pushed to `origin/Rebecca-Gautreaux-Work-Branch` for clearer PR review.
-- Apr 12 documentation follow-up: added a full Mermaid ER `Database Schema` graph in `docs/DATA_MODEL.md` under `Key Relationships`, capturing all 13 tables, key PK/FK fields, and current FK relationship edges.
+### April 10, 2026 Synchronization Note
+
+- Critical backend regression coverage was expanded this session for location ingestion, local summaries, system trigger/health behavior, and user auth/notification paths.
+- Full backend validation completed in this session: 107 passed, 0 failed (warnings only).
+- Documentation, transcript, and progress-tracking records are synchronized around this validation state; backend/security lead sign-off remains the external non-code approval gate.
 
 ---
 
-## April 11, 2026 Synchronization Note
+### April 11, 2026 Synchronization Note
 
 - GitHub merge blockers were resolved in this session: migration SQL indexability fix (`email_hmac` bounded type), Phase 3 migration prerequisite hardening (no broad schema bootstrap), strict migration test monkeypatching, and handoff metadata date alignment.
 - Branch conflict state was cleared by merging `main` into the active branch, followed by focused migration test verification (`6 passed`).
@@ -39,11 +32,21 @@ RiskRadar helps residents and travelers identify environmental risks by scraping
 
 ---
 
-## April 10, 2026 Synchronization Note
+### April 12, 2026 Synchronization Note
 
-- Critical backend regression coverage was expanded this session for location ingestion, local summaries, system trigger/health behavior, and user auth/notification paths.
-- Full backend validation completed in this session: 107 passed, 0 failed (warnings only).
-- Documentation, transcript, and progress-tracking records are synchronized around this validation state; backend/security lead sign-off remains the external non-code approval gate.
+- Completed the final pass for the web frontend visual-refresh plan in the template-based web UI (`backend/templates/*`, `backend/static/css/style.css`).
+- Implemented accessibility hardening in shared web templates: skip link + `main` landmark, ARIA labels/live regions, keyboard-visible focus states, and consistent error/success messaging patterns.
+- Aligned web visual styling with RiskRadar branding tokens while preserving backend route/API behavior.
+- Replaced remaining inline template presentation styles with reusable stylesheet classes to reduce drift and maintenance risk.
+- During final verification, a transient live external-data timeout was encountered and resolved by making live timeout/network transport failures skip-safe in `backend/tests/test_live_data_fetch.py`.
+- Final verification rerun for this session is green: full backend pytest suite `165 passed, 3 skipped`.
+- Coordination verification refresh updated backend baseline evidence to `172 passed, 3 skipped` after additional migration/schema safety tests landed.
+- Frontend static-check environment blocker was cleared (`npm install` in `frontend/RiskRadar`), and remaining lint/typecheck issues were documented as frontend-owner follow-ups (`app/main/weather-report.tsx`, `app/(tabs)/explore.tsx`).
+- Rebecca-safe coordination/documentation closeout tasks are complete; remaining open items are owner-dependent follow-ups.
+- Apr 12 follow-up (database safety implementation lane): added and validated `schema_drift_check.py`, unified `safety_gate.py`, registration plaintext-email hardening for new users, and legacy-login compatibility regression coverage.
+- Apr 12 follow-up verification: full backend pytest baseline advanced to `176 passed, 3 skipped` after safety-lane additions.
+- Apr 12 follow-up review prep: remaining local/unpushed work was split into categorized commits (security, DB safety commands/tests, migration evidence docs, top-level sync docs, frontend generated artifacts) and pushed to `origin/Rebecca-Gautreaux-Work-Branch` for clearer PR review.
+- Apr 12 documentation follow-up: added a full Mermaid ER `Database Schema` graph in `docs/DATA_MODEL.md` under `Key Relationships`, capturing all 13 tables, key PK/FK fields, and current FK relationship edges.
 
 ---
 
@@ -149,8 +152,8 @@ Then press:
 Team6Project/
 ├── .env.example              # Template for environment variables
 ├── .env                      # Your local config (not committed)
-│
 ├── backend/                  # Python FastAPI server
+
 │   ├── main.py               # App entry point
 │   ├── requirements.txt      # Python dependencies
 │   ├── riskradar.db          # SQLite database (auto-created)
