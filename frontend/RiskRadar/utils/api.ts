@@ -22,25 +22,45 @@ export async function removeToken(): Promise<void> {
 export async function apiFetch<T = any>(
   path: string,
   options: RequestInit = {},
+  timeoutMs: number = 30000,
 ): Promise<T> {
   const token = await getToken();
 
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
     ...((options.headers as Record<string, string>) ?? {}),
   };
+
+  // Only set Content-Type for requests that have a body
+  if (options.body) {
+    headers['Content-Type'] = headers['Content-Type'] ?? 'application/json';
+  }
 
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${API_BASE_URL}${path}`, {
-    ...options,
-    headers,
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE_URL}${path}`, {
+      ...options,
+      headers,
+      signal: controller.signal,
+    });
+  } catch (err: any) {
+    clearTimeout(timer);
+    if (err?.name === 'AbortError') {
+      throw new Error('Request timed out. Please check your connection.');
+    }
+    throw new Error('Network error. Please check your connection.');
+  } finally {
+    clearTimeout(timer);
+  }
 
   if (!res.ok) {
-    const body = await res.text();
+    const body = await res.text().catch(() => '');
     throw new Error(body || `Request failed with status ${res.status}`);
   }
 

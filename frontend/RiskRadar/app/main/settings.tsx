@@ -143,10 +143,8 @@ export default function SettingsScreen() {
   };
 
   const handleLogout = async () => {
-    if (user && !isDevUserMode) {
-      await logout();
-    }
-    router.replace('/');
+    await logout();
+    router.replace('/welcome');
   };
 
   return (

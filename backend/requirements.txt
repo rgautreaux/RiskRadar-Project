@@ -9,6 +9,7 @@ sqlalchemy>=2.0.35
 pymysql>=1.1.0
 pydantic>=2.10.0
 pydantic-settings>=2.5.0
+email-validator>=2.0.0         # required by Pydantic EmailStr
 python-dotenv>=1.0.1
 pyyaml>=6.0
 

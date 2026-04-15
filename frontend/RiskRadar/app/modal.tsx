@@ -12,15 +12,12 @@ import {
 import { useRouter } from 'expo-router';
 import React, { useState, useRef, useEffect } from 'react';
 
-
 import { ThemedText } from '@/components/themed-text';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { ThemedView } from '@/components/themed-view';
 import { Colors, Spacing, Radius, Shadows } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-// Import notification panel art
 const alertNotifArt = require('@/assets/icons/navigation/RiskRadar_ALERT_NotifWindow.png');
-// const standardNotifArt = require('@/assets/icons/navigation/RiskRadar_STND_NotifWIndow.png');
 
 /**
  * ModalScreen presents a branded notification details surface.

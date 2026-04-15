@@ -49,23 +49,48 @@ def _derive_email_aes_key() -> bytes:
     return digest.finalize()  # 32 bytes
 
 _EMAIL_AES_KEY = _derive_email_aes_key()  # Always a valid 32-byte AES key
-_EMAIL_AES_IV = b"RiskRadarEmailIV"  # 16 bytes (for demo; use random IV in prod)
+_LEGACY_EMAIL_AES_IV = b"RiskRadarEmailIV"  # 16 bytes — kept only for decrypting old records
+
 def encrypt_email(email: str) -> str:
-    """Encrypt an email address using AES-CBC."""
+    """Encrypt an email address using AES-CBC with a random IV.
+
+    The IV is prepended to the ciphertext so each encryption produces
+    unique output even for identical plaintext.
+    """
+    import os
+    iv = os.urandom(16)
     backend = default_backend()
     padder = padding.PKCS7(128).padder()
     padded_data = padder.update(email.encode("utf-8")) + padder.finalize()
-    cipher = Cipher(algorithms.AES(_EMAIL_AES_KEY), modes.CBC(_EMAIL_AES_IV), backend=backend)
+    cipher = Cipher(algorithms.AES(_EMAIL_AES_KEY), modes.CBC(iv), backend=backend)
     encryptor = cipher.encryptor()
     ct = encryptor.update(padded_data) + encryptor.finalize()
-    return base64.b64encode(ct).decode("utf-8")
+    return base64.b64encode(iv + ct).decode("utf-8")
 
 def decrypt_email(encrypted_email: str) -> str:
-    """Decrypt an AES-encrypted email address."""
+    """Decrypt an AES-encrypted email address.
+
+    Supports both new format (random IV prepended) and legacy format
+    (fixed IV, shorter ciphertext).
+    """
     backend = default_backend()
-    cipher = Cipher(algorithms.AES(_EMAIL_AES_KEY), modes.CBC(_EMAIL_AES_IV), backend=backend)
+    raw = base64.b64decode(encrypted_email)
+    # New format: first 16 bytes are the random IV, rest is ciphertext.
+    # Legacy format: entire blob is ciphertext encrypted with the fixed IV.
+    # AES-CBC ciphertext is always a multiple of 16. If raw length > 16 and
+    # the portion after the first 16 bytes is also a valid block size, treat
+    # it as new format. Legacy emails (≤ 64 chars) produce ≤ 64 bytes of
+    # ciphertext, so total raw length for new format is always > 16.
+    if len(raw) > 32:
+        # New format: IV + ciphertext (ciphertext is at least one block)
+        iv = raw[:16]
+        ct = raw[16:]
+    else:
+        # Legacy format (fixed IV)
+        iv = _LEGACY_EMAIL_AES_IV
+        ct = raw
+    cipher = Cipher(algorithms.AES(_EMAIL_AES_KEY), modes.CBC(iv), backend=backend)
     decryptor = cipher.decryptor()
-    ct = base64.b64decode(encrypted_email)
     padded_data = decryptor.update(ct) + decryptor.finalize()
     unpadder = padding.PKCS7(128).unpadder()
     data = unpadder.update(padded_data) + unpadder.finalize()
@@ -161,7 +186,11 @@ def get_current_user(
     except JWTError:
         raise credentials_exception
 
-    user = db.query(User).filter(User.id == int(user_id)).first()
+    try:
+        uid = int(user_id)
+    except (ValueError, TypeError):
+        raise credentials_exception
+    user = db.query(User).filter(User.id == uid).first()
     if user is None:
         raise credentials_exception
     return user

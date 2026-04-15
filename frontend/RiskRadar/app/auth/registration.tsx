@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,8 @@ import {
   SafeAreaView,
   ScrollView,
   Pressable,
+  Animated,
+  ViewStyle,
 } from 'react-native';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { BrandHeader } from '@/components/brand-header';
@@ -18,6 +20,35 @@ import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useAuth } from '@/contexts/auth-context';
+
+function FadeInView({ delay = 0, children, style }: { delay?: number; children: React.ReactNode; style?: ViewStyle }) {
+  const opacity = useRef(new Animated.Value(0)).current;
+  const translateY = useRef(new Animated.Value(18)).current;
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      Animated.parallel([
+        Animated.timing(opacity, { toValue: 1, duration: 450, useNativeDriver: true }),
+        Animated.timing(translateY, { toValue: 0, duration: 450, useNativeDriver: true }),
+      ]).start();
+    }, delay);
+    return () => clearTimeout(timer);
+  }, []);
+  return <Animated.View style={[style, { opacity, transform: [{ translateY }] }]}>{children}</Animated.View>;
+}
+
+function useShakeAnimation() {
+  const translateX = useRef(new Animated.Value(0)).current;
+  const shake = () => {
+    Animated.sequence([
+      Animated.timing(translateX, { toValue: -8, duration: 50, useNativeDriver: true }),
+      Animated.timing(translateX, { toValue: 8, duration: 50, useNativeDriver: true }),
+      Animated.timing(translateX, { toValue: -6, duration: 50, useNativeDriver: true }),
+      Animated.timing(translateX, { toValue: 6, duration: 50, useNativeDriver: true }),
+      Animated.timing(translateX, { toValue: 0, duration: 50, useNativeDriver: true }),
+    ]).start();
+  };
+  return { translateX, shake };
+}
 
 export default function RegistrationScreen() {
   const router = useRouter();
@@ -41,6 +72,7 @@ export default function RegistrationScreen() {
     form?: string;
   }>({});
   const { register } = useAuth();
+  const formShake = useShakeAnimation();
 
   const validateForm = () => {
     const newErrors: typeof errors = {};
@@ -85,21 +117,24 @@ export default function RegistrationScreen() {
   };
 
   const handleRegister = async () => {
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      formShake.shake();
+      return;
+    }
     setErrors({});
     setIsSubmitting(true);
     try {
       await register(fullName, email, password, zipCode || undefined);
-      router.replace('/main/home');
-    } catch (err: any) {
-      console.error('Registration error:', err);
+      router.replace('/');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : '';
       let message = 'Registration failed. Please try again.';
-      if (err.message?.includes('already registered')) {
+      if (msg.includes('already registered')) {
         message = 'An account with this email already exists.';
-      } else if (err.message?.includes('Failed to fetch') || err.message?.includes('Network request failed')) {
+      } else if (msg.includes('Failed to fetch') || msg.includes('Network request failed')) {
         message = 'Cannot connect to server. Make sure the backend is running.';
-      } else if (err.message) {
-        message = err.message;
+      } else if (msg) {
+        message = msg;
       }
       setErrors({ form: message });
     } finally {
@@ -125,15 +160,15 @@ export default function RegistrationScreen() {
             <Ionicons name="arrow-back" size={24} color={palette.text} />
           </TouchableOpacity>
 
-          <View style={styles.headerContainer}>
+          <FadeInView delay={0} style={styles.headerContainer}>
             <Text style={styles.title}>Create Account</Text>
             <Text style={styles.subtitle}>Join RiskRadar to stay aware and prepared</Text>
-          </View>
+          </FadeInView>
 
-          <View style={styles.formContainer}>
+          <Animated.View style={[styles.formContainer, { transform: [{ translateX: formShake.translateX }] }]}>
             {errors.form ? <Text style={styles.formError}>{errors.form}</Text> : null}
 
-            <View style={styles.inputGroup}>
+            <FadeInView delay={80} style={styles.inputGroup}>
               <Text style={styles.label}>Full Name</Text>
               <View style={[styles.inputContainer, errors.fullName && styles.inputError]}>
                 <Ionicons name="person-outline" size={20} color={palette.textSecondary} style={styles.inputIcon} />
@@ -150,9 +185,9 @@ export default function RegistrationScreen() {
                 />
               </View>
               {errors.fullName ? <Text style={styles.errorText}>{errors.fullName}</Text> : null}
-            </View>
+            </FadeInView>
 
-            <View style={styles.inputGroup}>
+            <FadeInView delay={160} style={styles.inputGroup}>
               <Text style={styles.label}>Email Address</Text>
               <View style={[styles.inputContainer, errors.email && styles.inputError]}>
                 <Ionicons name="mail-outline" size={20} color={palette.textSecondary} style={styles.inputIcon} />
@@ -170,9 +205,9 @@ export default function RegistrationScreen() {
                 />
               </View>
               {errors.email ? <Text style={styles.errorText}>{errors.email}</Text> : null}
-            </View>
+            </FadeInView>
 
-            <View style={styles.inputGroup}>
+            <FadeInView delay={240} style={styles.inputGroup}>
               <Text style={styles.label}>Home Zip Code</Text>
               <View style={[styles.inputContainer, errors.zipCode && styles.inputError]}>
                 <Ionicons name="location-outline" size={20} color={palette.textSecondary} style={styles.inputIcon} />
@@ -190,9 +225,9 @@ export default function RegistrationScreen() {
                 />
               </View>
               {errors.zipCode ? <Text style={styles.errorText}>{errors.zipCode}</Text> : null}
-            </View>
+            </FadeInView>
 
-            <View style={styles.inputGroup}>
+            <FadeInView delay={320} style={styles.inputGroup}>
               <Text style={styles.label}>Password</Text>
               <View style={[styles.inputContainer, errors.password && styles.inputError]}>
                 <Ionicons name="lock-closed-outline" size={20} color={palette.textSecondary} style={styles.inputIcon} />
@@ -216,9 +251,9 @@ export default function RegistrationScreen() {
                 </Pressable>
               </View>
               {errors.password ? <Text style={styles.errorText}>{errors.password}</Text> : null}
-            </View>
+            </FadeInView>
 
-            <View style={styles.inputGroup}>
+            <FadeInView delay={400} style={styles.inputGroup}>
               <Text style={styles.label}>Confirm Password</Text>
               <View style={[styles.inputContainer, errors.confirmPassword && styles.inputError]}>
                 <Ionicons name="shield-checkmark-outline" size={20} color={palette.textSecondary} style={styles.inputIcon} />
@@ -242,30 +277,32 @@ export default function RegistrationScreen() {
                 </Pressable>
               </View>
               {errors.confirmPassword ? <Text style={styles.errorText}>{errors.confirmPassword}</Text> : null}
-            </View>
+            </FadeInView>
 
-            <View style={styles.termsContainer}>
-              <Text style={styles.termsText}>
-                By creating an account, you agree to our{' '}
-                <Text style={styles.termsLink}>Terms of Service</Text> and{' '}
-                <Text style={styles.termsLink}>Privacy Policy</Text>
-              </Text>
-            </View>
+            <FadeInView delay={480}>
+              <View style={styles.termsContainer}>
+                <Text style={styles.termsText}>
+                  By creating an account, you agree to our{' '}
+                  <Text style={styles.termsLink}>Terms of Service</Text> and{' '}
+                  <Text style={styles.termsLink}>Privacy Policy</Text>
+                </Text>
+              </View>
 
-            <PrimaryButton
-              label={isSubmitting ? '...' : 'Create Account'}
-              onPress={handleRegister}
-              disabled={isSubmitting}
-              loading={isSubmitting}
-            />
-          </View>
+              <PrimaryButton
+                label={isSubmitting ? '...' : 'Create Account'}
+                onPress={handleRegister}
+                disabled={isSubmitting}
+                loading={isSubmitting}
+              />
+            </FadeInView>
+          </Animated.View>
 
-          <View style={styles.footerContainer}>
+          <FadeInView delay={560} style={styles.footerContainer}>
             <Text style={styles.footerText}>Already have an account? </Text>
             <TouchableOpacity onPress={() => router.push('/auth/login')}>
               <Text style={styles.loginText}>Log in</Text>
             </TouchableOpacity>
-          </View>
+          </FadeInView>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

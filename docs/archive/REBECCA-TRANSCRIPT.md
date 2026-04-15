@@ -1,3 +1,4 @@
+<<<<<<< HEAD:docs/REBECCA-TRANSCRIPT.md
 ---
 
 # GitHub Copilot Session 26 - Documentation Consistency, Demo Script Security, and Evidence Sync (Apr 12, 2026)
@@ -291,6 +292,9 @@ I confirmed that Rebecca has no further implementation steps on her end for the 
 
 ---
 
+=======
+<!-- Archived session log. For current project status, see README.md -->
+>>>>>>> QuiV2:docs/archive/REBECCA-TRANSCRIPT.md
 # GitHub Copilot Session 20 - Documentation Updates for Rebecca (Apr 2, 2026)
 
 **User:** Perform the following Documentation Updates for Rebecca now:

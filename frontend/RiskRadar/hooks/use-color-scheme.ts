@@ -1,9 +1,6 @@
-import { useColorScheme as _useColorScheme } from 'react-native';
-
 /**
- * Returns the user's current color scheme preference ('light' or 'dark').
- * Wraps React Native's useColorScheme to provide a stable, typed interface.
+ * Returns 'light' — RiskRadar is light-mode only.
  */
-export function useColorScheme(): 'light' | 'dark' {
-  return _useColorScheme() ?? 'light';
+export function useColorScheme(): 'light' {
+  return 'light';
 }

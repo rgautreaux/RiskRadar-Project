@@ -7,6 +7,7 @@ from pathlib import Path
 import yaml
 
 from config.settings import settings
+from scrapers.base_scraper import BaseScraper
 from scrapers.generic_api_scraper import GenericAPIScraper
 from scrapers.web_scraper import WebScraper
 from scrapers.nws_scraper import NWSScraper
@@ -20,28 +21,28 @@ logger = logging.getLogger(__name__)
 # These coexist alongside config-driven sources from sources.yaml.
 LEGACY_SCRAPERS: list[dict] = [
     {
-        "factory": NWSScraper,
+        "factory": lambda: NWSScraper(),
         "id": "nws",
         "interval_minutes": None,
         "requires_env": None,
         "stagger_offset_minutes": 0,
     },
     {
-        "factory": AirNowScraper,
+        "factory": lambda: AirNowScraper(),
         "id": "airnow",
         "interval_minutes": None,
         "requires_env": None,
         "stagger_offset_minutes": 1,
     },
     {
-        "factory": EPAScraper,
+        "factory": lambda: EPAScraper(),
         "id": "epa",
         "interval_minutes": 60,
         "requires_env": None,
         "stagger_offset_minutes": 3,
     },
     {
-        "factory": FIRMSScraper,
+        "factory": lambda: FIRMSScraper(),
         "id": "firms",
         "interval_minutes": None,
         "requires_env": "NASA_FIRMS_MAP_KEY",
@@ -52,18 +53,13 @@ LEGACY_SCRAPERS: list[dict] = [
 
 def _load_yaml_config() -> dict:
     """Load and parse the sources.yaml config file."""
-
-    config_path = Path(settings.SOURCES_CONFIG_PATH).resolve()
+    config_path = Path(settings.SOURCES_CONFIG_PATH)
     if not config_path.exists():
-        logger.warning("Sources config not found at %s, using empty config", config_path)
+        logger.warning(f"Sources config not found at {config_path}, using empty config")
         return {"api_sources": [], "web_sources": []}
 
-    try:
-        with open(config_path, "r", encoding="utf-8") as f:
-            config = yaml.safe_load(f) or {}
-    except OSError as e:
-        logger.error("Failed to read sources config at %s: %s", config_path, e)
-        return {"api_sources": [], "web_sources": []}
+    with open(config_path, "r") as f:
+        config = yaml.safe_load(f) or {}
 
     return config
 
@@ -84,8 +80,8 @@ def load_all_scrapers() -> list[dict]:
         if entry["requires_env"]:
             if not os.environ.get(entry["requires_env"], ""):
                 logger.info(
-                    "Skipping legacy scraper '%s': %s not set",
-                    entry['id'], entry['requires_env']
+                    f"Skipping legacy scraper '{entry['id']}': "
+                    f"{entry['requires_env']} not set"
                 )
                 continue
         scrapers.append({
@@ -106,8 +102,8 @@ def load_all_scrapers() -> list[dict]:
         if auth.get("type", "none") != "none" and auth.get("env_var"):
             if not os.environ.get(auth["env_var"], ""):
                 logger.info(
-                    "Skipping API source '%s': %s not set",
-                    api_cfg['name'], auth['env_var']
+                    f"Skipping API source '{api_cfg['name']}': "
+                    f"{auth['env_var']} not set"
                 )
                 continue
 
@@ -128,8 +124,7 @@ def load_all_scrapers() -> list[dict]:
 
         if not settings.FIRECRAWL_API_KEY:
             logger.info(
-                "Skipping web source '%s': FIRECRAWL_API_KEY not set",
-                web_cfg['name']
+                f"Skipping web source '{web_cfg['name']}': FIRECRAWL_API_KEY not set"
             )
             continue
         if llm_provider not in {"openrouter", "openai", "deepseek", "anthropic"}:
@@ -154,5 +149,5 @@ def load_all_scrapers() -> list[dict]:
         })
         stagger += 2  # web scrapers are slower, give more stagger space
 
-    logger.info("Registry loaded: %d scrapers total", len(scrapers))
+    logger.info(f"Registry loaded: {len(scrapers)} scrapers total")
     return scrapers

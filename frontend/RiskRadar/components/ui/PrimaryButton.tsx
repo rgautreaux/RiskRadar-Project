@@ -1,5 +1,5 @@
-import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ViewStyle, TextStyle, GestureResponderEvent } from 'react-native';
+import React, { useRef, useCallback } from 'react';
+import { Animated, Text, StyleSheet, ViewStyle, TextStyle, GestureResponderEvent, Pressable } from 'react-native';
 import { Colors, Spacing, Radius, Fonts } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
@@ -24,29 +24,51 @@ export function PrimaryButton({
 }: PrimaryButtonProps) {
   const scheme = useColorScheme() ?? 'light';
   const palette = Colors[scheme];
+  const scale = useRef(new Animated.Value(1)).current;
+
+  const handlePressIn = useCallback(() => {
+    Animated.timing(scale, {
+      toValue: 0.96,
+      duration: 100,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
+  const handlePressOut = useCallback(() => {
+    Animated.timing(scale, {
+      toValue: 1,
+      duration: 150,
+      useNativeDriver: true,
+    }).start();
+  }, []);
 
   return (
-    <TouchableOpacity
-      style={[
-        styles.button,
-        { backgroundColor: disabled ? palette.textSecondary : palette.primary, shadowColor: palette.primary },
-        style,
-      ]}
+    <Pressable
       onPress={onPress}
-      activeOpacity={0.8}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
       disabled={disabled || loading}
     >
-      {leftIcon && <>{leftIcon}</>}
-      <Text
+      <Animated.View
         style={[
-          styles.label,
-          { color: palette.white, fontFamily: Fonts.sans },
-          textStyle,
+          styles.button,
+          { backgroundColor: disabled ? palette.textSecondary : palette.primary, shadowColor: palette.primary },
+          style,
+          { transform: [{ scale }] },
         ]}
       >
-        {loading ? '...' : label}
-      </Text>
-    </TouchableOpacity>
+        {leftIcon && <>{leftIcon}</>}
+        <Text
+          style={[
+            styles.label,
+            { color: palette.white, fontFamily: Fonts.sans },
+            textStyle,
+          ]}
+        >
+          {loading ? '...' : label}
+        </Text>
+      </Animated.View>
+    </Pressable>
   );
 }
 

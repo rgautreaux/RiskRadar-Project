@@ -95,7 +95,41 @@ LLM_API_KEY=your-deepseek-api-key
 AIRNOW_API_KEY=your-airnow-key
 ```
 
-### Step 3: Start the Backend
+### Step 3: Set Up the Database (DB_PATH)
+
+RiskRadar uses SQLite for local development. The database file (`riskradar.db`) is created automatically inside the `backend/` folder the first time the server starts. You do **not** need to install any database software.
+
+**How it works:**
+
+| Scenario | What to do |
+|----------|-----------|
+| Local dev (default) | Do nothing — `backend/riskradar.db` is created automatically |
+| Custom location | Set `DB_PATH=/your/custom/path/riskradar.db` in `.env` |
+| Production (MariaDB/MySQL) | Set `DATABASE_URL=mysql+pymysql://user:pass@host:3306/riskradar` in `.env` |
+
+**Step-by-step for local setup:**
+
+1. Open your `.env` file (in the project root — same folder as `backend/`)
+2. Make sure these lines are **not** set to placeholder text — either comment them out or leave them out entirely:
+   ```env
+   # DATABASE_URL=          ← leave commented out for SQLite
+   # DB_PATH=               ← leave commented out to use backend/riskradar.db
+   ```
+3. The backend will auto-create `backend/riskradar.db` with all tables on first startup
+4. To verify the database was created, check that `Team6Project/backend/riskradar.db` exists after starting the server
+
+> **Common mistake:** If you copy `.env.example` to `.env` without editing it, the placeholder values like `your-default-latitude-here` will cause startup errors. Replace all placeholders with real values or remove those lines entirely — the settings have working defaults.
+
+**If you ever need to reset the database:**
+```bash
+# Delete the database file and restart the server — it will be recreated fresh
+del backend\riskradar.db        # Windows
+rm backend/riskradar.db         # Mac/Linux
+```
+
+---
+
+### Step 4: Start the Backend
 
 Open a terminal (Command Prompt or PowerShell):
 
@@ -109,13 +143,14 @@ You should see:
 
 ```
 INFO:     Uvicorn running on http://0.0.0.0:8000
+Database ready: sqlite:////.../backend/riskradar.db
 ```
 
 > **Leave this terminal open.** The backend must stay running.
 
 Verify it works by opening http://localhost:8000/docs in your browser — you should see the Swagger API docs.
 
-### Step 4: Start the Frontend (Mobile App)
+### Step 5: Start the Frontend (Mobile App)
 
 Open a **second terminal**:
 
@@ -395,6 +430,7 @@ Copy `.env.example` to `.env` and fill in your values.
 | `AIRNOW_API_KEY` | For air quality | Free key from [airnowapi.org](https://docs.airnowapi.org/account/request/) |
 | `NASA_FIRMS_MAP_KEY` | For wildfires | Key from [NASA FIRMS](https://firms.modaps.eosdis.nasa.gov/api/area/) |
 | `FIRECRAWL_API_KEY` | For web scraping | Key from [firecrawl.dev](https://firecrawl.dev) |
+| `OPENWEATHER_API_KEY` | For 7-day forecast | Key from [openweathermap.org/api](https://openweathermap.org/api/one-call-3) |
 | `DEFAULT_ZIP_CODE` | No | Default location ZIP (default: 90001) |
 
 ---
@@ -421,6 +457,8 @@ Expected: `87 passed`. Tests use an in-memory database and mock all external API
 | Weather report shows wrong location | Make sure you're entering a valid 5-digit US zip code |
 | Frontend can't connect to backend | Both devices must be on the same WiFi; backend must be running with `--host 0.0.0.0` |
 | `ModuleNotFoundError` | Run `py -m pip install -r requirements.txt` in the backend folder |
+| `no such table: users` on startup | Your `.env` has `DB_PATH=` set to empty or a placeholder — remove those lines so SQLite uses its default path (`backend/riskradar.db`) |
+| `ValidationError` for `DEFAULT_LAT`, `ACCESS_TOKEN_EXPIRE_MINUTES` | `.env` still has placeholder text — replace with real values or remove those lines |
 | Expo QR code won't scan | Press `w` to test on web first; make sure Expo Go app is installed on phone |
 | Registration fails silently | Check the backend terminal for error messages |
 
@@ -500,90 +538,3 @@ For more details, see:
 
 ---
 
-## How the Frontend Connects to the Backend
-
-```
-┌──────────────────────────┐
-│   React Native App       │
-│   (Expo on phone/web)    │
-└───────────┬──────────────┘
-            │  HTTP requests to http://<your-ip>:8000/api/v1/...
-            │  JWT token in Authorization header
-            │
-┌───────────▼──────────────┐
-│   FastAPI Backend        │
-│   (Python on your PC)    │
-├──────────────────────────┤
-│ /api/v1/users/login      │ → returns JWT token
-│ /api/v1/users/register   │ → creates account
-│ /api/v1/alerts           │ → list all alerts from DB
-│ /api/v1/location/alerts  │ → fetch fresh alerts for a zip code
-│ /api/v1/summaries/latest │ → latest AI summary
-│ /api/v1/health           │ → server status
-└───────────┬──────────────┘
-            │
-┌───────────▼──────────────┐
-│   SQLite Database        │
-│   (riskradar.db)         │
-└──────────────────────────┘
-```
-
-**Key connection files:**
-
-| File | What it does |
-|------|-------------|
-| `frontend/RiskRadar/constants/api.ts` | Builds the backend URL — auto-detects your PC's IP from Expo |
-| `frontend/RiskRadar/utils/api.ts` | `apiFetch()` helper — adds JWT token to every request |
-| `frontend/RiskRadar/contexts/auth-context.tsx` | Manages login/logout, stores JWT token |
-| `backend/auth/security.py` | Verifies passwords and JWT tokens |
-
----
-
-## Major Developments & Implementation Highlights (as of Mar 30, 2026)
-
-### 1. User Security Plan & Safe Migration
-- Comprehensive User Security Plan implemented (encryption, key management, audit logging planned)
-- All preparatory work (migration scripts, rollback, logging, monitoring, staging setup) completed in test/staging environments
-- Documentation-driven approach ensures all changes are safe, reversible, and fully auditable
-
-### 2. Automated Data Retention & Cleanup
-- Scheduled archive and deletion system keeps the database performant and compliant
-- Retention jobs (nightly/weekly) archive and delete old data, with full logging and dry-run safety
-- All retention logic, migrations, and tests are documented and validated
-
-### 3. End-to-End Testing & Validation
-- Full backend pytest suite (87/87 passing) covers API, database, scrapers, and retention logic
-- Integration tests ensure scraper-to-database pipeline is robust and reliable
-- CI/local pre-push checklist ensures code quality and reproducibility
-
-### 4. Frontend UI/UX & Wireframe Accuracy
-- Mobile app UI/UX plan finalized and mapped to wireframe assets
-- Implementation checklist and asset mapping ensure efficient, brand-accurate styling
-- All frontend components are structured for maintainability and scalability
-
-### 5. Documentation & Team Alignment
-- All major sessions and developments are logged in REBECCA-TRANSCRIPT.md and GROUP_PROGRESS_LOG
-- AUTHORS.md details each member's contributions and roles
-- README, TODO, and all top-level docs are kept in sync for auditability and onboarding
-
----
-
-## Importance of Major Developments
-
-- **Security:** User Security Plan ensures data protection, auditability, and compliance.
-- **Performance:** Automated retention and cleanup keep the system fast and scalable.
-- **Reliability:** End-to-end tests and integration coverage prevent regressions and ensure correctness.
-- **Usability:** Wireframe-accurate UI/UX delivers a polished, user-friendly experience.
-- **Transparency:** Comprehensive documentation and progress logs keep the team aligned and the project audit-ready.
-
----
-
-## Why These Developments Matter
-
-- **Security:** Ensures user data is protected, auditable, and compliant with best practices
-- **Performance:** Automated cleanup and retention keep the system fast and scalable
-- **Reliability:** End-to-end tests and integration coverage prevent regressions and ensure correctness
-- **Usability:** Wireframe-accurate UI/UX delivers a polished, user-friendly experience
-- **Transparency:** Comprehensive documentation and progress logs keep the team aligned and the project audit-ready
-
----

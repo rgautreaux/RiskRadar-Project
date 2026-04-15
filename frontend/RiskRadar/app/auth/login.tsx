@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,8 @@ import {
   Platform,
   SafeAreaView,
   Pressable,
+  Animated,
+  ViewStyle,
 } from 'react-native';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { BrandHeader } from '@/components/brand-header';
@@ -17,6 +19,35 @@ import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useAuth } from '@/contexts/auth-context';
+
+function FadeInView({ delay = 0, children, style }: { delay?: number; children: React.ReactNode; style?: ViewStyle }) {
+  const opacity = useRef(new Animated.Value(0)).current;
+  const translateY = useRef(new Animated.Value(18)).current;
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      Animated.parallel([
+        Animated.timing(opacity, { toValue: 1, duration: 450, useNativeDriver: true }),
+        Animated.timing(translateY, { toValue: 0, duration: 450, useNativeDriver: true }),
+      ]).start();
+    }, delay);
+    return () => clearTimeout(timer);
+  }, []);
+  return <Animated.View style={[style, { opacity, transform: [{ translateY }] }]}>{children}</Animated.View>;
+}
+
+function useShakeAnimation() {
+  const translateX = useRef(new Animated.Value(0)).current;
+  const shake = () => {
+    Animated.sequence([
+      Animated.timing(translateX, { toValue: -8, duration: 50, useNativeDriver: true }),
+      Animated.timing(translateX, { toValue: 8, duration: 50, useNativeDriver: true }),
+      Animated.timing(translateX, { toValue: -6, duration: 50, useNativeDriver: true }),
+      Animated.timing(translateX, { toValue: 6, duration: 50, useNativeDriver: true }),
+      Animated.timing(translateX, { toValue: 0, duration: 50, useNativeDriver: true }),
+    ]).start();
+  };
+  return { translateX, shake };
+}
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -29,6 +60,7 @@ export default function LoginScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; form?: string }>({});
   const { login } = useAuth();
+  const formShake = useShakeAnimation();
 
   const validateForm = () => {
     const newErrors: { email?: string; password?: string } = {};
@@ -52,19 +84,22 @@ export default function LoginScreen() {
   };
 
   const handleLogin = async () => {
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      formShake.shake();
+      return;
+    }
     setErrors({});
     setIsSubmitting(true);
     try {
       await login(email, password);
-      router.replace('/main/home');
-    } catch (err: any) {
-      console.error('Login error:', err);
+      router.replace('/');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : '';
       let message = 'Invalid email or password. Please try again.';
-      if (err.message?.includes('Failed to fetch') || err.message?.includes('Network request failed')) {
+      if (msg.includes('Failed to fetch') || msg.includes('Network request failed')) {
         message = 'Cannot connect to server. Make sure the backend is running.';
-      } else if (err.message) {
-        message = err.message;
+      } else if (msg) {
+        message = msg;
       }
       setErrors({ form: message });
     } finally {
@@ -86,15 +121,15 @@ export default function LoginScreen() {
           <Ionicons name="arrow-back" size={24} color={palette.text} />
         </TouchableOpacity>
 
-        <View style={styles.headerContainer}>
+        <FadeInView delay={0} style={styles.headerContainer}>
           <Text style={styles.title}>Welcome Back</Text>
           <Text style={styles.subtitle}>Sign in to continue to RiskRadar</Text>
-        </View>
+        </FadeInView>
 
-        <View style={styles.formContainer}>
+        <Animated.View style={[styles.formContainer, { transform: [{ translateX: formShake.translateX }] }]}>
           {errors.form ? <Text style={styles.formError}>{errors.form}</Text> : null}
 
-          <View style={styles.inputGroup}>
+          <FadeInView delay={120} style={styles.inputGroup}>
             <Text style={styles.label}>Email Address</Text>
             <View style={[styles.inputContainer, errors.email && styles.inputError]}>
               <Ionicons name="mail-outline" size={20} color={palette.textSecondary} style={styles.inputIcon} />
@@ -112,9 +147,9 @@ export default function LoginScreen() {
               />
             </View>
             {errors.email ? <Text style={styles.errorText}>{errors.email}</Text> : null}
-          </View>
+          </FadeInView>
 
-          <View style={styles.inputGroup}>
+          <FadeInView delay={240} style={styles.inputGroup}>
             <Text style={styles.label}>Password</Text>
             <View style={[styles.inputContainer, errors.password && styles.inputError]}>
               <Ionicons name="lock-closed-outline" size={20} color={palette.textSecondary} style={styles.inputIcon} />
@@ -138,26 +173,28 @@ export default function LoginScreen() {
               </Pressable>
             </View>
             {errors.password ? <Text style={styles.errorText}>{errors.password}</Text> : null}
-          </View>
+          </FadeInView>
 
-          <TouchableOpacity style={styles.forgotPassword}>
-            <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-          </TouchableOpacity>
+          <FadeInView delay={360}>
+            <TouchableOpacity style={styles.forgotPassword}>
+              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+            </TouchableOpacity>
 
-          <PrimaryButton
-            label={isSubmitting ? '...' : 'Log In'}
-            onPress={handleLogin}
-            disabled={isSubmitting}
-            loading={isSubmitting}
-          />
-        </View>
+            <PrimaryButton
+              label={isSubmitting ? '...' : 'Log In'}
+              onPress={handleLogin}
+              disabled={isSubmitting}
+              loading={isSubmitting}
+            />
+          </FadeInView>
+        </Animated.View>
 
-        <View style={styles.footerContainer}>
+        <FadeInView delay={480} style={styles.footerContainer}>
           <Text style={styles.footerText}>{"Don't have an account? "}</Text>
           <TouchableOpacity onPress={() => router.push('/auth/registration')}>
             <Text style={styles.signupText}>Sign up</Text>
           </TouchableOpacity>
-        </View>
+        </FadeInView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

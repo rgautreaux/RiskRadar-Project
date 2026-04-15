@@ -17,6 +17,7 @@ or http://localhost:8000/docs for the Swagger API docs.
 """
 
 import logging
+import socket
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -36,6 +37,18 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname
 BASE_DIR = Path(__file__).resolve().parent
 
 
+def _get_local_ip() -> str | None:
+    """Best-effort detection of the machine's LAN IP for CORS."""
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except Exception:
+        return None
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup: init DB + start scrapers. Shutdown: stop scheduler."""
@@ -50,13 +63,14 @@ app = FastAPI(title="RiskRadar API", version="1.0.0", lifespan=lifespan)
 # --- CORS middleware -------------------------------------------------------
 origins_raw = settings.CORS_ALLOWED_ORIGINS.strip()
 if origins_raw == "*":
-  cors_origins = ["*"]
+    cors_origins = ["*"]
 else:
-  cors_origins = [origin.strip() for origin in origins_raw.split(",") if origin.strip()]
+    cors_origins = [origin.strip() for origin in origins_raw.split(",") if origin.strip()]
 
 app.add_middleware(
     CORSMiddleware,
-  allow_origins=cors_origins,
+    allow_origins=cors_origins,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
