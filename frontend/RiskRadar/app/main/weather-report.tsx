@@ -169,7 +169,7 @@ export default function WeatherReport() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'} backgroundColor={palette.background} />
+      <StatusBar barStyle="dark-content" backgroundColor={palette.background} />
 
       {/* Header */}
       <View style={styles.header}>
