@@ -21,10 +21,13 @@ HOW IT CONNECTS:
 from pathlib import Path
 
 from fastapi import APIRouter, Request
+
 from fastapi.templating import Jinja2Templates
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
+# Workaround for Jinja2 >=3.1 cache bug: disable template cache
+templates.env.cache = None
 
 router = APIRouter(tags=["Frontend"])
 

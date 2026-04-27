@@ -1,3 +1,9 @@
+# RiskRadar — Group 6 Senior Project
+
+// Copilot: Review for feature lists, goals, and TODOs.
+
+
+// Copilot: Summarize the stated core innovations and features from the README for analysis.
 
 # RiskRadar — Group 6 Senior Project
 
@@ -52,6 +58,9 @@ RiskRadar helps residents and travelers identify environmental risks by scraping
 
 ## Prerequisites
 
+// Copilot: Continue review for feature lists, goals, and TODOs.
+
+
 Before you start, make sure you have these installed on your machine:
 
 | Tool | Version | How to check | How to install |
@@ -66,6 +75,9 @@ Before you start, make sure you have these installed on your machine:
 ---
 
 ## Quick Start (Run the Whole App)
+
+// Copilot: Continue review for feature lists, goals, and TODOs.
+
 
 ### Step 1: Clone the repo
 
@@ -169,6 +181,8 @@ Then press:
 ---
 
 ## Team Members
+
+// Copilot: Continue review for feature lists, goals, and TODOs.
 
 | Name | Role |
 |------|------|

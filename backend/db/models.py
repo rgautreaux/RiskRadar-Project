@@ -279,6 +279,17 @@ class CleanupRun(Base):
     )
 
 
+class MigrationLog(Base):
+    __tablename__ = "migration_log"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    timestamp = Column(DateTime(timezone=True), nullable=False, default=_now)
+    user_id = Column(Integer, nullable=True)
+    action = Column(Text, nullable=True)
+    status = Column(Text, nullable=True)
+    error_message = Column(Text, nullable=True)
+
+
 class NotificationDispatchLog(Base):
     __tablename__ = "notification_dispatch_log"
 
