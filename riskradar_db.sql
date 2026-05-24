@@ -19,23 +19,6 @@ SET time_zone = "+00:00";
 -- Database: `riskradar_db`
 --
 
-SET FOREIGN_KEY_CHECKS=0;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `alert_raw_payloads`
---
-
-DROP TABLE IF EXISTS `alert_raw_payloads`;
-CREATE TABLE `alert_raw_payloads` (
-  `alert_id` int(11) NOT NULL,
-  `raw_payload` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`raw_payload`)),
-  `created_at` datetime NOT NULL,
-  PRIMARY KEY (`alert_id`),
-  CONSTRAINT `alert_raw_payloads_ibfk_1` FOREIGN KEY (`alert_id`) REFERENCES `alerts` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
 -- --------------------------------------------------------
 
 --
@@ -62,11 +45,26 @@ CREATE TABLE `alerts` (
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uq_source_alert` (`source`,`source_id`) USING HASH,
+  UNIQUE KEY `uq_source_alert` (`source`,`source_id`(191)),
   KEY `location_id` (`location_id`),
   KEY `idx_alerts_source_fetched_at` (`source`,`fetched_at`),
   KEY `idx_alerts_type_severity_fetched_at` (`alert_type`,`severity`,`fetched_at`),
   CONSTRAINT `alerts_ibfk_1` FOREIGN KEY (`location_id`) REFERENCES `locations` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `alert_raw_payloads`
+--
+
+DROP TABLE IF EXISTS `alert_raw_payloads`;
+CREATE TABLE `alert_raw_payloads` (
+  `alert_id` int(11) NOT NULL,
+  `raw_payload` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`raw_payload`)),
+  `created_at` datetime NOT NULL,
+  PRIMARY KEY (`alert_id`),
+  CONSTRAINT `alert_raw_payloads_ibfk_1` FOREIGN KEY (`alert_id`) REFERENCES `alerts` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -129,22 +127,6 @@ CREATE TABLE `cleanup_runs` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
-
---
--- Table structure for table `locations`
---
-
-DROP TABLE IF EXISTS `locations`;
-CREATE TABLE `locations` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `latitude` float NOT NULL,
-  `longitude` float NOT NULL,
-  `location_name` text NOT NULL,
-  `created_at` datetime NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uq_locations_lat_lon_name` (`latitude`,`longitude`,`location_name`) USING HASH,
-  KEY `idx_locations_lat_lon` (`latitude`,`longitude`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -235,6 +217,28 @@ CREATE TABLE `scrape_log_archive` (
   UNIQUE KEY `original_id` (`original_id`),
   KEY `cleanup_run_id` (`cleanup_run_id`),
   CONSTRAINT `scrape_log_archive_ibfk_1` FOREIGN KEY (`cleanup_run_id`) REFERENCES `cleanup_runs` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `saved_destinations`
+--
+
+DROP TABLE IF EXISTS `saved_destinations`;
+CREATE TABLE `saved_destinations` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `city` text NOT NULL,
+  `state` text DEFAULT NULL,
+  `zip_code` text DEFAULT NULL,
+  `latitude` float NOT NULL,
+  `longitude` float NOT NULL,
+  `created_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_user_destination` (`user_id`,`city`(191),`state`(8)),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `saved_destinations_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -346,7 +350,7 @@ CREATE TABLE `users` (
   `updated_at` datetime NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email_hmac` (`email_hmac`),
-  UNIQUE KEY `email` (`email`) USING HASH
+  UNIQUE KEY `email` (`email`(191))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------

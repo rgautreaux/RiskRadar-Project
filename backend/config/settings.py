@@ -12,7 +12,7 @@ class Settings(BaseSettings):
 
     # Database
     DATABASE_URL: str = ""
-    DB_PATH: str = str(BASE_DIR / "riskradar.db")
+    DB_PATH: str = ""
     CORS_ALLOWED_ORIGINS: str = "*"
 
     # --- JWT Authentication ---
@@ -23,12 +23,8 @@ class Settings(BaseSettings):
 
     # --- LLM (OpenRouter) ---
     OPENROUTER_API_KEY: str = ""
-    LLM_API_KEY: str = ""
-    LLM_PROVIDER: str = "openrouter"
-    LLM_MODEL: str = "gpt-4o-mini"
-    LLM_MODEL_GUEST: str = "gpt-4o-mini"
-    LLM_MODEL_PREMIUM: str = "gpt-4o"
-    LLM_MAX_TOKENS: int = 4000
+    LLM_MODEL_GUEST: str = ""
+    LLM_MODEL_PREMIUM: str = ""
 
 
     # --- Scraper API Keys ---
@@ -72,11 +68,5 @@ class Settings(BaseSettings):
     USERS_USE_PREFERENCE_JUNCTION_TABLE: bool = True
     NORMALIZATION_DUAL_WRITE_LEGACY_JSON: bool = True
     GEO_USE_ZIP_LOOKUP: bool = True
-
-    def resolved_llm_api_key(self) -> str:
-        return self.LLM_API_KEY.strip() or self.OPENROUTER_API_KEY.strip()
-
-    def resolved_llm_provider(self) -> str:
-        return self.LLM_PROVIDER.strip().lower()
 
 settings = Settings()

@@ -1,6 +1,7 @@
 import json
 from collections.abc import Iterable
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from db.models import (
@@ -107,23 +108,36 @@ def ensure_alert_location(db: Session, alert: Alert) -> None:
     if alert.latitude is None or alert.longitude is None or not alert.location_name:
         return
 
-    location = (
-        db.query(Location)
-        .filter(
-            Location.latitude == alert.latitude,
-            Location.longitude == alert.longitude,
-            Location.location_name == alert.location_name,
+    def _query_existing() -> Location | None:
+        return (
+            db.query(Location)
+            .filter(
+                Location.latitude == alert.latitude,
+                Location.longitude == alert.longitude,
+                Location.location_name == alert.location_name,
+            )
+            .first()
         )
-        .first()
-    )
+
+    location = _query_existing()
     if location is None:
-        location = Location(
-            latitude=alert.latitude,
-            longitude=alert.longitude,
-            location_name=alert.location_name,
-        )
-        db.add(location)
-        db.flush()
+        try:
+            # Use a savepoint so only the failed INSERT is rolled back,
+            # not the entire outer transaction.
+            with db.begin_nested():
+                location = Location(
+                    latitude=alert.latitude,
+                    longitude=alert.longitude,
+                    location_name=alert.location_name,
+                )
+                db.add(location)
+                db.flush()  # execute INSERT so the DB assigns location.id
+        except IntegrityError:
+            # A concurrent alert in the same batch already inserted this row;
+            # the savepoint was rolled back — re-query to get the existing one.
+            location = _query_existing()
+    if location is None:
+        return
     alert.location_id = location.id
 
 

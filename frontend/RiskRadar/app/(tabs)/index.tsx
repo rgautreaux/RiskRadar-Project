@@ -385,7 +385,7 @@ export default function HomeScreen() {
           ? apiFetch<ForecastDay[]>(`/forecast/zip?zip_code=${resolvedZip}`).catch(() => [])
           : Promise.resolve([]),
         resolvedZip
-          ? apiFetch<Summary | null>(`/summaries/generate/local?zip_code=${resolvedZip}`, { method: 'POST' }).catch(() => null)
+          ? apiFetch<Summary | null>(`/summaries/latest/local?zip_code=${resolvedZip}`).catch(() => null)
           : Promise.resolve(null),
       ]);
 

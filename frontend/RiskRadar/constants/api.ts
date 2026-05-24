@@ -10,4 +10,4 @@ const DEV_HOST = expoHost ?? Platform.select({
   default: 'localhost',
 });
 
-export const API_BASE_URL = `http://${DEV_HOST}:8000/api/v1`;
+export const API_BASE_URL = `http://${DEV_HOST}:8001/api/v1`;

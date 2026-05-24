@@ -29,9 +29,8 @@ class Summarizer:
 
     def _resolve_model(self, is_premium: bool = False) -> str:
         """Return the LLM model name for the given user tier."""
-        default_model = settings.LLM_MODEL.strip() or "gpt-4o-mini"
-        guest_model = settings.LLM_MODEL_GUEST.strip() or default_model
-        premium_model = settings.LLM_MODEL_PREMIUM.strip() or default_model
+        guest_model = settings.LLM_MODEL_GUEST.strip()
+        premium_model = settings.LLM_MODEL_PREMIUM.strip()
 
         if is_premium:
             return premium_model

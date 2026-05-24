@@ -40,12 +40,16 @@ class BaseScraper(ABC):
                     logger.warning(f"[{self.source_name}] normalize error: {e}")
                     continue
 
-                # Dedup: skip if (source, source_id) already exists
-                existing = (
-                    session.query(Alert)
-                    .filter_by(source=normalized["source"], source_id=normalized["source_id"])
-                    .first()
-                )
+                # Dedup: skip if (source, source_id) already exists.
+                # no_autoflush prevents pending Alert objects added earlier
+                # in this loop from being flushed to the DB mid-iteration,
+                # which would trigger a premature INSERT before commit.
+                with session.no_autoflush:
+                    existing = (
+                        session.query(Alert)
+                        .filter_by(source=normalized["source"], source_id=normalized["source_id"])
+                        .first()
+                    )
                 if not existing:
                     session.add(Alert(**normalized))
                     new_count += 1

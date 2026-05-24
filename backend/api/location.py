@@ -433,6 +433,15 @@ def get_alerts_for_location(
             logger.exception("AirNow fetch failed for zip=%s", zip_code)
     all_alerts.extend(pollen_alerts)
 
+    # Deduplicate by (source, source_id) before touching the session to avoid
+    # autoflush IntegrityErrors when the same alert appears more than once in
+    # the combined fetch results.
+    seen_keys: dict[tuple[str, str], dict] = {}
+    for alert_data in all_alerts:
+        key = (alert_data["source"], alert_data["source_id"])
+        seen_keys[key] = alert_data
+    all_alerts = list(seen_keys.values())
+
     # Store in DB (dedup by source + source_id)
     stored = []
     for alert_data in all_alerts:
