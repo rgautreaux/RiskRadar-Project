@@ -3,46 +3,54 @@
 import logging
 import os
 from pathlib import Path
+from typing import Any, TypedDict
 
 import yaml
 
 from config.settings import settings
-from scrapers.base_scraper import BaseScraper
-from scrapers.generic_api_scraper import GenericAPIScraper
-from scrapers.web_scraper import WebScraper
-from scrapers.nws_scraper import NWSScraper
 from scrapers.airnow_scraper import AirNowScraper
 from scrapers.epa_scraper import EPAScraper
 from scrapers.firms_scraper import FIRMSScraper
+from scrapers.generic_api_scraper import GenericAPIScraper
+from scrapers.nws_scraper import NWSScraper
+from scrapers.web_scraper import WebScraper
 
 logger = logging.getLogger(__name__)
 
+
+class ScraperDescriptor(TypedDict):
+    scraper: Any
+    id: str
+    interval_minutes: int | None
+    stagger_offset_minutes: int
+
+
 # Legacy scrapers with custom Python logic.
 # These coexist alongside config-driven sources from sources.yaml.
-LEGACY_SCRAPERS: list[dict] = [
+LEGACY_SCRAPERS: list[dict[str, Any]] = [
     {
-        "factory": lambda: NWSScraper(),
+        "factory": NWSScraper,
         "id": "nws",
         "interval_minutes": None,
         "requires_env": None,
         "stagger_offset_minutes": 0,
     },
     {
-        "factory": lambda: AirNowScraper(),
+        "factory": AirNowScraper,
         "id": "airnow",
         "interval_minutes": None,
         "requires_env": None,
         "stagger_offset_minutes": 1,
     },
     {
-        "factory": lambda: EPAScraper(),
+        "factory": EPAScraper,
         "id": "epa",
         "interval_minutes": 60,
         "requires_env": None,
         "stagger_offset_minutes": 3,
     },
     {
-        "factory": lambda: FIRMSScraper(),
+        "factory": FIRMSScraper,
         "id": "firms",
         "interval_minutes": None,
         "requires_env": "NASA_FIRMS_MAP_KEY",
@@ -51,20 +59,20 @@ LEGACY_SCRAPERS: list[dict] = [
 ]
 
 
-def _load_yaml_config() -> dict:
+def _load_yaml_config() -> dict[str, list[dict[str, Any]]]:
     """Load and parse the sources.yaml config file."""
     config_path = Path(settings.SOURCES_CONFIG_PATH)
     if not config_path.exists():
-        logger.warning(f"Sources config not found at {config_path}, using empty config")
+        logger.warning("Sources config not found at %s, using empty config", config_path)
         return {"api_sources": [], "web_sources": []}
 
-    with open(config_path, "r") as f:
-        config = yaml.safe_load(f) or {}
+    with open(config_path, "r", encoding="utf-8") as file_handle:
+        config = yaml.safe_load(file_handle) or {}
 
     return config
 
 
-def load_all_scrapers() -> list[dict]:
+def load_all_scrapers() -> list[ScraperDescriptor]:
     """Return a list of scraper descriptors for the scheduler.
 
     Each descriptor is a dict with:
@@ -73,15 +81,16 @@ def load_all_scrapers() -> list[dict]:
       - "interval_minutes": int or None (None => use global default)
       - "stagger_offset_minutes": int (to avoid thundering herd)
     """
-    scrapers = []
+    scrapers: list[ScraperDescriptor] = []
 
     # 1) Legacy scrapers (the original four)
     for entry in LEGACY_SCRAPERS:
         if entry["requires_env"]:
             if not os.environ.get(entry["requires_env"], ""):
                 logger.info(
-                    f"Skipping legacy scraper '{entry['id']}': "
-                    f"{entry['requires_env']} not set"
+                    "Skipping legacy scraper '%s': %s not set",
+                    entry["id"],
+                    entry["requires_env"],
                 )
                 continue
         scrapers.append({
@@ -102,8 +111,9 @@ def load_all_scrapers() -> list[dict]:
         if auth.get("type", "none") != "none" and auth.get("env_var"):
             if not os.environ.get(auth["env_var"], ""):
                 logger.info(
-                    f"Skipping API source '{api_cfg['name']}': "
-                    f"{auth['env_var']} not set"
+                    "Skipping API source '%s': %s not set",
+                    api_cfg["name"],
+                    auth["env_var"],
                 )
                 continue
 
@@ -124,20 +134,21 @@ def load_all_scrapers() -> list[dict]:
 
         if not settings.FIRECRAWL_API_KEY:
             logger.info(
-                f"Skipping web source '{web_cfg['name']}': FIRECRAWL_API_KEY not set"
+                "Skipping web source '%s': FIRECRAWL_API_KEY not set",
+                web_cfg["name"],
             )
             continue
         if llm_provider not in {"openrouter", "openai", "deepseek", "anthropic"}:
             logger.info(
                 "Skipping web source '%s': unsupported LLM_PROVIDER '%s'",
-                web_cfg['name'],
+                web_cfg["name"],
                 llm_provider,
             )
             continue
         if not llm_api_key:
             logger.info(
                 "Skipping web source '%s': LLM_API_KEY or OPENROUTER_API_KEY not set",
-                web_cfg['name']
+                web_cfg["name"],
             )
             continue
 
@@ -149,5 +160,5 @@ def load_all_scrapers() -> list[dict]:
         })
         stagger += 2  # web scrapers are slower, give more stagger space
 
-    logger.info(f"Registry loaded: {len(scrapers)} scrapers total")
+    logger.info("Registry loaded: %s scrapers total", len(scrapers))
     return scrapers

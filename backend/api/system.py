@@ -12,10 +12,10 @@ HOW IT CONNECTS:
 """
 
 from datetime import datetime, timezone
+from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from sqlalchemy import func
 
 from db.database import get_db
 from db.models import Alert, ScrapeLog, User
@@ -25,45 +25,37 @@ router = APIRouter(tags=["System"])
 
 
 @router.get("/health")
-def health_check(db: Session = Depends(get_db)):
+def health_check(_db: Session = Depends(get_db)) -> dict[str, Any]:
     """
     Health check endpoint.
 
     Returns API status and basic database stats so you can verify
     the backend is running and connected to the database.
     """
-    try:
-        alert_count = db.query(func.count(Alert.id)).scalar() or 0
-        last_scrape = (
-            db.query(ScrapeLog)
-            .order_by(ScrapeLog.completed_at.desc())
-            .first()
-        )
-        return {
-            "status": "healthy",
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "database": "connected",
-            "alert_count": alert_count,
-            "last_scrape": {
-                "source": last_scrape.source,
-                "status": last_scrape.status,
-                "completed_at": last_scrape.completed_at,
-            } if last_scrape else None,
-        }
-    except Exception as e:
-        return {
-            "status": "unhealthy",
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "database": "error",
-            "error": str(e),
-        }
+    alert_count = _db.query(Alert.id).count() or 0
+    last_scrape = (
+        _db.query(ScrapeLog)
+        .order_by(ScrapeLog.completed_at.desc())
+        .first()
+    )
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "database": "connected",
+        "alert_count": alert_count,
+        "last_scrape": {
+            "source": last_scrape.source,
+            "status": last_scrape.status,
+            "completed_at": last_scrape.completed_at,
+        } if last_scrape else None,
+    }
 
 
 @router.post("/scrape/trigger")
 def trigger_scrape(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
+    _db: Session = Depends(get_db),
+    _current_user: User = Depends(get_current_user),
+) -> dict[str, Any]:
     """
     Manually trigger all scrapers to run immediately.
 
@@ -72,25 +64,19 @@ def trigger_scrape(
 
     Returns a summary of what each scraper fetched.
     """
-    from scrapers.registry import load_all_scrapers
+    from backend.scrapers.registry import load_all_scrapers
 
+    _ = (_db, _current_user)
     scrapers = load_all_scrapers()
-    results = []
+    results: list[dict[str, Any]] = []
 
     for scraper_info in scrapers:
         scraper = scraper_info["scraper"]
-        try:
-            count = scraper.run()
-            results.append({
-                "source": scraper_info["id"],
-                "status": "success",
-                "alerts_stored": count,
-            })
-        except Exception as e:
-            results.append({
-                "source": scraper_info["id"],
-                "status": "error",
-                "error": str(e),
-            })
+        count = scraper.run()
+        results.append({
+            "source": scraper_info["id"],
+            "status": "success",
+            "alerts_stored": count,
+        })
 
     return {"triggered_at": datetime.now(timezone.utc).isoformat(), "results": results}

@@ -6,7 +6,6 @@ and returns them.
 """
 
 import re
-import math
 import logging
 from datetime import datetime, timedelta, timezone
 from typing import Optional
@@ -41,7 +40,7 @@ def _zip_to_coords(zip_code: str) -> tuple[float, float, str, str] | None:
         city = place["place name"]
         state = place["state abbreviation"]
         return lat, lon, city, state
-    except Exception:
+    except (httpx.RequestError, ValueError, KeyError, IndexError, TypeError):
         return None
 
 
@@ -82,7 +81,7 @@ def _reverse_geocode_zip(lat: float, lon: float) -> str | None:
         if postcode and len(postcode) >= 5 and postcode[:5].isdigit():
             return postcode[:5]
         return None
-    except Exception:
+    except (httpx.RequestError, ValueError, KeyError, IndexError, TypeError):
         return None
 
 
@@ -130,7 +129,7 @@ def _city_to_coords(query: str) -> tuple[float, float, str, str, str | None] | N
             zip_code = _reverse_geocode_zip(lat, lon)
 
         return lat, lon, city, state, zip_code
-    except Exception:
+    except (httpx.RequestError, ValueError, KeyError, IndexError, TypeError):
         logger.exception("City geocoding failed for query: %s", query)
         return None
 
@@ -242,7 +241,7 @@ def _fetch_airnow(zip_code: str) -> list[dict]:
         resp = httpx.get(url, params=params, timeout=30)
         resp.raise_for_status()
         raw_items = resp.json()
-    except Exception:
+    except (httpx.ConnectError, httpx.ReadTimeout, httpx.RemoteProtocolError, ValueError, KeyError, IndexError, TypeError):
         return []
 
     results = []
@@ -300,7 +299,7 @@ def _fetch_pollen(lat: float, lon: float) -> list[dict]:
         resp = httpx.get(url, params=params, timeout=15)
         resp.raise_for_status()
         data = resp.json()
-    except Exception:
+    except (httpx.RequestError, ValueError, KeyError, IndexError, TypeError):
         logger.exception("Google Pollen API fetch failed for lat=%s lon=%s", lat, lon)
         return []
 
@@ -385,7 +384,7 @@ def get_alerts_for_location(
     pollen_alerts: list[dict] = []
     try:
         pollen_alerts = _fetch_pollen(lat, lon)
-    except Exception:
+    except (httpx.RequestError, ValueError, KeyError, IndexError, TypeError):
         logger.exception("Google Pollen fetch failed for lat=%s lon=%s", lat, lon)
 
     # If we have fresh weather/AQ cache, combine with pollen and return
@@ -424,12 +423,12 @@ def get_alerts_for_location(
     all_alerts: list[dict] = []
     try:
         all_alerts.extend(_fetch_nws_alerts(lat, lon, state))
-    except Exception:
+    except (httpx.RequestError, ValueError, KeyError, IndexError, TypeError):
         logger.exception("NWS alert fetch failed for lat=%s lon=%s", lat, lon)
     if zip_code:
         try:
             all_alerts.extend(_fetch_airnow(zip_code))
-        except Exception:
+        except (httpx.RequestError, ValueError, KeyError, IndexError, TypeError):
             logger.exception("AirNow fetch failed for zip=%s", zip_code)
     all_alerts.extend(pollen_alerts)
 
@@ -462,7 +461,6 @@ def get_alerts_for_location(
     except IntegrityError:
         db.rollback()
         # Re-fetch all matching alerts in one query instead of per-item lookups
-        source_ids = [(d["source"], d["source_id"]) for d in all_alerts]
         stored = (
             db.query(Alert)
             .filter(
@@ -541,7 +539,7 @@ def autocomplete_location(q: str = Query(..., min_length=2, description="Partial
                 results.append({"label": label, "city": city, "state": state})
 
         return results
-    except Exception:
+    except (httpx.RequestError, ValueError, KeyError, IndexError, TypeError):
         return []
 
 

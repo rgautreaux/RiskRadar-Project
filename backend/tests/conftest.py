@@ -1,41 +1,51 @@
 """Shared fixtures for all tests."""
 
 import json
-import pytest
 from datetime import datetime, timezone
-from contextlib import asynccontextmanager
-from unittest.mock import patch
+from typing import Generator
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
+import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.pool import StaticPool
 
-from auth.security import hash_password
-from db.database import Base, get_db
-from db.models import Alert, Summary, User, ScrapeLog
+from backend.auth.security import hash_password
+from backend.db.database import Base, get_db
+from backend.db.models import Alert, Summary, User
 
 
 # ---------------------------------------------------------------------------
 # Database fixtures
 # ---------------------------------------------------------------------------
 
-@pytest.fixture
-def db_session():
+
+@pytest.fixture(name="db_session")
+def db_session_fixture() -> Generator[Session, None, None]:
     """In-memory SQLite session — fresh tables per test.
 
     Uses StaticPool so all connections share the same :memory: database.
     Without this, create_all() and the session would get different DBs.
     """
+    # Use an in-memory engine for tests and ensure the project's
+    # backend.db.database.SessionLocal/engine point to it so all code
+    # (including scrapers) uses the same test DB.
+    import backend.db.database as _db
+
     engine = create_engine(
         "sqlite:///:memory:",
         connect_args={"check_same_thread": False},
         poolclass=StaticPool,
     )
+
+    # Patch the backend database module to use our test engine/session
+    _db.engine = engine
+    _db.SessionLocal = sessionmaker(bind=engine)
+
     Base.metadata.create_all(bind=engine)
-    Session = sessionmaker(bind=engine)
-    session = Session()
+    session_factory = _db.SessionLocal
+    session = session_factory()
     try:
         yield session
     finally:
@@ -44,16 +54,15 @@ def db_session():
 
 
 @pytest.fixture
-def test_client(db_session):
+def test_client(db_session: Session) -> Generator[TestClient, None, None]:
     """FastAPI TestClient wired to the in-memory DB.
 
     Creates a fresh app without lifespan (no scheduler, no prod DB init)
     so tests run isolated and fast.
     """
     from fastapi.middleware.cors import CORSMiddleware
-    from api.router import api_router
+    from backend.api.router import api_router
 
-    # Build a clean app without the lifespan that starts the scheduler
     test_app = FastAPI(title="RiskRadar API Test")
     test_app.add_middleware(
         CORSMiddleware,
@@ -62,11 +71,10 @@ def test_client(db_session):
         allow_headers=["*"],
     )
     test_app.include_router(api_router)
-
-    # Wire the root endpoint
-    @test_app.get("/")
-    def root():
-        return {"name": "RiskRadar API", "version": "1.0.0", "status": "running"}
+    test_app.add_api_route(
+        "/",
+        lambda: {"name": "RiskRadar API", "version": "1.0.0", "status": "running"},
+    )
 
     def _override_get_db():
         try:
@@ -87,8 +95,8 @@ def test_client(db_session):
 NOW = datetime.now(timezone.utc)
 
 
-@pytest.fixture
-def sample_alerts(db_session):
+@pytest.fixture(name="sample_alerts")
+def sample_alerts_fixture(db_session: Session) -> list[Alert]:
     """Insert 3 alerts of different types."""
     alerts = [
         Alert(
@@ -139,13 +147,13 @@ def sample_alerts(db_session):
     ]
     db_session.add_all(alerts)
     db_session.commit()
-    for a in alerts:
-        db_session.refresh(a)
+    for alert in alerts:
+        db_session.refresh(alert)
     return alerts
 
 
 @pytest.fixture
-def sample_user(db_session):
+def sample_user(db_session: Session) -> User:
     """Insert a test user."""
     user = User(
         display_name="Test User",
@@ -162,13 +170,14 @@ def sample_user(db_session):
 
 
 @pytest.fixture
-def sample_summary(db_session, sample_alerts):
+def sample_summary(db_session: Session, request: pytest.FixtureRequest) -> Summary:
     """Insert a test summary."""
+    sample_alerts = request.getfixturevalue("sample_alerts")
     summary = Summary(
         title="Environmental Digest — Mar 02, 2026",
         content="## Executive Summary\nMultiple alerts detected.",
         summary_type="daily",
-        alert_ids=json.dumps([a.id for a in sample_alerts]),
+        alert_ids=json.dumps([alert.id for alert in sample_alerts]),
         region="US",
         generated_at=NOW,
         model_used="gpt-4o-mini",

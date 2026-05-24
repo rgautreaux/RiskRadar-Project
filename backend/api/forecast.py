@@ -11,14 +11,14 @@ Returns up to 8 daily forecast objects.
 import logging
 import time
 from collections import OrderedDict
-from datetime import datetime, timezone
+from datetime import datetime
 
 import httpx
 from fastapi import APIRouter, HTTPException, Query
 
 from config.settings import settings
 from schemas.forecast import ForecastPeriodOut
-from api.location import _zip_to_coords
+from backend.api.location import _zip_to_coords
 
 logger = logging.getLogger(__name__)
 
@@ -136,20 +136,19 @@ def get_forecast(
             _cache.move_to_end(key)
             return data
         del _cache[key]
-
     try:
         data = _fetch_owm_forecast(lat, lon)
     except httpx.HTTPStatusError as exc:
         status = exc.response.status_code
         if status == 401:
-            raise HTTPException(status_code=502, detail="Invalid OpenWeatherMap API key")
+            raise HTTPException(status_code=502, detail="Invalid OpenWeatherMap API key") from exc
         if status == 429:
-            raise HTTPException(status_code=429, detail="OpenWeatherMap rate limit reached")
+            raise HTTPException(status_code=429, detail="OpenWeatherMap rate limit reached") from exc
         logger.error("OWM forecast HTTP error %s: %s", status, exc)
-        raise HTTPException(status_code=502, detail="OpenWeatherMap API returned an error")
-    except Exception:
+        raise HTTPException(status_code=502, detail="OpenWeatherMap API returned an error") from exc
+    except Exception as exc:
         logger.exception("OWM forecast fetch failed")
-        raise HTTPException(status_code=502, detail="Could not fetch forecast")
+        raise HTTPException(status_code=502, detail="Could not fetch forecast") from exc
 
     _cache[key] = (time.time(), data)
     while len(_cache) > _CACHE_MAX_SIZE:

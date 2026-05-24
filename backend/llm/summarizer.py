@@ -91,7 +91,17 @@ class Summarizer:
 
         try:
             text, tokens, model = self._call_llm(prompts.TRIP_PACKING_SYSTEM, user_msg, is_premium=is_premium)
-        except Exception as exc:
+        except (
+            openai.APIConnectionError,
+            openai.APIStatusError,
+            openai.RateLimitError,
+            openai.AuthenticationError,
+            openai.BadRequestError,
+            ValueError,
+            KeyError,
+            AttributeError,
+            IndexError,
+        ) as exc:
             logger.warning("LLM daily digest fallback activated: %s", exc)
             text = self._build_fallback_summary(len(alerts), "Daily Digest")
             tokens = 0
@@ -149,7 +159,17 @@ class Summarizer:
 
         try:
             text, tokens, model = self._call_llm(prompts.TRIP_PACKING_SYSTEM, user_msg, is_premium=is_premium)
-        except Exception as exc:
+        except (
+            openai.APIConnectionError,
+            openai.APIStatusError,
+            openai.RateLimitError,
+            openai.AuthenticationError,
+            openai.BadRequestError,
+            ValueError,
+            KeyError,
+            AttributeError,
+            IndexError,
+        ) as exc:
             logger.warning("LLM local digest fallback activated for %s, %s: %s", city, state, exc)
             text = self._build_fallback_summary(len(alerts), f"Local Digest for {city}, {state}")
             tokens = 0
