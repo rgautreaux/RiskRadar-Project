@@ -19,13 +19,40 @@ The approach is designed for full production maturity, not MVP shortcuts. It pri
 - Operational controls: LLM sampling/caching, provider circuit-breakers, quotas, offline route snapshots, and parity contract tests.
 - UI changes: Medical & Allergy settings, `Why?` explainability view, emergency CTA, packing and itinerary UIs.
 
+**Security Posture and Threat Model**
+
+This plan does not claim to guarantee perfect safety. It defines the controls RiskRadar must implement so the new travel, collaboration, and assistant features are hardened against realistic attack paths and data-loss scenarios.
+
+Primary threat classes to cover:
+
+- Account takeover, session theft, credential stuffing, and brute-force attacks.
+- Broken authorization, IDOR, privilege escalation, and insecure public-link sharing.
+- Injection risks across SQL, HTML, CSRF, SSRF, and prompt-injection paths.
+- Sensitive-data exposure through logs, caches, backups, shared views, or third-party providers.
+- Supply-chain compromise through dependencies, containers, CI/CD, or scraper inputs.
+- Abuse, scraping, bot traffic, rate-limit bypass, and denial-of-service attempts.
+- Malicious or poisoned external data from events, places, routing, and health sources.
+- Unsafe LLM behavior, tool misuse, hallucinated citations, and unsafe advice.
+- Insider misuse, leaked secrets, misconfiguration, and incomplete incident recovery.
+
+Mandatory security controls:
+
+- Least-privilege RBAC and row-level authorization for all trip, sharing, and assistant data paths.
+- TLS everywhere, service-to-service authentication, encrypted secrets, and encryption at rest for databases, backups, and sensitive fields.
+- Strong session security: short-lived access tokens, refresh-token rotation, reuse detection, revocation, and secure cookie settings.
+- Security headers and browser protections: strict CSP, HSTS, X-Frame-Options, CSRF defenses, and origin allowlists.
+- Abuse prevention: endpoint-level rate limits, bot detection, link enumeration throttling, and anomaly alerts.
+- Secure SDLC gates: threat modeling, SAST, DAST, secret scanning, dependency scanning, container/IaC scanning, and SBOM generation.
+- AI safety: prompt-injection defenses, tool allowlists, citation validation, confidence thresholds, and human-review gates for high-risk recommendations.
+- Auditability and recovery: immutable audit logs, alerting on sensitive actions, tested backups, restore drills, incident-response runbooks, and rollback paths.
+
 
 ## Core Principles
 
 1. **API-First Design**: Features delivered via stable, contract-tested REST/GraphQL endpoints, enabling web and mobile to consume the same logic without deep coupling.
 2. **Schema Safety**: All data model changes follow expand-migrate-contract patterns with rollback scripts, parity validators, and preflight gating.
 3. **Provider Neutrality**: Routing, LLM, and event data sources abstracted via adapters so decisions can be deferred and vendors swapped without rework.
-4. **Security-by-Default**: Authorization enforced at data access layer, sharing links are signed and time-bounded, audit trails on collaboration actions.
+4. **Security-by-Default**: Authorization enforced at data access layer, sharing links are signed and time-bounded, service credentials are least-privilege and rotated, sensitive data is encrypted, and audit trails cover collaboration and assistant actions.
 5. **Observable Degradation**: When external providers fail, system shifts to safe fallback modes (cached routes, risk-only advisories) with clear uncertainty messaging.
 6. **Explainability**: Recommendations, alerts, and itinerary suggestions include "why" and confidence fields so users understand reasoning.
 
@@ -351,41 +378,58 @@ Requirements:
 **Tasks**:
 
 **Security (Weeks 1–14)**:
+- Perform feature-by-feature threat modeling using STRIDE and maintain a living risk register with explicit owners and due dates.
+- Require security sign-off before rollout of events, routing, itineraries, sharing, packing, or assistant changes.
 - Implement strict CORS allowlist (specific origins, not wildcard).
 - Add endpoint-level rate limiting (not just auth endpoints): 100 req/min per user for routes, 50 for recommendations.
 - Add abuse detection: repeated failed authorization attempts, unusual API patterns.
 - Implement token rotation: JWT refresh tokens, logout invalidation.
 - Secret hygiene: rotate LLM API keys monthly, use HashiCorp Vault or equivalent.
+- Add MFA for privileged/admin/support roles and step-up authentication for risky actions like link creation, share changes, and health-profile edits.
+- Enforce browser protections: CSP, HSTS, X-Content-Type-Options, CSRF tokens, and clickjacking defenses.
+- Add detection for credential stuffing, session hijacking, link enumeration, scraping, and rapid request bursts.
+- Harden AI calls: tool allowlists, prompt-injection filters, output citation checks, and a hard stop for low-confidence or policy-violating responses.
+- Protect supply chain: pin dependencies, generate SBOMs, scan dependencies/containers/IaC in CI, and block releases on critical findings.
+- Add WAF/bot mitigation and basic DDoS throttling in front of public endpoints.
 
 **Data Privacy (Weeks 4–10)**:
 - Minimize retention: delete collaboration audit logs after 1 year.
 - Share link tokens encrypted at rest.
+- Encrypt sensitive health, identity, and collaboration metadata at rest and in backups using managed keys with rotation.
 - Shared-view redaction: hide sensitive health conditions, device tokens from viewers.
+- Separate public, collaborator, and owner views so shared APIs never leak private fields by default.
 - GDPR/CCPA compliance: user data export, deletion, opt-out audit.
+- Add secure deletion verification and document backup retention so deleted records are not reintroduced inadvertently.
 
 **Reliability (Weeks 4–14)**:
 - Implement retries with exponential backoff for external APIs.
 - Circuit breaker pattern: fail open to degraded mode after 3 failures.
 - Idempotency keys for mutations (prevent double-posts).
 - Dead-letter handling for failed event ingestion.
+- Back up databases before every migration and rehearse restore/rollback in staging.
+- Add incident-response runbooks for provider compromise, leaked tokens, data exfiltration, and unsafe assistant behavior.
 
 **Observability (Weeks 5–14)**:
 - Structured logging: JSON logs with request ID, user ID, trace ID.
 - Distributed tracing: instrument scraper, recommendation engine, routing calls.
 - Metrics: event ingestion rate, recommendation latency p50/p95/p99, share link usage.
 - Alerting: high error rates, SLO violations, cost overruns.
+- Security metrics: auth failures, authorization denials, link-enumeration attempts, token revocations, guardrail triggers, and suspicious provider responses.
+- Redact secrets and health data from logs by default, with explicit allowlists for any exceptional diagnostic access.
 
 **Cost Governance (Weeks 6–14)**:
 - Provider request budgets: stop routing calls if monthly quota exceeded.
 - Caching: route snapshots (7d), event lists (1h), forecast (4h).
 - Sampling: LLM recommendation calls only for 20% of traffic initially, then ramp.
 - Dashboard: per-feature spend visibility.
+- Add cost-abuse controls for automated scraping, repeated route recomputation, and public-link brute-force traffic.
 
 **Rollout Strategy (Weeks 13–14)**:
 - Canary releases: 5% → 25% → 50% → 100% over 1 week.
 - Feature flags enable per-feature rollout independently.
 - Predefined rollback triggers: error rate >5%, p95 latency >2s, cost spike >20%.
 - Post-release runbook: validation checks, alerting configuration.
+- Require an external penetration test or red-team review before any full production rollout.
 
 **Key Files**:
 - backend/auth/security.py (extend CORS, rate limiting)
@@ -399,6 +443,8 @@ Requirements:
 **Verification**:
 - All endpoints have rate-limit headers.
 - CORS allows only registered origins.
+- Security scans are clean for critical/high findings before release.
+- Penetration-test findings are triaged and remediated before rollout beyond canary.
 - Traces propagate across service boundaries.
 - Degraded mode engages when provider latency >2s.
 - All tests pass; no regressions.

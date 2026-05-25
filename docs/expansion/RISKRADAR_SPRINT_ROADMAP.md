@@ -37,6 +37,10 @@ These capabilities are strategic differentiators and must be worked in parallel 
 - **Model Ops & Observability**: add LLM usage dashboards, hallucination detection, guardrail metrics, and automated sampling for human review (implement in Sprint 5 integration tests).
 - **Human‑in‑the‑loop Ops**: define triage queues for flagged outputs, clinician review UIs, and escalation paths; staff rota in Ops plan.
 - **Privacy & Compliance Controls**: encryption-at-rest, consent flows for `user_health_profile`, and data export/redaction APIs added in Sprint 1.
+- **Threat Modeling & Security Gates**: run STRIDE reviews for each feature area, maintain a live risk register, and block releases on unresolved critical/high findings.
+- **Secure SDLC & Supply Chain**: add SAST, DAST, secret scanning, dependency scanning, container/IaC scanning, SBOM generation, and signed-build verification to CI.
+- **Zero-Trust Operations**: use least-privilege service accounts, short-lived credentials, mTLS/service auth, and managed key rotation for sensitive data and backups.
+- **Incident Response & Recovery**: rehearse breach response, backup restore, rollback, and provider-compromise playbooks before canary and GA.
 - **User Research & Accessibility**: run focused user interviews with allergy/health-affected travelers; schedule accessibility audit (WCAG AA) in Sprint 9–10.
 
 
@@ -515,26 +519,33 @@ Additional Acceptance Criteria:
 - Strict CORS allowlist: specific origins, not wildcard.
 - Endpoint-level rate limiting: 100 req/min per user for routes, 50 for recommendations, etc.
 - JWT refresh tokens; logout invalidation.
+- Secure session handling: secure cookies, refresh-token reuse detection, session revocation, and step-up auth for risky actions.
 - Abuse detection: repeated failed auth, unusual API patterns.
 - Secret rotation: LLM API keys monthly, use HashiCorp Vault or equivalent.
-- OWASP Top 10 mitigation: SQL injection (parameterized queries), XSS (sanitization), CSRF tokens.
-- Security tests: rate limiting bypass attempts, authorization bypass, token leaks.
+- OWASP Top 10 mitigation: SQL injection (parameterized queries), XSS (sanitization), CSRF tokens, SSRF protection, open-redirect checks, and clickjacking defenses.
+- Browser and API hardening: CSP, HSTS, X-Content-Type-Options, secure cache headers, and origin-bound callbacks.
+- Security tests: rate limiting bypass attempts, authorization bypass, token leaks, dependency scans, secret scans, and container scan failures.
+- WAF/bot mitigation: throttling for credential stuffing, link enumeration, and scraping bursts.
 
 **Tests** (>20):
 - Unit: rate limiter, abuse detector, token rotation.
 - Integration: auth flow end-to-end, CORS headers, secret rotation.
-- Security: attempt bypass of rate limits, unauthorized access, token reuse.
+- Security: attempt bypass of rate limits, unauthorized access, token reuse, CSRF, SSRF, and prompt-injection entry points.
+- CI: fail builds on critical SAST/DAST, dependency, or secret-scan findings.
 
 **Acceptance Criteria**:
 - [ ] CORS allowlist enforced; wildcard removed.
 - [ ] Rate limiting active on all endpoints; bypass attempts fail.
 - [ ] Token rotation works; old tokens invalidated on logout.
 - [ ] Abuse detection flags unusual patterns.
+- [ ] Security headers present on all web responses.
+- [ ] Critical/high security scanner findings are fixed before release.
 - [ ] Security tests pass; no known vulnerabilities.
 
 **Risk Mitigation**:
 - Emergency disable switches for rate limiting in case of issues.
 - Secret rotation does not disrupt service.
+- All privileged actions are logged and reviewed.
 
 ---
 
@@ -552,11 +563,13 @@ Additional Acceptance Criteria:
 
 **Deliverables**:
 - Retention policies: delete collab audit logs after 1 year, share links after expiry.
-- Encryption at rest: share link tokens, sensitive user data.
+- Encryption at rest: share link tokens, sensitive user data, backups, and derived caches.
+- Field-level encryption for health profile, share tokens, and any sensitive collaboration metadata.
 - GDPR compliance: user data export endpoint, deletion workflow.
 - CCPA compliance: opt-out audit, tracking preference storage.
 - Shared-view redaction: hide health conditions, device tokens from viewers.
 - Audit trail: all access and modifications logged with user/timestamp.
+- Secure deletion: verify deletes propagate to primary data, replicas, caches, and exported artifacts.
 - Privacy tests: verify sensitive data not exposed in shared views.
 
 **Tests** (>15):
@@ -576,6 +589,7 @@ Additional Acceptance Criteria:
 **Risk Mitigation**:
 - Retention policies reviewed by legal; backup snapshots kept for compliance.
 - Data export tested before compliance deadline.
+- Keys rotated on a fixed schedule and after any suspected compromise.
 
 ---
 
@@ -596,11 +610,13 @@ Additional Acceptance Criteria:
 - Distributed tracing: trace routing calls, recommendation engine, event ingestion.
 - Metrics: event ingestion rate, recommendation latency p50/p95/p99, share link usage, cost per trip.
 - Alerting: high error rates, SLO violations, cost overruns.
+- Security telemetry: auth failures, authorization denials, token revocations, link-enumeration attempts, guardrail triggers, and suspicious provider responses.
 - Cost dashboard: per-feature spend visibility, quota usage.
 - Request quotas: stop routing calls if monthly quota exceeded.
 - Caching: route snapshots (7d), event lists (1h), forecast (4h).
 - Sampling: LLM recommendation calls only for 20% of traffic initially, then ramp.
 - Observability tests: verify traces propagate, logs structured, metrics exported.
+- Incident-response alerts: data exfiltration, provider compromise, and brute-force attacks page the on-call team.
 
 **Tests** (>15):
 - Unit: quota logic, cache TTL, sampling algorithm.
@@ -619,6 +635,7 @@ Additional Acceptance Criteria:
 **Risk Mitigation**:
 - Alerts trigger on cost spike >20%.
 - Fallback to cached data if external API call fails.
+- Log redaction prevents secrets and health data from entering telemetry.
 
 ---
 
@@ -679,6 +696,8 @@ Additional Acceptance Criteria:
 - Release notes: features, fixes, known issues.
 - API documentation: OpenAPI specs for all new endpoints.
 - Operations runbook: deployment, rollback, alerting.
+- Independent penetration test and red-team review, with all critical/high findings closed before GA.
+- Disaster-recovery drill: backup restore, failover, and rollback verified in staging.
 - Canary deployment: 5% of users on new features; monitoring enabled.
 - Rollback procedure: documented, tested.
 - Post-release verification checklist.
@@ -693,11 +712,14 @@ Additional Acceptance Criteria:
 - [ ] Canary deployment stable (error rate <1%, latency <SLO).
 - [ ] Documentation complete and reviewed.
 - [ ] Rollback tested and verified.
+- [ ] Penetration-test findings resolved or explicitly waived by security leadership.
+- [ ] Restore drill proves data can be recovered within the recovery objective.
 - [ ] Tech lead sign-off to proceed to wider rollout.
 
 **Risk Mitigation**:
 - Predefined rollback triggers: >5% error rate, >2s p95 latency, cost spike >20%.
 - 24/7 on-call during canary period.
+- Release blocked if critical security findings remain open.
 
 ---
 
