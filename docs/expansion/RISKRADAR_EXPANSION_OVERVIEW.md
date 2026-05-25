@@ -10,6 +10,16 @@ The approach is designed for full production maturity, not MVP shortcuts. It pri
 
 ---
 
+**Sync Checklist (high level)**
+
+- New capability domains: Events, Routing, Itineraries, Packing, Collaboration, Golby parity.
+- Data & schema changes: `Trip`, `Itinerary`, `ItineraryItem`, `PackingList`, `TripShare`, `Place` (add `allergen_flags`, `diet_tags`, `source`, `confidence`), `user_health_profile`, `item_health_score`.
+- Deterministic safety layers: `backend/services/health_guardrails.py` and guardrail checks before any LLM output.
+- Provenance & explainability: attach `{why, confidence, sources[], timestamp}` to recommendations; surface `clinician_review_required` where applicable.
+- Operational controls: LLM sampling/caching, provider circuit-breakers, quotas, offline route snapshots, and parity contract tests.
+- UI changes: Medical & Allergy settings, `Why?` explainability view, emergency CTA, packing and itinerary UIs.
+
+
 ## Core Principles
 
 1. **API-First Design**: Features delivered via stable, contract-tested REST/GraphQL endpoints, enabling web and mobile to consume the same logic without deep coupling.

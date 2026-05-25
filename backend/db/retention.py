@@ -1,5 +1,6 @@
 import json
 import logging
+from importlib import import_module
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Any, cast
@@ -8,7 +9,15 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from backend.config.settings import settings as _module_settings
-from importlib import import_module
+from db.models import (
+    Alert,
+    AlertArchive,
+    CleanupRun,
+    ScrapeLog,
+    ScrapeLogArchive,
+    Summary,
+    SummaryArchive,
+)
 
 
 def _resolve_session_local():
@@ -40,15 +49,6 @@ def _resolve_settings():
     except Exception:
         pass
     return _module_settings
-from db.models import (
-    Alert,
-    AlertArchive,
-    CleanupRun,
-    ScrapeLog,
-    ScrapeLogArchive,
-    Summary,
-    SummaryArchive,
-)
 
 logger = logging.getLogger(__name__)
 

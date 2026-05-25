@@ -6,6 +6,15 @@
 
 This roadmap breaks the 8-phase plan into **14 two-week sprints**, with explicit team roles, daily/weekly cadence, and go/no-go acceptance criteria. The timeline assumes a team of **8–10 engineers** split across backend, frontend, QA, and DevOps tracks.
 
+**Sync Checklist (high level)**
+
+- Core additions: Events ingestion, Routing provider adapter, Interactive Itineraries, Packing Lists, Trip Sharing, Golby parity.
+- Data model changes: add `Trip`, `Itinerary`, `PackingList`, `TripShare`, extend `Place` with `allergen_flags`/`diet_tags` and provenance fields; add `user_health_profile` and `item_health_score` schemas and migrations.
+- Safety & guardrails: `backend/services/health_guardrails.py` deterministic checks; explainability `{why, confidence, sources[], timestamp}`; `clinician_review_required` flagging and triage queues.
+- Scraper updates: emit `source`, `confidence`, `trust_tier`, `allergen_flags`, and dead-letter handling for ambiguous records.
+- Testing & ops: parity contract tests, migration preflight, LLM sampling/caching, circuit-breakers, and offline route snapshots.
+
+
 
 ## Team Structure (Recommended)
 

@@ -5,7 +5,9 @@ from backend.scrapers.generic_api_scraper import (
 	_extract_path,
 	_safe_float,
 )
-import httpx
+import httpx as _httpx
+
+httpx = _httpx
 
 __all__ = [
 	"GenericAPIScraper",
