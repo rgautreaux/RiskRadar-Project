@@ -180,7 +180,7 @@ class Summarizer:
             model = "fallback-no-llm"
 
         summary = Summary(
-            title=f"Travel Briefing: {city}, {state} — {date.today().strftime('%b %d, %Y')}",
+            title=f"Local Digest for {city}, {state} — {date.today().strftime('%b %d, %Y')}",
             content=text,
             summary_type="local",
             alert_ids=json.dumps([a.id for a in alerts]) if settings.NORMALIZATION_DUAL_WRITE_LEGACY_JSON else None,

@@ -6,25 +6,30 @@
 
 This roadmap breaks the 8-phase plan into **14 two-week sprints**, with explicit team roles, daily/weekly cadence, and go/no-go acceptance criteria. The timeline assumes a team of **8–10 engineers** split across backend, frontend, QA, and DevOps tracks.
 
----
 
 ## Team Structure (Recommended)
 
-- **Tech Lead / Architect** (1): Oversees all tracks, gates decisions, resolves blockers.
-- **Backend Team** (3–4): Database, API, scraper services, authorization.
-- **Frontend Team** (2): Mobile (React Native) and web (PHP/React) UX.
-- **QA / Automation** (1–2): Test automation, performance testing, security validation.
-- **DevOps / Platform** (1): CI/CD, observability, staging/prod operations.
 
 **Stand-ups**: Daily 15-min sync; weekly full-team sync on Monday.
 **Demos**: Every sprint (Friday).
 **Planning**: Sprint planning on Monday; retros on Friday.
 
----
 
 ## Sprint Schedule (14 × 2-week sprints = 28 weeks ≈ 7 months)
 
-### **Sprint 0: Program Setup & Guardrails** (Weeks 1–2)
+## Cross-cutting Priorities & Differentiators
+
+These capabilities are strategic differentiators and must be worked in parallel across early sprints (0–4). Assign a small cross-functional team (Tech Lead, Backend, QA, Clinical Advisor) to coordinate.
+
+- **Clinical & Legal Review Gate**: establish a clinician review workflow and legal sign-off process for any high‑risk medical or allergy guidance. Implement clinician_review_required flags in Phase 1 models and Sprint 2 scrapers.
+- **Authoritative Data Partnerships**: prioritize onboarding 2–3 verified data partners (health orgs, municipal alert feeds, trusted event partners) and assign ingestion SLAs and trust tiers.
+- **Provenance & Trust Signals**: standardize `source`, `confidence`, `trust_tier`, `last_seen` fields across scrapers and surface in APIs and UI explainability views.
+- **Offline & Edge Resilience**: design route snapshotting, cached alerts, and local map tiles; include offline sync stories in Sprint 3 and Sprint 4.
+- **Model Ops & Observability**: add LLM usage dashboards, hallucination detection, guardrail metrics, and automated sampling for human review (implement in Sprint 5 integration tests).
+- **Human‑in‑the‑loop Ops**: define triage queues for flagged outputs, clinician review UIs, and escalation paths; staff rota in Ops plan.
+- **Privacy & Compliance Controls**: encryption-at-rest, consent flows for `user_health_profile`, and data export/redaction APIs added in Sprint 1.
+- **User Research & Accessibility**: run focused user interviews with allergy/health-affected travelers; schedule accessibility audit (WCAG AA) in Sprint 9–10.
+
 
 **Theme**: Lock scope, define contracts, establish automation gates.
 
@@ -756,6 +761,12 @@ Additional Acceptance Criteria:
 	- Implement `source`/`confidence` metadata across scrapers and APIs so every event/alert/forecast carries provenance and freshness.
 	- Add a per-user `risk_tolerance` preference and wire it into itinerary and route scoring to let users choose safer vs. faster recommendations.
 	- Add a provenance UI affordance (`Why?`) on `ItineraryItem` cards, Event cards, and Route options that displays `why`, `sources[]`, and `confidence`.
+	- Add opt-in `user_health_profile` schema + migration (allergies, asthma, conditions, meds); add privacy/export/delete controls and shared-view redaction.
+	- Implement `backend/services/health_guardrails.py` with deterministic rules, unit tests, and example rules (asthma+AQI, severe allergy filtering, heat/heart-condition guidance).
+	- Extend scrapers/places to emit `allergen_flags` and `diet_tags` plus `source`/`confidence`; add ingestion tests and dead-letter handling for ambiguous records.
+	- Wire allergen-aware filters into `/api/v1/trips/{id}/places` and the packing generator; surface `clinician_review_required` and `{why, confidence, sources[]}` in API outputs.
+	- Add UI items: "Medical & Allergy" settings, `Why?` explainability affordance on Itinerary/Place/Packing items, and emergency CTA flows.
+	- Schedule a clinical/legal review: capture a short sign-off workflow and document required citations/sources (CDC, WHO, EPA, local health agencies).
 - **Medium-term (sprints 3–7):**
 	- Add `item_health_score` into the data model and surface it in itinerary timelines and conflict checks.
 	- Implement a hybrid recommendation engine (deterministic rules + ML/LLM ranker) with LLM sampling, output caching, and guardrails for safety-critical suggestions.

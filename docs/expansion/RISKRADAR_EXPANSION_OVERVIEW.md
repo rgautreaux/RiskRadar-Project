@@ -288,6 +288,31 @@ The approach is designed for full production maturity, not MVP shortcuts. It pri
 
 These refinements prioritize user trust, clarity, and safety while keeping operational costs and provider risk manageable. They are reflected in the Roadmap's prioritized next steps and sprint tasks.
 
+**Differentiators & Competitive Advantages**
+
+- **Medical‑aware travel advice**: opt‑in, auditable health profiles + deterministic guardrails with clinician review for any prescriptive advice (differentiates from generic travel apps).
+- **Provenance‑first recommendations**: every recommendation includes `source`, `confidence`, `trust_tier`, `last_seen` and a `{why, confidence, sources[], timestamp}` explainability object.
+- **Actionable assistant (Golby)**: not just suggestions — one‑tap bookings, reroutes, emergency CTAs, and collaborative actions with clear safety tradeoffs shown.
+- **Operational cost & model governance**: LLM sampling/caching, hallucination monitoring, guardrail metrics, and a model‑ops cadence to keep reliability high and costs bounded.
+- **Human‑in‑the‑loop safety ops**: small triage team and clinician workflows to review flagged cases and continuously improve deterministic rules.
+- **Offline‑first resilience**: route snapshots, cached alerts, and local maps so travelers remain safe without connectivity.
+
+These capabilities position RiskRadar as a safety‑centric travel intelligence platform that blends deterministic public‑safety rules, verified data provenance, and action‑oriented assistant features.
+
+**Health & Allergy Safety**
+
+Add an opt-in `user_health_profile` (allergies, asthma, chronic conditions, relevant medications) with explicit consent, export/delete controls, and minimal retention. Implement a deterministic health guardrail layer (`backend/services/health_guardrails.py`) that runs before ML/LLM outputs to enforce safety rules and block or flag high-risk advice. Example guardrail rules:
+- Asthma + AQI > 150 → mark outdoor exertion as unsafe; recommend N95 and indoor alternatives.
+- Severe peanut/nut allergy → filter Places and menu items with `allergen_flags.contains_nuts`; mark exposures as high-risk and require manual verification.
+- Heart condition + heat advisory → advise reduced exertion, show nearest medical facility, and surface emergency CTA.
+
+Requirements:
+- Scrapers and `Place` schema must include `allergen_flags`, `diet_tags`, `confidence`, and `source` provenance fields so recommendations can be traced and filtered.
+- All medical/allergy guidance must include an explainability object `{why, confidence, sources[], timestamp}` and a `clinician_review_required` flag when deterministic rules mark output high-risk.
+- LLMs may only be used for phrasing/explanations when guardrails permit; LLM outputs must include citation tokens and be suppressed below configured confidence thresholds.
+- UI: provide a "Medical & Allergy" settings UI (opt-in), a `Why?` explainability view on itinerary/place/packing cards, and a prominent emergency CTA when severe risks are detected.
+- Privacy: redact health fields in shared/public views, encrypt health data at rest, and expose export/delete endpoints.
+
 **Key Files**:
 - backend/api/parity/ (new, API contract definitions)
 - backend/api/router.py (register parity adapter routes)

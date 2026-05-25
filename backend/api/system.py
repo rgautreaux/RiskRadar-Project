@@ -73,11 +73,22 @@ def trigger_scrape(
 
     for scraper_info in scrapers:
         scraper = scraper_info["scraper"]
-        count = scraper.run()
-        results.append({
-            "source": scraper_info["id"],
-            "status": "success",
-            "alerts_stored": count,
-        })
+        try:
+            count = scraper.run()
+            results.append({
+                "source": scraper_info["id"],
+                "status": "success",
+                "alerts_stored": count,
+            })
+        except Exception as exc:
+            # Don't let one failing scraper crash the entire trigger endpoint;
+            # surface the failure per-scraper so callers can observe partial
+            # failures (tests expect this behavior).
+            results.append({
+                "source": scraper_info["id"],
+                "status": "error",
+                "alerts_stored": 0,
+                "error": str(exc),
+            })
 
     return {"triggered_at": datetime.now(timezone.utc).isoformat(), "results": results}
