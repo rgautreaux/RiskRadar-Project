@@ -40,6 +40,7 @@ This roadmap breaks the 8-phase plan into **14 two-week sprints**, with explicit
 - Preflight check script (migration validation).
 - CI gate definitions (test pass rate, coverage min, regression suite).
 - API versioning policy documented.
+ - Parity checklist added to docs and integrated into CI gates (`docs/PARITY_CHECKLIST.md`).
 
 **Acceptance Criteria**:
 - [ ] Feature flags toggleable without redeploy.
@@ -110,6 +111,12 @@ This roadmap breaks the 8-phase plan into **14 two-week sprints**, with explicit
 - API endpoint: GET /api/v1/trips/{id}/events (filters by date/location, ranked by relevance).
 - Scraper integration tests with mocked responses.
 
+Additional Deliverables (safety & services):
+- `CrimeScraper` and ingestion pipeline for crime incidents; models and trip-scoped safety APIs (`/api/v1/trips/{id}/safety`).
+- `PlacesScraper` for food/essentials (restaurants, grocery stores, markets); `Place` models and `/api/v1/trips/{id}/places` API with dietary/allergy filters.
+- `LodgingScraper` ingestion for hotels/hostels/short-term rentals; `Lodging` models and `/api/v1/trips/{id}/lodging` API with safety-aware ranking.
+- Integration tests covering deduplication, confidence scoring, and ranking across sources.
+
 **Tests** (>30):
 - Unit: normalization, dedup, quality checks.
 - Integration: scraper end-to-end, API filters.
@@ -121,6 +128,11 @@ This roadmap breaks the 8-phase plan into **14 two-week sprints**, with explicit
 - [ ] Trip event API returns results ranked by user interest.
 - [ ] Quality scores flag low-confidence events.
 - [ ] 30+ tests passing.
+
+Additional Acceptance Criteria:
+- [ ] Crime/places/lodging scrapers normalize representative payloads and appear in parity matrix.
+- [ ] Trip safety, places, and lodging endpoints return results constrained to trip geometry/time window and respect confidence filters.
+- [ ] 40+ integration tests covering new scrapers and APIs.
 
 **Risk Mitigation**:
 - Implement rate limiting on event API calls (prevent abuse).
@@ -388,6 +400,7 @@ This roadmap breaks the 8-phase plan into **14 two-week sprints**, with explicit
 - Adapter layer: map web-app calls to RiskRadar endpoints (middleware or client library).
 - API contract definitions (OpenAPI specs or Pydantic models).
 - Parity tests: for every shared endpoint, verify web and mobile responses match.
+ - Follow `docs/PARITY_CHECKLIST.md` during implementation and CI; ensure contract tests and parity validator run as part of the PR gate.
 
 **Tests** (>30):
 - Contract tests: all parity endpoints tested in parallel (web, mobile, direct API).
@@ -735,6 +748,23 @@ This roadmap breaks the 8-phase plan into **14 two-week sprints**, with explicit
 | User satisfaction | >80% | N/A | >85% |
 | Cost per trip | <$0.05 | N/A | <$0.05 |
 | Security audit pass | 100% | N/A | 100% |
+
+---
+**Refinements & Prioritized Next Steps**
+
+- **Short-term priorities (3 weeks):**
+	- Implement `source`/`confidence` metadata across scrapers and APIs so every event/alert/forecast carries provenance and freshness.
+	- Add a per-user `risk_tolerance` preference and wire it into itinerary and route scoring to let users choose safer vs. faster recommendations.
+	- Add a provenance UI affordance (`Why?`) on `ItineraryItem` cards, Event cards, and Route options that displays `why`, `sources[]`, and `confidence`.
+- **Medium-term (sprints 3–7):**
+	- Add `item_health_score` into the data model and surface it in itinerary timelines and conflict checks.
+	- Implement a hybrid recommendation engine (deterministic rules + ML/LLM ranker) with LLM sampling, output caching, and guardrails for safety-critical suggestions.
+	- Extend routing to be multimodal, accessibility-aware, and hazard-avoidant with tradeoff UI (time vs. safety).
+- **Measurement & Ops:**
+	- Instrument KPIs: recommendation precision/recall, false-alert rate, packing relevance, LLM usage and hallucination rate.
+	- Enforce provider budgets, caching policies, and circuit breakers; add alerts when thresholds are approached.
+
+These refinements will be incorporated into sprint tasks, tracked as part of the Go/No-Go acceptance criteria when they materially affect safety, accuracy, or cost.
 
 ---
 

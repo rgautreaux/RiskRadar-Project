@@ -1,4 +1,13 @@
 
+## Archive Format
+
+- Each session is recorded as a chronological block headed by `## Session: YYYY-MM-DD — Title`.
+- Within a session, messages are recorded verbatim with `User:` and `GitHub Copilot:` prefixes for easy search.
+- Newer sessions appear after older ones (append-only). Use the session headers to scan chronologically.
+
+
+## Session: 2026-05-25 — Golby design & backend debugging
+
 User: Create a detailed plan to complete the remaining open items for fixing all database issues and errors
 
 GitHub Copilot: Research all open database issues and errors

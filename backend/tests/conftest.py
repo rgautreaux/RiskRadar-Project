@@ -43,7 +43,28 @@ def db_session_fixture() -> Generator[Session, None, None]:
     _db.engine = engine
     _db.SessionLocal = sessionmaker(bind=engine)
 
+    # Also ensure the top-level db.database module used across the project
+    # points to the same engine/session so all imports share the test DB.
+    import importlib
+    try:
+        _top = importlib.import_module("db.database")
+        _top.engine = engine
+        _top.SessionLocal = _db.SessionLocal
+        _top.Base = _db.Base
+    except Exception:
+        # If top-level db package is not yet imported, ignore — imports will
+        # reference backend.db.database directly in that case.
+        pass
+
     Base.metadata.create_all(bind=engine)
+    # Ensure top-level db.database Base metadata is synced so imported models
+    # (which reference db.database.Base) have tables created in this in-memory DB.
+    try:
+        import db.database as _topdb
+        _topdb.Base.metadata.create_all(bind=engine)
+    except Exception:
+        pass
+
     session_factory = _db.SessionLocal
     session = session_factory()
     try:

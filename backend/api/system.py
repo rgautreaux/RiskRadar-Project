@@ -64,7 +64,8 @@ def trigger_scrape(
 
     Returns a summary of what each scraper fetched.
     """
-    from backend.scrapers.registry import load_all_scrapers
+    # Import the top-level shim so tests can monkeypatch `scrapers.registry`.
+    from scrapers.registry import load_all_scrapers
 
     _ = (_db, _current_user)
     scrapers = load_all_scrapers()

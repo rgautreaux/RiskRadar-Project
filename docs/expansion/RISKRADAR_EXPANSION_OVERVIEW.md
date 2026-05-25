@@ -276,6 +276,18 @@ The approach is designed for full production maturity, not MVP shortcuts. It pri
 - Adapt tone and detail to the traveler’s preferences and past feedback.
 - Ask a clarifying question only when it materially improves the answer.
 
+---
+**Refinements For Accuracy & UX**
+
+- **Provenance & Confidence:** standardize metadata fields (`source`, `confidence`, `trust_tier`, `last_seen`) for all external data (events, alerts, forecasts). Always attach this metadata to recommendations so users can inspect where advice came from and how fresh it is.
+- **User Risk Controls:** surface a per-user `risk_tolerance` setting that adjusts itinerary and routing scoring (safer ↔ faster). Use it to tune recommendation aggressiveness and notify users when their preferences would suppress otherwise relevant items.
+- **Item Health & Explainability:** add an `item_health_score` for `ItineraryItem` and other recommendations; attach a compact explainability object `{why, confidence, sources[], timestamp}` to every recommendation, itinerary item, route option, and packing suggestion.
+- **Hybrid Recommendation Stack:** combine deterministic rules (activity→items, safety guardrails) with ML/LLM ranking for personalization. Use LLMs sparingly (sampling + caching) and require human review or higher-confidence thresholds for medical/safety-critical advice.
+- **UX & Collaboration Enhancements:** progressive disclosure with a short summary + a `Why?` view; one-tap safety fixes (auto-resolve conflicts); offline edits with background sync and simple conflict resolution UI; collaborative presence indicators and per-change comments.
+- **Operational & Cost Controls:** sample and cache LLM outputs, enforce provider budgets, circuit-breaker for external providers, and cached degraded-mode fallbacks annotated with uncertainty language.
+
+These refinements prioritize user trust, clarity, and safety while keeping operational costs and provider risk manageable. They are reflected in the Roadmap's prioritized next steps and sprint tasks.
+
 **Key Files**:
 - backend/api/parity/ (new, API contract definitions)
 - backend/api/router.py (register parity adapter routes)
@@ -500,6 +512,80 @@ The external web-app repository (cmps-357-sp26-final-project-cmps357-team-3) pro
 - Reuse risk scoring engine for itinerary conflict detection.
 - Preserve map and forecast UX; adapt to new trip/itinerary contexts.
 - Deploy unified Golby to both web and mobile via shared backend service.
+- Deploy all integrated features (Golby, risk scoring, interactive map, forecast, settings) to both web and mobile through the shared RiskRadar backend; enforce contract/parity tests, feature flags, and coordinated rollouts so both platforms expose the same useful capabilities and behavior.
+
+**Additional Integrations (Local Safety & Services)**:
+
+The expansion will also add three locally-focused data domains to improve traveler situational awareness and planning. Each will be ingested via scrapers, normalized into shared schemas, surfaced via trip-scoped APIs, and subject to the same cross-platform parity and CI contract testing described above (see docs/PARITY_CHECKLIST.md).
+
+1. **Crime & Safety Scraper**
+
+   Tasks:
+   - Implement `CrimeScraper` extending the scraper base class to ingest crime history and active crime alerts (police blotters, public crime datasets, community reports).
+   - Normalize incidents into a `CrimeIncident` schema (type, severity, timestamp, location, source, confidence).
+   - Provide trip-scoped and route-overlay APIs to surface nearby incidents and aggregated safety scores by area.
+   - Quarantine low-confidence/community-sourced reports and surface with clear uncertainty language.
+
+   Key Files:
+   - `backend/scrapers/crime_scraper.py` (new)
+   - `backend/db/models.py` (add `CrimeIncident`, `CrimeAreaScore` tables)
+   - `backend/api/safety.py` (new endpoints)
+   - `backend/tests/test_crime_scraper.py`, `test_safety_apis.py`
+
+   Verification:
+   - Scraper normalizes representative payloads without errors.
+   - Trip and route overlays return incidents within requested geometry and time window.
+   - Confidence scoring separates verified vs. community-sourced reports.
+
+   Risk Controls:
+   - Label community-sourced or low-confidence incidents prominently.
+   - Rate-limit and quarantine ambiguous sources; provide appeals workflow for disputed records.
+
+2. **Food Recommendations (Places) Scraper**
+
+   Tasks:
+   - Add scrapers to ingest restaurants, grocery stores, markets, and essential services (Yelp, Google Places, OpenStreetMap, local directories).
+   - Normalize into a `Place` schema (name, category, cuisine tags, hours, diet tags, allergy flags, rating, review_count, location, source).
+   - Add personalization layer that filters and ranks by user food preferences, allergies, and dietary restrictions.
+   - Surface per-trip/place recommendations with distance, travel time, risk overlay (safety), and review context.
+
+   Key Files:
+   - `backend/scrapers/places_scraper.py` (new)
+   - `backend/db/models.py` (add `Place`, `PlaceReview` tables)
+   - `backend/api/places.py` (new endpoints)
+   - `backend/tests/test_places_scraper.py`, `test_places_ranking.py`
+
+   Verification:
+   - Place ingestion normalizes core fields and deduplicates cross-sourced entries.
+   - Recommendations respect user dietary filters and allergy exclusions.
+   - Ratings and review counts included in ranking signals.
+
+   Risk Controls:
+   - Avoid medical/advisory claims; include uncertainty and source attribution for reviews.
+   - Respect provider TOS and rate limits; cache responses and honor opt-outs.
+
+3. **Hotel & Lodging Recommendations Scraper**
+
+   Tasks:
+   - Ingest lodging inventory (hotels, hostels, B&Bs, short-term rentals) from public APIs and directories.
+   - Normalize into `Lodging` schema (name, type, price_range, amenities, rating, safety_score, location, source).
+   - Integrate area safety signals (from `CrimeIncident`/`CrimeAreaScore`), user preferences, and reviews into ranking and trust signals.
+   - Expose trip-scoped lodging recommendations with booking links (where permitted), cancellation policy highlights, and safety notes.
+
+   Key Files:
+   - `backend/scrapers/lodging_scraper.py` (new)
+   - `backend/db/models.py` (add `Lodging`, `LodgingAmenity` tables)
+   - `backend/api/lodging.py` (new endpoints)
+   - `backend/tests/test_lodging_scraper.py`, `test_lodging_ranking.py`
+
+   Verification:
+   - Lodging results include safety-aware ranking and clearly attributed review data.
+   - Recommendations surface cancellation and booking-relevant metadata when available.
+
+   Risk Controls:
+   - Do not surface unverified listings as 'recommended'—require minimum review_count/confidence.
+   - Apply area-level safety flags and allow users to filter out high-risk zones.
+
 
 ---
 

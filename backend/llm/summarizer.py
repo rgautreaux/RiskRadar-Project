@@ -29,12 +29,15 @@ class Summarizer:
 
     def _resolve_model(self, is_premium: bool = False) -> str:
         """Return the LLM model name for the given user tier."""
-        guest_model = settings.LLM_MODEL_GUEST.strip()
-        premium_model = settings.LLM_MODEL_PREMIUM.strip()
+        # Priority: explicit `LLM_MODEL` > tiered guest/premium > safe defaults
+        explicit = getattr(settings, "LLM_MODEL", "").strip()
+        if explicit:
+            return explicit
 
-        if is_premium:
-            return premium_model
-        return guest_model
+        guest_model = (settings.LLM_MODEL_GUEST or "").strip() or "gpt-4o-mini"
+        premium_model = (settings.LLM_MODEL_PREMIUM or "").strip() or guest_model
+
+        return premium_model if is_premium else guest_model
 
     def _call_llm(self, system: str, user: str, is_premium: bool = False) -> tuple[str, int, str]:
         """Call the configured LLM provider. Returns (text, token_count, model_used)."""
@@ -97,6 +100,7 @@ class Summarizer:
             openai.RateLimitError,
             openai.AuthenticationError,
             openai.BadRequestError,
+            RuntimeError,
             ValueError,
             KeyError,
             AttributeError,
