@@ -57,6 +57,42 @@ These capabilities are strategic differentiators and must be worked in parallel 
 - **Incident Response & Recovery**: rehearse breach response, backup restore, rollback, and provider-compromise playbooks before canary and GA.
 - **User Research & Accessibility**: run focused user interviews with allergy/health-affected travelers; schedule accessibility audit (WCAG AA) in Sprint 9–10.
 
+**Backfill Security Addenda for New Planned Features**
+
+The roadmap below now includes explicit security tasks for the newly planned forecast, allergen, tide/outbreak, routing, and import capabilities. These items are release-gating work, not optional polish.
+
+- Sprint 2 security work: Forecast completeness
+	- Add provider allowlists, strict schema validation, and timeout/circuit-breaker behavior for forecast enrichment.
+	- Add cache-poisoning, stale-data, and missing-field tests for `uvi`, `dew_point`, `visibility`, `pressure`, and `feels_like`.
+	- Acceptance gate: degraded mode renders safely if the provider drops fields or fails.
+
+- Sprint 2 security work: Astronomy and celestial timing
+	- Add provider allowlists, timezone/DST validation, and freshness checks for sunrise, sunset, moonrise, moonset, moon phase, moon illumination, and celestial events.
+	- Add tests for invalid dates, timezone shifts, and stale or malformed moon/sun payloads.
+	- Acceptance gate: astronomy data renders with safe fallback values if the provider is unavailable.
+
+- Sprint 2–3 security work: Places and allergen extraction
+	- Require sanitization of menu text, OCR output, and any embedded HTML before extraction.
+	- Add confidence thresholds and a review/dead-letter path for ambiguous allergen matches.
+	- Acceptance gate: low-confidence allergen records never auto-raise unsafe advice.
+
+- Sprint 3 security work: Tides, outbreaks, and multimodal routing
+	- Add source trust tiers, freshness checks, and a strict provider allowlist for all coastal, weather, outbreak, and routing feeds.
+	- Store route snapshots with provider metadata and reject malformed route legs or advisories.
+	- Acceptance gate: provider outage or malformed input falls back to a clearly labeled degraded advisory.
+
+- Sprint 4–5 security work: Import/connectors for itineraries
+	- Make calendar, PNR, and email imports opt-in with explicit consent and revocation.
+	- Scan and size-limit all imported content before parsing; redact raw message content from logs.
+	- Acceptance gate: imported trips can be deleted cleanly and no raw import payload remains in telemetry.
+
+- Sprint 4–6 security work: Health-aware recommendations and guardrails
+	- Ensure any recommendation that can become prescriptive passes through `backend/services/health_guardrails.py` first.
+	- Require `{why, confidence, sources[], timestamp}` and `clinician_review_required` where the policy or confidence threshold demands it.
+	- Acceptance gate: no health-sensitive advice ships without provenance, confidence, and the right escalation flag.
+
+Add a checklist item for each of the above in the sprint ticket itself and link it back to `docs/expansion/RISKRADAR_EXPANSION_SECURITYPLAN.md` so the security review cannot be bypassed.
+
 
 **Theme**: Lock scope, define contracts, establish automation gates.
 
@@ -432,6 +468,9 @@ Additional Acceptance Criteria:
 - Adapter layer: map web-app calls to RiskRadar endpoints (middleware or client library).
 - API contract definitions (OpenAPI specs or Pydantic models).
 - Parity tests: for every shared endpoint, verify web and mobile responses match.
+ - Coverage expansion: include personalized risk score, interactive maps, forecast/risk views, itinerary planning, packing guidance, collaboration, sharing, and import flows in the parity matrix.
+ - Shared map behavior: ensure route overlays, hazard layers, route alternatives, and location search behave the same on web and mobile.
+ - Shared recommendation behavior: ensure web and mobile both expose the same explanations, confidence values, and `Why?` affordances for itineraries, packing, and route advice.
  - Follow `docs/PARITY_CHECKLIST.md` during implementation and CI; ensure contract tests and parity validator run as part of the PR gate.
 
 **Tests** (>30):
@@ -473,6 +512,10 @@ Additional Acceptance Criteria:
 - Feedback loop: thumbs up/down influences future responses on both platforms.
 - Context-aware prompts for new features: events, routes, itineraries.
 - Parity tests: same prompts, same model, same responses on web and mobile.
+ - Golby feature breadth: add first-class support for personalized risk score explanation, interactive maps, route overlays, forecast summaries, itinerary planning, packing guidance, trip imports, and collaboration/share workflows.
+ - Golby actionability: let users ask Golby to plan, reroute, repack, reschedule, compare safety tradeoffs, and explain why a recommendation is risky or safe.
+ - Golby memory: persist preferences for tone, risk tolerance, travel pace, dietary/allergy constraints, preferred map detail, and past itinerary style.
+ - Golby web-app parity: the web widget must mirror mobile guidance, recommendations, and safety escalation behaviors exactly.
 
 **Golby Intelligence Requirements**:
 - Golby must act as the primary travel advisor inside RiskRadar, not just a chat widget, by understanding the user’s trip, itinerary, packing needs, alerts, saved places, and collaboration state.
@@ -482,6 +525,9 @@ Additional Acceptance Criteria:
 - Golby must proactively offer the next best action, such as planning a day, updating packing, checking route risk, or warning about a time-sensitive alert.
 - Golby must expose its reasoning in user-friendly terms, including what live data it used and why a suggestion was made.
 - Golby must support opt-in memory controls, including clear data export, preference editing, and memory reset.
+- Golby must also explain the user's personalized risk score, interactive map findings, weather/forecast shifts, route hazards, and import summaries in plain language.
+- Golby must help users discover what changed, why it matters, and what to do next when the app surfaces a new event, place, alert, itinerary conflict, packing need, or sharing change.
+- Golby must remain the same helpful guide across web and mobile, using the same guardrails, same provenance, and same recommendation rules.
 
 **Golby Advice Principles**:
 - Lead with the safest, most useful recommendation first.
@@ -854,5 +900,45 @@ These refinements will be incorporated into sprint tasks, tracked as part of the
 ✅ User satisfaction >85%; positive feedback on features.
 ✅ Web/mobile parity verified; Golby unified.
 ✅ Security audit passed; compliance audit passed.
+
+---
+
+## Completeness Backfill Plan (ensures all partially-implemented & unplanned items are tracked)
+
+Purpose: Close gaps found in the codebase review by converting partially-implemented or unplanned features into tracked sprint tickets with owners and acceptance criteria.
+
+Backfill items and sprint mapping:
+
+- Sprint 2: Forecast completeness
+	- Tasks: Provider selection for UVI, add `uvi`, `dew_point`, `visibility`, `pressure`, `feels_like` to forecast schema and API; DB migration and tests.
+	- Acceptance: `GET /forecast` returns UVI and the extra fields; UI surfaces UVI; tests added.
+
+- Sprint 2–3: Place allergen flags & PlacesScraper
+	- Tasks: `Place` schema add `allergen_flags`/`diet_tags`; implement `PlacesScraper` and menu extraction pipeline; wire to guardrails.
+	- Acceptance: `Place` records include flags; guardrail uses them in evaluations.
+
+- Sprint 3: Tides and coastal hazards
+	- Tasks: Tide provider adapter, normalization, route-enrichment for coastal legs.
+	- Acceptance: Tide data affects route scoring for coastal itineraries.
+
+- Sprint 3–4: Disease/outbreak feeds
+	- Tasks: Ingest authoritative outbreak feeds, normalize, clinician-gated advisories.
+	- Acceptance: Outbreak incidents surfaced with provenance and clinician review gating when required.
+
+- Sprint 3: Multimodal routing provider completeness
+	- Tasks: Implement full set of provider implementations for walking, biking, transit, driving, ferry; multimodal tests.
+	- Acceptance: Multimodal route supports hazards overlay and provider fallback tests pass.
+
+- Sprint 4–5: Itinerary import/connectors (ICS, PNR, opt-in email parsing)
+	- Tasks: Calendar ICS import, PNR parser adapters, opt-in email parser; consent/PII handling; retention/audit rules.
+	- Acceptance: ICS import and manual PNR import work with consent and redaction.
+
+- Sprint 4: Menu allergen extraction (NLP)
+	- Tasks: OCR/text extraction pipeline + classifier for allergen extraction; confidence scoring and dead-letter handling.
+	- Acceptance: Extracted allergens used by guardrails when confidence threshold met.
+
+For each backfill ticket: include provider/key notes, billing impact, DB migration script + rollback, unit/integration tests, privacy impact assessment (if PII/health data), and map security checks back to `docs/expansion/RISKRADAR_EXPANSION_SECURITYPLAN.md`.
+
+Next steps: create tracked tickets for each backfill item in the sprint tracker, assign owners, and add to the sprint planning board for the mapped sprint windows.
 
 </parameter>

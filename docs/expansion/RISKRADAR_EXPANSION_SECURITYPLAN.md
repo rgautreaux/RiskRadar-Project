@@ -10,6 +10,23 @@ Scope
 - Sensitive data: `user_health_profile`, sharing tokens, PII, audit logs, backups.
 - Integrations: routing providers, event/place/lodging scrapers, LLM providers.
 
+Backfill security coverage for newly planned features
+-----------------------------------------------------
+- Forecast extensions: lock down provider credentials, validate any new weather fields against provider schemas, and treat forecast enrichment as untrusted external data until normalized. Add tests for cache poisoning, stale data fallback, and missing-field behavior for `uvi`, `dew_point`, `visibility`, `pressure`, and `feels_like`.
+- Astronomy and celestial timing: treat sunrise, sunset, moonrise, moonset, moon phase, moon illumination, and special events like supermoons or blood moons as provider-sourced data that must be validated, time-zoned correctly, and cached with freshness metadata.
+- Place allergen extraction: treat menus, OCR output, and free-text venue content as hostile input. Sanitize extracted text, run prompt-injection and HTML-scrubbing checks, preserve provenance for every extracted allergen, and require confidence thresholds plus manual-review fallback for ambiguous results.
+- Tide and outbreak feeds: require allowlisted providers, source trust tiers, and freshness checks. Outbreak or disease advisories must be clearly labeled as informational, never diagnostic, and any high-impact recommendation must pass clinician-review gating.
+- Multimodal routing: protect route-provider calls with hostname allowlists, quotas, and response integrity checks. Sign and version route snapshots, reject malformed legs, and ensure degraded mode is available if the primary provider or an alternative transit feed is unavailable.
+- Trip import connectors: imports from ICS, PNR, email, or similar sources must be opt-in, sandboxed, size-limited, and redacted before storage. Strip attachments unless explicitly needed, enforce MIME/type validation, and keep imported PII out of logs and analytics.
+- Health- and allergy-linked recommendations: all new health-adjacent features must use `backend/services/health_guardrails.py` before any LLM output is shown. If a backfill feature can surface prescriptive advice, it must expose `{why, confidence, sources[], timestamp}` and `clinician_review_required` when the rule set or confidence threshold requires escalation.
+
+Required controls for all backfill work:
+- Data provenance and trust tier on every externally sourced record.
+- Strict schema validation and dead-letter quarantine for malformed records.
+- Explicit user consent where itinerary import or health data is involved.
+- Redaction of health, itinerary, and sharing data in shared/public views.
+- Security tests for provider outage, malformed payloads, injection attempts, and permission bypass.
+
 Threat model summary
 --------------------
 - Account takeover and session compromise
@@ -186,6 +203,44 @@ Risk Controls:
 - Timebound remediation SLAs and gating: no GA until pentest critical issues closed and restore drill passed.
 
 Owner: Security owner, DevOps lead.
+
+Feature-specific hardening checklist for new planned capabilities
+-----------------------------------------------------------------
+
+Forecast expansion
+- Treat forecast providers as untrusted external dependencies; require host allowlists, timeouts, and circuit-breakers in the fetch layer.
+- Validate every incoming payload against a strict schema and drop unexpected fields instead of passing them through to the API.
+- Add tests for stale cache reuse, missing `uvi` values, and provider outages that force degraded-mode summaries.
+
+Astronomy and celestial timing
+- Use a trusted astronomy provider or library for sunrise/sunset and lunar calculations; validate timezone, date boundaries, and daylight-saving transitions.
+- Cache moon-phase and sunrise/sunset responses with explicit freshness timestamps and fall back to the last-known safe value when the provider is unavailable.
+- Reject malformed celestial event records and keep special events such as blood moons and supermoons as informational, not safety-critical, unless paired with other risk signals.
+
+Place allergen extraction and place safety
+- Run OCR/text extraction in a bounded parser path and reject HTML, script tags, or oversized payloads before classification.
+- Require confidence thresholds for allergen matches; low-confidence extractions must be held in a review queue or dead-letter table.
+- Ensure guardrails consume only normalized allergen metadata and never raw menu text unless the user explicitly opts into review.
+
+Tide, weather, and outbreak feeds
+- Keep source trust tiers and freshness timestamps attached to every record.
+- Disallow medical-style advice unless deterministic guardrails approve the output and the UI displays uncertainty language.
+- Add source-specific tests to prove that malformed or stale advisories do not surface as actionable recommendations.
+
+Multimodal routing and travel risk
+- Enforce provider-specific quota limits and store immutable snapshots of route responses for audit and rollback.
+- Reject route legs that lack valid geometry, timestamps, or provider metadata.
+- Keep a safe fallback path when a provider or transit feed is unavailable, and label the response clearly as degraded.
+
+Import connectors
+- Make all import features opt-in, revocable, and easy to disable per user.
+- Apply content-type validation, attachment scanning, and size limits before parsing PNR, ICS, or email content.
+- Minimize retention: only store normalized itinerary data required for the trip, and redact raw message content from logs and analytics.
+
+Security verification additions
+- Add unit and integration tests for each backfill feature covering provider outage, malformed payloads, permission bypass, and consent enforcement.
+- Add privacy checks to confirm health, itinerary, and sharing data do not leak through shared/public views.
+- Include backfill feature checks in release gates before canary promotion.
 
 Backend checklist (detailed)
 ----------------------------

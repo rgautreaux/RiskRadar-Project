@@ -305,6 +305,11 @@ Mandatory security controls:
 - Keep responses warm, friendly, and encouraging while staying source-grounded, safety-first, and transparent about uncertainty.
 - Let Golby proactively advise the user: suggest itinerary changes when weather or alerts shift, recommend packing items before departure, explain why a route or activity is risky, and surface the next best action inside the app.
 - Require Golby to cite the live context it used when available, and to fall back to clear uncertainty language when data is sparse or conflicting.
+- Extend Golby across the newly backfilled feature set as the user's persistent guide: forecast interpretation, UV and weather nuance, allergen-aware places and meals, tides, outbreak advisories, multimodal route choices, itinerary imports, public/private sharing, and health-aware recommendations.
+- Make Golby able to compare tradeoffs in plain language: safer vs. faster routes, indoor vs. outdoor activities, allergy-safe vs. higher-risk places, and when to defer to a clinician or emergency CTA.
+- Require Golby to offer the next best action for every major flow: plan, reroute, repack, reschedule, share, import, or review an alert.
+- Ensure Golby can explain the user's current risk score, why it changed, which live signals moved it, and what the user can do about it.
+- Keep Golby friendly and supportive, but never chatty at the expense of clarity; it should act like the user's best travel companion, not just a command-driven assistant.
 
 **Golby Advice Principles**:
 - Lead with the safest, most useful recommendation first.
@@ -312,6 +317,18 @@ Mandatory security controls:
 - Separate facts, confidence, and next steps so users can act quickly.
 - Adapt tone and detail to the traveler’s preferences and past feedback.
 - Ask a clarifying question only when it materially improves the answer.
+- When a feature is newly added or partially inferred, Golby must state uncertainty plainly and point users to the underlying source or settings screen.
+
+**Golby Feature Coverage**:
+- Risk scoring: explain the personalized risk score, what moved it, and how users can adjust it.
+- Maps: describe interactive maps, route overlays, hazards, closures, and safer alternatives.
+- Itineraries: build, explain, and revise day-by-day plans using live alerts, weather, and events.
+- Packing: generate packing guidance tied to itinerary, weather, risk, and destination context.
+- Events and places: recommend activities and venues with provenance, confidence, and allergy/health suitability.
+- Sharing and collaboration: help users invite collaborators, manage permissions, and understand who can see what.
+- Imports: help users bring in trips from supported sources and explain what was imported.
+- Health and safety: explain when a clinician review, emergency CTA, or safer alternative is required.
+- Astronomy: explain sunrise and sunset, moonrise and moonset, current moon phase, moon illumination, next full moon, and notable events such as supermoons or blood moons.
 
 ---
 **Refinements For Accuracy & UX**
@@ -333,6 +350,7 @@ These refinements prioritize user trust, clarity, and safety while keeping opera
 - **Operational cost & model governance**: LLM sampling/caching, hallucination monitoring, guardrail metrics, and a model‑ops cadence to keep reliability high and costs bounded.
 - **Human‑in‑the‑loop safety ops**: small triage team and clinician workflows to review flagged cases and continuously improve deterministic rules.
 - **Offline‑first resilience**: route snapshots, cached alerts, and local maps so travelers remain safe without connectivity.
+- **Astronomy-aware planning**: sunrise, sunset, and moon-phase context to support safe timing, night travel, photography, outdoor events, and tide-adjacent planning.
 
 These capabilities position RiskRadar as a safety‑centric travel intelligence platform that blends deterministic public‑safety rules, verified data provenance, and action‑oriented assistant features.
 
@@ -594,10 +612,57 @@ The external web-app repository (cmps-357-sp26-final-project-cmps357-team-3) pro
 - Preserve map and forecast UX; adapt to new trip/itinerary contexts.
 - Deploy unified Golby to both web and mobile via shared backend service.
 - Deploy all integrated features (Golby, risk scoring, interactive map, forecast, settings) to both web and mobile through the shared RiskRadar backend; enforce contract/parity tests, feature flags, and coordinated rollouts so both platforms expose the same useful capabilities and behavior.
+- Expand the web-app feature matrix to include the personalized risk score, interactive maps with route overlays, forecast/risk explanation, itinerary planning, packing guidance, trip sharing, health/allergy settings, and import flows.
+- Ensure the web app and mobile app both surface the same recommendations, warnings, confidence values, and `Why?` explainability panels for every feature.
+- Make Golby the first-line guide in both surfaces so the user experience feels consistent whether the traveler is on web or mobile.
 
 **Additional Integrations (Local Safety & Services)**:
 
 The expansion will also add three locally-focused data domains to improve traveler situational awareness and planning. Each will be ingested via scrapers, normalized into shared schemas, surfaced via trip-scoped APIs, and subject to the same cross-platform parity and CI contract testing described above (see docs/PARITY_CHECKLIST.md).
+
+---
+
+## Completeness Backfill: Partially-Implemented & Previously-Unplanned Features
+
+Summary: convert partially implemented items and previously unplanned items into explicit tracked engineering tasks with owners, sprint targets, acceptance criteria, and security/privacy checklists.
+
+1. Forecast: UV Index (UVI) + extended meteorological fields
+   - What: add `uvi`, `dew_point`, `visibility`, `pressure`, `feels_like` to forecast schema and API; persist `forecast.uvi` in DB.
+   - Steps: provider selection (OpenWeather paid tier or alternate), DB migration + rollback, API update (`backend/api/forecast.py`), tests, UI surface.
+   - Owner: Forecast subteam. Target sprint: Sprint 2. Acceptance: UVI and fields present in `GET /forecast`, tests and docs updated.
+
+2. Place-level allergen flags & menu extraction
+   - What: implement `Place.allergen_flags`, `diet_tags`; add `PlacesScraper` and menu extraction pipeline (structured + fallback text/OCR) and confidence scoring.
+   - Steps: schema migration, scraper adapters, NLP/OCR pipeline, guardrail integration, dead-letter handling.
+   - Owner: Scrapers + Backend. Target sprint: Sprint 2–3. Acceptance: `Place` rows include `allergen_flags` used by `health_guardrails`.
+
+3. Tides & coastal hazards
+   - What: add tide provider adapter (NOAA or vendor), surface coastal tide risk to trip safety APIs and route enrichment.
+   - Owner: Routing/Weather. Target sprint: Sprint 3. Acceptance: tide data appears for coastal itineraries and affects route scoring.
+
+4. Disease/outbreak feeds
+   - What: ingest authoritative outbreak feeds (CDC/HealthMap), normalize severity, add `clinician_review_required` gating for sensitive advisories.
+   - Owner: Data Partnerships + Backend. Target sprint: Sprint 3–4. Acceptance: outbreak incidents visible with provenance and gating.
+
+5. Multimodal routing provider completeness
+   - What: implement `backend/services/routing_adapter.py` providers for walking, biking, transit, driving, ferry; provider metadata and cost controls; multimodal tests.
+   - Owner: Routing subteam. Target sprint: Sprint 3. Acceptance: multi-modal route responses with hazard overlays and fallback tests.
+
+6. Import/connectors for itineraries (PNR, calendar, optional email)
+   - What: calendar ICS import, manual PNR import adapters, and an opt-in email parser for itinerary extraction; consent, retention, audit requirements enforced.
+   - Owner: Integrations + Privacy. Target sprint: Sprint 4–5. Acceptance: ICS import and manual PNR import with consent flows and redaction.
+
+7. Place menu allergen extraction (NLP)
+   - What: OCR/text extraction + classifier to extract ingredient/allergen mentions from menus; attach confidence and surface to guardrails.
+   - Owner: Data + LLM team. Target sprint: Sprint 4. Acceptance: extracted allergens above confidence threshold applied in guardrails.
+
+8. Additional weather/sensor fields & fusion
+   - What: ingest and normalize dew point, pressure, visibility; use them in route/guardrail evaluations (e.g., fog/visibility hazards).
+   - Owner: Forecast team. Target sprint: Sprint 2. Acceptance: fields available in API and used in tests.
+
+Requirements for each backfill task: provider selection note, billing/keys plan, DB migration script + rollback, unit/integration tests, privacy impact assessment (if PII/health data involved), and mapping to `RISKRADAR_EXPANSION_SECURITYPLAN.md` security checks.
+
+These tasks are mirrored in the sprint roadmap to ensure tracked tickets with owners and acceptance criteria.
 
 1. **Crime & Safety Scraper**
 
