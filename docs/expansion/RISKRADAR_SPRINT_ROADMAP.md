@@ -38,6 +38,20 @@ These capabilities are strategic differentiators and must be worked in parallel 
 - **Human‑in‑the‑loop Ops**: define triage queues for flagged outputs, clinician review UIs, and escalation paths; staff rota in Ops plan.
 - **Privacy & Compliance Controls**: encryption-at-rest, consent flows for `user_health_profile`, and data export/redaction APIs added in Sprint 1.
 - **Threat Modeling & Security Gates**: run STRIDE reviews for each feature area, maintain a live risk register, and block releases on unresolved critical/high findings.
+ 
+**Security Plan Cross-Link & Tasks**
+
+- The detailed security implementation plan and phase-by-phase breakdown live in `docs/expansion/RISKRADAR_EXPANSION_SECURITYPLAN.md`. All security subtasks below map back to that plan and must be tracked in the living risk register.
+- Quick mapping of phases → sprints (high-level):
+	- Phase 0 (Baseline) -> Sprint 0 (pre-sprint / week 1): CI gates, SBOM, SAST, assign security owner.
+	- Phase 1 (Auth & Authorization) -> Sprint 1: RBAC, row-level checks, refresh-token rotation, MFA hooks.
+	- Phase 2 (Data Protection) -> Sprint 1–2: field-level encryption, backups, secure deletion workflows.
+	- Phase 3 (API Hardening) -> Sprint 2–4: CORS allowlist, CSP/HSTS, rate-limiting, WAF rules.
+	- Phase 4 (LLM & Provider Safety) -> Sprint 4–6: guardrails, prompt-safety pipeline, review queue.
+	- Phase 5 (CI/CD & Supply Chain) -> Sprint 5–7: DAST, container/IaC scanning, signed builds, SBOM enforcement.
+	- Phase 6 (Observability & IR) -> Sprint 6–9: telemetry, restore drills, pentest, IR runbooks.
+
+- Action: Add a checklist item for each sprint ticket referencing the security plan section and the living risk register entry. CI must include SAST/secret-scan and block merge on critical findings for any PR that touches security-sensitive files.
 - **Secure SDLC & Supply Chain**: add SAST, DAST, secret scanning, dependency scanning, container/IaC scanning, SBOM generation, and signed-build verification to CI.
 - **Zero-Trust Operations**: use least-privilege service accounts, short-lived credentials, mTLS/service auth, and managed key rotation for sensitive data and backups.
 - **Incident Response & Recovery**: rehearse breach response, backup restore, rollback, and provider-compromise playbooks before canary and GA.
