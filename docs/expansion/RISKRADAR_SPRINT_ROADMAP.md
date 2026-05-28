@@ -38,6 +38,16 @@ These capabilities are strategic differentiators and must be worked in parallel 
 - **Human‑in‑the‑loop Ops**: define triage queues for flagged outputs, clinician review UIs, and escalation paths; staff rota in Ops plan.
 - **Privacy & Compliance Controls**: encryption-at-rest, consent flows for `user_health_profile`, and data export/redaction APIs added in Sprint 1.
 - **Threat Modeling & Security Gates**: run STRIDE reviews for each feature area, maintain a live risk register, and block releases on unresolved critical/high findings.
+
+**Traveler Intelligence Core & Golby Orchestration**
+
+This expansion is only cohesive if every dataset communicates through one canonical traveler context and Golby orchestrates that context consistently.
+
+- Define the canonical traveler context contract in Sprint 0 and require every feature to read/write through it.
+- Make the traveler core the shared integration surface for environmental, crime, event, route, astronomy, itinerary, packing, sharing, and import data.
+- Require Golby to orchestrate the traveler core before producing advice, rather than stitching together isolated feature results.
+- Make the same traveler core and Golby orchestration rules apply to both web and mobile so parity is semantic, not just visual.
+- Add end-to-end tests that move a trip through import → risk scoring → route choice → event selection → itinerary → packing → sharing while proving the same context is reused.
  
 **Security Plan Cross-Link & Tasks**
 
@@ -109,12 +119,16 @@ Add a checklist item for each of the above in the sprint ticket itself and link 
 - CI gate definitions (test pass rate, coverage min, regression suite).
 - API versioning policy documented.
  - Parity checklist added to docs and integrated into CI gates (`docs/PARITY_CHECKLIST.md`).
+ - Traveler intelligence core contract: canonical context object, provenance rules, freshness rules, and fallback snapshot rules.
+ - Golby orchestration contract: input context, output explanation shape, and safe-degradation behavior when data is sparse.
 
 **Acceptance Criteria**:
 - [ ] Feature flags toggleable without redeploy.
 - [ ] Preflight checks pass in staging.
 - [ ] CI gates block PRs that fail tests or reduce coverage.
 - [ ] Tech lead sign-off on scope and approach.
+- [ ] Traveler intelligence core contract approved and shared across all teams.
+- [ ] Golby orchestration contract approved and bound to the same core.
 
 **Risk Mitigation**: 
 - Define emergency rollback procedures.
@@ -469,6 +483,7 @@ Additional Acceptance Criteria:
 - API contract definitions (OpenAPI specs or Pydantic models).
 - Parity tests: for every shared endpoint, verify web and mobile responses match.
  - Coverage expansion: include personalized risk score, interactive maps, forecast/risk views, itinerary planning, packing guidance, collaboration, sharing, and import flows in the parity matrix.
+ - Shared traveler core parity: ensure web and mobile both consume the same canonical traveler context and return the same derived risk, map, itinerary, packing, astronomy, and safety outputs.
  - Shared map behavior: ensure route overlays, hazard layers, route alternatives, and location search behave the same on web and mobile.
  - Shared recommendation behavior: ensure web and mobile both expose the same explanations, confidence values, and `Why?` affordances for itineraries, packing, and route advice.
  - Follow `docs/PARITY_CHECKLIST.md` during implementation and CI; ensure contract tests and parity validator run as part of the PR gate.
@@ -483,6 +498,7 @@ Additional Acceptance Criteria:
 - [ ] Adapter layer maps all calls without errors.
 - [ ] Contract tests pass; all surfaces return equivalent responses.
 - [ ] Tech lead reviews and approves parity approach.
+- [ ] Web and mobile consume the same traveler core without divergence.
 
 **Risk Mitigation**:
 - Contract tests are release blockers.
@@ -516,6 +532,8 @@ Additional Acceptance Criteria:
  - Golby actionability: let users ask Golby to plan, reroute, repack, reschedule, compare safety tradeoffs, and explain why a recommendation is risky or safe.
  - Golby memory: persist preferences for tone, risk tolerance, travel pace, dietary/allergy constraints, preferred map detail, and past itinerary style.
  - Golby web-app parity: the web widget must mirror mobile guidance, recommendations, and safety escalation behaviors exactly.
+ - Golby orchestration core: consume the same canonical traveler context as every feature and use it to coordinate all recommendations.
+ - Golby conflict handling: when data sources disagree, surface the conflict and choose the safest, highest-confidence recommendation.
 
 **Golby Intelligence Requirements**:
 - Golby must act as the primary travel advisor inside RiskRadar, not just a chat widget, by understanding the user’s trip, itinerary, packing needs, alerts, saved places, and collaboration state.
@@ -556,6 +574,7 @@ Additional Acceptance Criteria:
 - [ ] Golby learns from user feedback and preference changes without losing safety guardrails.
 - [ ] Golby can explain which alerts, trips, itineraries, or packing rules informed each recommendation.
 - [ ] 40+ tests passing.
+- [ ] Golby orchestrates all core data domains from the shared traveler context without inconsistent answers.
 
 **Risk Mitigation**:
 - Guardrails are release blockers.

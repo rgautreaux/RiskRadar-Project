@@ -18,6 +18,7 @@ The approach is designed for full production maturity, not MVP shortcuts. It pri
 - Provenance & explainability: attach `{why, confidence, sources[], timestamp}` to recommendations; surface `clinician_review_required` where applicable.
 - Operational controls: LLM sampling/caching, provider circuit-breakers, quotas, offline route snapshots, and parity contract tests.
 - UI changes: Medical & Allergy settings, `Why?` explainability view, emergency CTA, packing and itinerary UIs.
+- System integration goal: every feature must read from and write to a shared traveler intelligence core so all datasets communicate as one system and Golby can orchestrate them coherently.
 
 **Security Posture and Threat Model**
 
@@ -58,6 +59,67 @@ Mandatory security controls:
 
 ---
 
+## Shared Traveler Intelligence Core
+
+This section is the cohesion rule for the entire expansion. It closes the conceptual gap between the individual datasets by defining one canonical traveler context that every feature must use.
+
+**Canonical context contract**
+
+All features must assemble and consume a shared traveler context object that includes:
+- Traveler identity, trip membership, and collaboration permissions.
+- Saved preferences, health profile, allergies, risk tolerance, tone preferences, and import consent.
+- Live environmental, weather, astronomy, crime, event, route, itinerary, packing, and sharing data.
+- Provenance fields for every record: `source`, `confidence`, `trust_tier`, `last_seen`, `timestamp`, and timezone.
+- Derived safety outputs: personalized risk score, `clinician_review_required`, route hazard score, itinerary conflict score, packing urgency, and data freshness.
+
+**Core rules**
+
+- Every dataset must be normalized into the shared traveler core before it can influence recommendations or UI.
+- Every recommendation must cite the same underlying traveler context object, not separate feature-specific lookups.
+- Every feature must publish its outputs back into the core so downstream features can reuse the same truth.
+- If any critical input is stale, missing, or low-confidence, the system must degrade to a safe advisory and explain the limitation.
+- The core must support both real-time lookups and cached fallback snapshots for offline or provider-failure scenarios.
+
+**What this solves**
+
+- Eliminates isolated datasets that cannot talk to each other.
+- Prevents Golby from giving advice without the same context used by routes, itineraries, packing, and safety checks.
+- Makes the environmental, crime, event, travel, astronomy, and health layers equally actionable.
+- Gives the roadmap one integration contract instead of many loose feature contracts.
+
+**Required integrations**
+
+- Environmental risks must feed the core at full depth, including weather, air quality, pollen, tides, and astronomy.
+- Crime and safety feeds must influence route safety, event attendance, lodging, and after-dark planning.
+- Events, places, and lodging must be scored against the same traveler context so the user gets consistent recommendations.
+- Itinerary, packing, sharing, and imports must all write back to the core so Golby can keep advising across the full trip lifecycle.
+- Web and mobile must render the same core-derived recommendations and explanations.
+
+---
+
+## Golby Orchestration Layer
+
+Golby is not just a chat surface. It is the strict orchestration layer that reads the shared traveler intelligence core, coordinates the feature layers, and returns the best next action.
+
+**Golby responsibilities**
+
+- Orchestrate the live traveler context before answering any question.
+- Compare tradeoffs across weather, crime, events, routes, astronomy, itinerary, packing, and sharing.
+- Turn raw data into plain-language guidance that is warm, supportive, and precise.
+- Surface next-best actions such as plan, reroute, repack, reschedule, share, import, or review.
+- Preserve safety rules, confidence thresholds, and clinician review gating.
+- Learn from feedback, preferences, and corrections without losing safety guardrails.
+
+**Golby operating rules**
+
+- Golby must never bypass the shared traveler core or use conflicting feature-specific truths.
+- Golby must explain why a recommendation changed whenever the core changes.
+- Golby must remain the same across web and mobile, with the same guardrails, same evidence, and same persona.
+- Golby must be able to orchestrate all feature domains, including the newly planned astronomy, crime, itinerary import, and route safety surfaces.
+- Golby must default to safe degradation when data is sparse, stale, or contradictory.
+
+---
+
 ## Phase Breakdown
 
 ### Phase 0: Program Setup and Architectural Guardrails (Week 1)
@@ -66,10 +128,12 @@ Mandatory security controls:
 
 **Tasks**:
 1. Define success metrics and SLOs (latency, availability, freshness, accessibility, cost budgets).
-2. Establish feature flags for events, routing, recommendations, sharing, Golby parity with remote kill-switches.
-3. Define bounded domains: Alerts, Travel, Collaboration, Assistant.
+2. Establish feature flags for events, routing, recommendations, sharing, astronomy, imports, and Golby parity with remote kill-switches.
+3. Define bounded domains: Alerts, Travel, Collaboration, Assistant, and the shared traveler intelligence core.
 4. Lock API evolution strategy: additive changes on /api/v1; reserve /api/v2 for breaking changes.
 5. Build release gate automation: preflight checks, parity validators, migration blockers, regression test gates.
+6. Define the canonical traveler context contract and require every feature to read/write through it.
+7. Define Golby orchestration boundaries so all advice flows through the shared core before being surfaced.
 
 **Risk Controls**: 
 - Emergency feature disable paths prevent cascading failures.
@@ -296,6 +360,7 @@ Mandatory security controls:
 5. Build shared schemas: UserOut, TripOut, EventOut, ItineraryOut, etc., with parity tests.
 6. Add platform-specific UX (responsive CSS for web, Expo Router navigation for mobile) while preserving feature equivalence.
 7. Contract tests: for every new API, verify web and mobile responses match exactly (excluding presentation).
+8. Wire the shared traveler intelligence core into the web-app contract so both surfaces consume the same traveler context and Golby orchestration results.
 
 **Golby Intelligence Layer**:
 - Make Golby the primary assistant surface for trip planning, itinerary building, packing guidance, event discovery, route advice, and feature navigation.
@@ -310,6 +375,12 @@ Mandatory security controls:
 - Require Golby to offer the next best action for every major flow: plan, reroute, repack, reschedule, share, import, or review an alert.
 - Ensure Golby can explain the user's current risk score, why it changed, which live signals moved it, and what the user can do about it.
 - Keep Golby friendly and supportive, but never chatty at the expense of clarity; it should act like the user's best travel companion, not just a command-driven assistant.
+
+**Golby Orchestration Guarantees**:
+- Golby must orchestrate the shared traveler intelligence core rather than assemble fragmented feature-specific answers.
+- Golby must prefer the highest-confidence combined context across sources and explicitly call out conflicts between datasets.
+- Golby must use the same orchestration rules on web and mobile so the experience is consistent everywhere.
+- Golby must be able to coordinate route, itinerary, packing, event, sharing, import, astronomy, and safety decisions in one response.
 
 **Golby Advice Principles**:
 - Lead with the safest, most useful recommendation first.

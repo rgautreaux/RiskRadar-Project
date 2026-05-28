@@ -10,6 +10,14 @@ Scope
 - Sensitive data: `user_health_profile`, sharing tokens, PII, audit logs, backups.
 - Integrations: routing providers, event/place/lodging scrapers, LLM providers.
 
+Traveler intelligence core and Golby orchestration
+--------------------------------------------------
+- The canonical traveler context is a security-sensitive control plane: it aggregates identity, permissions, health, location, itinerary, route, astronomy, event, and safety data, so it must be integrity-protected and source-trusted.
+- Golby orchestration must only read from the shared traveler core and must never fabricate or bypass provenance, freshness, or confidence metadata.
+- Any feature that writes to the traveler core must enforce authorization, consent, redaction, and audit logging before the data becomes available to other features.
+- Conflicting or low-confidence data must be surfaced as degraded advice rather than silently merged into a false certainty.
+- Offline snapshots of the traveler core must be encrypted, timestamped, and limited to the minimum context required for safe fallback behavior.
+
 Backfill security coverage for newly planned features
 -----------------------------------------------------
 - Forecast extensions: lock down provider credentials, validate any new weather fields against provider schemas, and treat forecast enrichment as untrusted external data until normalized. Add tests for cache poisoning, stale data fallback, and missing-field behavior for `uvi`, `dew_point`, `visibility`, `pressure`, and `feels_like`.
@@ -19,6 +27,8 @@ Backfill security coverage for newly planned features
 - Multimodal routing: protect route-provider calls with hostname allowlists, quotas, and response integrity checks. Sign and version route snapshots, reject malformed legs, and ensure degraded mode is available if the primary provider or an alternative transit feed is unavailable.
 - Trip import connectors: imports from ICS, PNR, email, or similar sources must be opt-in, sandboxed, size-limited, and redacted before storage. Strip attachments unless explicitly needed, enforce MIME/type validation, and keep imported PII out of logs and analytics.
 - Health- and allergy-linked recommendations: all new health-adjacent features must use `backend/services/health_guardrails.py` before any LLM output is shown. If a backfill feature can surface prescriptive advice, it must expose `{why, confidence, sources[], timestamp}` and `clinician_review_required` when the rule set or confidence threshold requires escalation.
+- Traveler core integrity: protect the canonical context object with strict authorization, provenance validation, and tamper-evident audit logs; never allow one feature to overwrite another feature’s higher-confidence record without traceability.
+- Golby orchestration safety: require Golby to consume only validated traveler-core inputs, reject stale or conflicting records, and log which sources were selected or rejected for every recommendation.
 
 Required controls for all backfill work:
 - Data provenance and trust tier on every externally sourced record.
@@ -26,6 +36,7 @@ Required controls for all backfill work:
 - Explicit user consent where itinerary import or health data is involved.
 - Redaction of health, itinerary, and sharing data in shared/public views.
 - Security tests for provider outage, malformed payloads, injection attempts, and permission bypass.
+- Security tests for traveler-core tampering, stale-context replay, conflicting dataset resolution, and Golby orchestration bypass.
 
 Threat model summary
 --------------------
