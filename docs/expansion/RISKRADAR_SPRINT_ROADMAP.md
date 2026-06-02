@@ -13,6 +13,7 @@ This roadmap breaks the 8-phase plan into **14 two-week sprints**, with explicit
 - Safety & guardrails: `backend/services/health_guardrails.py` deterministic checks; explainability `{why, confidence, sources[], timestamp}`; `clinician_review_required` flagging and triage queues.
 - Scraper updates: emit `source`, `confidence`, `trust_tier`, `allergen_flags`, and dead-letter handling for ambiguous records.
 - Testing & ops: parity contract tests, migration preflight, LLM sampling/caching, circuit-breakers, and offline route snapshots.
+- Scope objective: expand RiskRadar data collection from US-only sources to global sources with phased onboarding and the same validation/security controls.
 
 
 
@@ -956,8 +957,10 @@ Backfill items and sprint mapping:
 	- Tasks: OCR/text extraction pipeline + classifier for allergen extraction; confidence scoring and dead-letter handling.
 	- Acceptance: Extracted allergens used by guardrails when confidence threshold met.
 
+- Sprint 5–8: Global data expansion rollout
+	- Tasks: onboard non-US weather/air/safety/event sources, add locale and country normalization fields, and extend parity tests for international endpoints.
+	- Acceptance: Global sources ingest successfully while existing US feeds and API contracts remain stable.
+
 For each backfill ticket: include provider/key notes, billing impact, DB migration script + rollback, unit/integration tests, privacy impact assessment (if PII/health data), and map security checks back to `docs/expansion/RISKRADAR_EXPANSION_SECURITYPLAN.md`.
 
 Next steps: create tracked tickets for each backfill item in the sprint tracker, assign owners, and add to the sprint planning board for the mapped sprint windows.
-
-</parameter>

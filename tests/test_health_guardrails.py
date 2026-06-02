@@ -8,7 +8,7 @@ def test_asthma_aqi_rule_triggers():
     context = {"aqi": 160, "timestamp": "2026-05-25T12:00:00Z"}
     result = evaluate_health_risk(user, candidate, context)
     assert result["safe"] is False
-    assert any("AQI" in s or "asthma" in r.lower() for r in result["reasons"]) 
+    assert any("aqi" in reason.lower() or "asthma" in reason.lower() for reason in result["reasons"])
 
 
 def test_nut_allergy_triggers_clinician_review():
@@ -17,7 +17,7 @@ def test_nut_allergy_triggers_clinician_review():
     context = {"aqi": 50, "timestamp": "2026-05-25T12:00:00Z"}
     result = evaluate_health_risk(user, candidate, context)
     assert result["clinician_review_required"] is True
-    assert any("nut" in r.lower() or "peanut" in r.lower() for r in result["reasons"]) 
+    assert any("nut" in reason.lower() or "peanut" in reason.lower() for reason in result["reasons"])
 
 
 def test_heart_heat_rule_triggers():
@@ -26,4 +26,4 @@ def test_heart_heat_rule_triggers():
     context = {"heat_index": 102, "timestamp": "2026-05-25T12:00:00Z"}
     result = evaluate_health_risk(user, candidate, context)
     assert result["safe"] is False
-    assert any("heat" in r.lower() for r in result["reasons"]) 
+    assert any("heat" in reason.lower() for reason in result["reasons"])

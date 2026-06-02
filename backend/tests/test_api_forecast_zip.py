@@ -23,18 +23,17 @@ from api.forecast import _cache
 # A minimal valid ForecastPeriodOut payload to return from the mocked
 # get_forecast. All required fields must be present.
 _FAKE_PERIOD = {
-    "name": "Tonight",
-    "temperature": 65,
-    "temperature_unit": "F",
-    "wind_speed": "5 mph",
-    "wind_direction": "NW",
-    "short_forecast": "Clear",
-    "detailed_forecast": "Clear skies tonight.",
-    "is_daytime": False,
-    "start_time": "2026-04-08T18:00:00-07:00",
-    "end_time": "2026-04-09T06:00:00-07:00",
-    "icon": "https://api.weather.gov/icons/land/night/skc",
-    "precipitation_chance": None,
+    "date": "2026-04-08",
+    "day_name": "Tuesday",
+    "high_temp": 65.0,
+    "low_temp": 52.0,
+    "description": "clear skies",
+    "weather_main": "Clear",
+    "icon_code": "01d",
+    "wind_mph": 5.0,
+    "precip_chance": 0,
+    "humidity": 45,
+    "uvi": 1.0,
 }
 
 _FAKE_COORDS = (34.05, -118.24, "Los Angeles", "CA")  # (lat, lon, city, state)
@@ -64,8 +63,8 @@ class TestForecastByZip:
         data = resp.json()
         assert isinstance(data, list)
         assert len(data) == 1
-        assert data[0]["name"] == "Tonight"
-        assert data[0]["temperature"] == 65
+        assert data[0]["day_name"] == "Tuesday"
+        assert data[0]["high_temp"] == 65.0
 
     def test_passes_correct_lat_lon_to_get_forecast(self, test_client):
         """Verify that the lat/lon unpacked from _zip_to_coords are forwarded."""
@@ -88,8 +87,8 @@ class TestForecastByZip:
 
     def test_returns_multiple_periods(self, test_client):
         periods = [
-            {**_FAKE_PERIOD, "name": "Tonight"},
-            {**_FAKE_PERIOD, "name": "Thursday", "is_daytime": True},
+            {**_FAKE_PERIOD, "day_name": "Tuesday"},
+            {**_FAKE_PERIOD, "day_name": "Thursday", "date": "2026-04-09"},
         ]
         with (
             patch("api.forecast._zip_to_coords", return_value=_FAKE_COORDS),
@@ -101,7 +100,7 @@ class TestForecastByZip:
         assert len(resp.json()) == 2
 
     def test_response_includes_precipitation_chance_when_present(self, test_client):
-        period_with_precip = {**_FAKE_PERIOD, "precipitation_chance": 40}
+        period_with_precip = {**_FAKE_PERIOD, "precip_chance": 40}
         with (
             patch("api.forecast._zip_to_coords", return_value=_FAKE_COORDS),
             patch("api.forecast.get_forecast", return_value=[period_with_precip]),
@@ -109,7 +108,7 @@ class TestForecastByZip:
             resp = test_client.get("/api/v1/forecast/zip?zip_code=90001")
 
         assert resp.status_code == 200
-        assert resp.json()[0]["precipitation_chance"] == 40
+        assert resp.json()[0]["precip_chance"] == 40
 
 
 # ---------------------------------------------------------------------------

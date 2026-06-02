@@ -102,7 +102,7 @@ def _fetch_owm_forecast(lat: float, lon: float) -> list[dict]:
     return results
 
 
-@router.get("/zip")
+@router.get("/zip", response_model=list[ForecastPeriodOut])
 def get_forecast_by_zip(
     zip_code: str = Query(..., description="US ZIP code"),
 ):
@@ -132,7 +132,7 @@ def get_forecast_by_zip(
     return get_forecast(lat=lat, lon=lon)
 
 
-@router.get("")
+@router.get("", response_model=list[ForecastPeriodOut])
 def get_forecast(
     lat: float = Query(..., description="Latitude"),
     lon: float = Query(..., description="Longitude"),

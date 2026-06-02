@@ -1,12 +1,22 @@
 #!/usr/bin/env python3
 """Simple validator for docs/PARITY_MATRIX.md ensuring core entries exist."""
+import argparse
 import sys
 from pathlib import Path
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--matrix",
+        type=Path,
+        default=Path("docs/PARITY_MATRIX.md"),
+        help="Path to parity matrix markdown file (default: docs/PARITY_MATRIX.md)",
+    )
+    args = parser.parse_args()
+
     repo_root = Path(__file__).resolve().parents[1]
-    matrix = repo_root / "docs" / "PARITY_MATRIX.md"
+    matrix = args.matrix if args.matrix.is_absolute() else repo_root / args.matrix
     if not matrix.exists():
         print("PARITY_MATRIX.md not found", file=sys.stderr)
         return 2

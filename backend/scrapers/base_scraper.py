@@ -84,6 +84,11 @@ class BaseScraper(ABC):
             log.error_message = str(exc)
             session.rollback()
             logger.error("[%s] scrape failed: %s", self.source_name, exc)
+        except Exception as exc:
+            log.status = "failure"
+            log.error_message = str(exc)
+            session.rollback()
+            logger.exception("[%s] scrape failed unexpectedly", self.source_name)
 
         finally:
             elapsed = time.monotonic_ns() // 1_000_000 - start_ms

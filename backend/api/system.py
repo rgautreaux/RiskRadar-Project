@@ -15,6 +15,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 from fastapi import APIRouter, Depends
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from db.database import get_db
@@ -32,23 +33,33 @@ def health_check(_db: Session = Depends(get_db)) -> dict[str, Any]:
     Returns API status and basic database stats so you can verify
     the backend is running and connected to the database.
     """
-    alert_count = _db.query(Alert.id).count() or 0
-    last_scrape = (
-        _db.query(ScrapeLog)
-        .order_by(ScrapeLog.completed_at.desc())
-        .first()
-    )
-    return {
-        "status": "healthy",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "database": "connected",
-        "alert_count": alert_count,
-        "last_scrape": {
-            "source": last_scrape.source,
-            "status": last_scrape.status,
-            "completed_at": last_scrape.completed_at,
-        } if last_scrape else None,
-    }
+    timestamp = datetime.now(timezone.utc).isoformat()
+    try:
+        alert_count = _db.query(Alert.id).count() or 0
+        last_scrape = (
+            _db.query(ScrapeLog)
+            .order_by(ScrapeLog.completed_at.desc())
+            .first()
+        )
+        return {
+            "status": "healthy",
+            "timestamp": timestamp,
+            "database": "connected",
+            "alert_count": alert_count,
+            "last_scrape": {
+                "source": last_scrape.source,
+                "status": last_scrape.status,
+                "completed_at": last_scrape.completed_at,
+            } if last_scrape else None,
+        }
+    except SQLAlchemyError:
+        return {
+            "status": "unhealthy",
+            "timestamp": timestamp,
+            "database": "disconnected",
+            "alert_count": 0,
+            "last_scrape": None,
+        }
 
 
 @router.post("/scrape/trigger")

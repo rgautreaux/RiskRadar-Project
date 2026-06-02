@@ -19,6 +19,7 @@ The approach is designed for full production maturity, not MVP shortcuts. It pri
 - Operational controls: LLM sampling/caching, provider circuit-breakers, quotas, offline route snapshots, and parity contract tests.
 - UI changes: Medical & Allergy settings, `Why?` explainability view, emergency CTA, packing and itinerary UIs.
 - System integration goal: every feature must read from and write to a shared traveler intelligence core so all datasets communicate as one system and Golby can orchestrate them coherently.
+- Expansion objective: broaden data scraping scope from US-only coverage to global coverage while preserving current US data quality and safeguards.
 
 **Security Posture and Threat Model**
 
@@ -813,5 +814,3 @@ These tasks are mirrored in the sprint roadmap to ensure tracked tickets with ow
 3. **Phase 0 Execution**: Finalize SLOs, feature flags, release gates in Week 1.
 4. **Phase 1 Sprint**: Begin schema design and authorization layer (Week 2).
 5. **Ongoing**: Weekly progress reviews; monthly risk reviews; go/no-go gates at milestones.
-
-</parameter>
