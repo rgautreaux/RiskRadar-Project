@@ -95,11 +95,12 @@ def trigger_scrape(
             # Don't let one failing scraper crash the entire trigger endpoint;
             # surface the failure per-scraper so callers can observe partial
             # failures (tests expect this behavior).
+            _ = exc
             results.append({
                 "source": scraper_info["id"],
                 "status": "error",
                 "alerts_stored": 0,
-                "error": str(exc),
+                "error": "Scraper execution failed",
             })
 
     return {"triggered_at": datetime.now(timezone.utc).isoformat(), "results": results}
