@@ -110,8 +110,12 @@ class TestGenerateSummary:
         assert resp.status_code == 200
         data = resp.json()
         assert data["summary_type"] == "daily"
-        assert "Fallback" in data["content"]
+        # The fallback copy reassures the user without using the word "fallback" —
+        # it points them at the Alerts tab so they can still get critical info
+        # while the LLM is down. `model_used` is the contract for "was this a
+        # fallback?" — keep asserting that rather than the user-facing string.
         assert data["model_used"] == "fallback-no-llm"
+        assert "briefing service is temporarily unavailable" in data["content"]
 
 
 class TestLocalSummaryFlow:
@@ -134,7 +138,9 @@ class TestLocalSummaryFlow:
         data = resp.json()
         assert data["summary_type"] == "local"
         assert data["region"] == "Los Angeles, CA 90001"
-        assert "Local Digest for Los Angeles, CA" in data["title"]
+        # Title format is "Traveler Briefing: <City>, <State> — <date>" — assert
+        # on the stable City/State slug rather than the date portion.
+        assert "Traveler Briefing: Los Angeles, CA" in data["title"]
         assert data["content"] == "## Local Digest\nTest local summary."
         assert db_session.query(Summary).count() == 1
 
@@ -155,6 +161,60 @@ class TestLocalSummaryFlow:
         resp = test_client.get("/api/v1/summaries/latest/local?zip_code=90001")
         assert resp.status_code == 200
         assert resp.json() is None
+
+    def test_generate_local_summary_returns_cached_within_ttl(self, test_client, db_session, monkeypatch):
+        """Revisiting the same ZIP within the cache TTL must return the existing
+        Summary row without calling the LLM or inserting a duplicate.
+
+        Why this matters: each LLM call costs 3-10s + tokens. Before caching, the
+        dashboard regenerated on every app open, every location switch, and every
+        revisit — burning latency and spend for content that hadn't changed.
+        """
+        monkeypatch.setattr("api.location._zip_to_coords", lambda zip_code: (34.05, -118.24, "Los Angeles", "CA"))
+        monkeypatch.setattr(
+            "api.location._fetch_nws_alerts",
+            lambda lat, lon, state: [_mock_local_alert("nws", "nws_001", "Local Severe Weather")],
+        )
+        monkeypatch.setattr(
+            "api.location._fetch_airnow",
+            lambda zip_code: [_mock_local_alert("airnow", f"{zip_code}_PM25_2026-04-10", "Local Air Quality")],
+        )
+
+        mock_return = ("## Local Digest\nTest local summary.", 42, "openai/gpt-5.2")
+        with patch("llm.summarizer.Summarizer._call_llm", return_value=mock_return) as mock_llm:
+            # First request: cache MISS → calls LLM + inserts row.
+            first = test_client.post("/api/v1/summaries/generate/local?zip_code=90001")
+            assert first.status_code == 200
+            assert mock_llm.call_count == 1
+            assert db_session.query(Summary).count() == 1
+
+            # Second request (same ZIP, within TTL): cache HIT → no LLM call,
+            # no new row, returns the existing summary.
+            second = test_client.post("/api/v1/summaries/generate/local?zip_code=90001")
+            assert second.status_code == 200
+            assert mock_llm.call_count == 1, "LLM should not be called on cache hit"
+            assert db_session.query(Summary).count() == 1, "Should not insert a duplicate summary"
+            assert second.json()["id"] == first.json()["id"]
+
+    def test_generate_local_summary_force_bypasses_cache(self, test_client, db_session, monkeypatch):
+        """`force=true` must bypass the cache and regenerate, so pull-to-refresh
+        or manual refresh can always get fresh LLM output."""
+        monkeypatch.setattr("api.location._zip_to_coords", lambda zip_code: (34.05, -118.24, "Los Angeles", "CA"))
+        monkeypatch.setattr(
+            "api.location._fetch_nws_alerts",
+            lambda lat, lon, state: [_mock_local_alert("nws", "nws_001", "Local Severe Weather")],
+        )
+        monkeypatch.setattr("api.location._fetch_airnow", lambda zip_code: [])
+
+        mock_return = ("## Local Digest\nTest.", 42, "openai/gpt-5.2")
+        with patch("llm.summarizer.Summarizer._call_llm", return_value=mock_return) as mock_llm:
+            test_client.post("/api/v1/summaries/generate/local?zip_code=90001")
+            test_client.post("/api/v1/summaries/generate/local?zip_code=90001&force=true")
+
+            assert mock_llm.call_count == 2, "force=true should skip cache and call LLM again"
+            assert db_session.query(Summary).count() == 2, "force=true should insert a new row"
+
+
 class TestCallLlm:
     def test_resolve_model_falls_back_to_safe_default(self):
         from llm.summarizer import Summarizer

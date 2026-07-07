@@ -18,13 +18,16 @@ logger = logging.getLogger(__name__)
 
 class Summarizer:
     def _build_fallback_summary(self, alerts_count: int, scope: str) -> str:
-        """Return a deterministic summary when the LLM provider is unavailable."""
+        """Return a deterministic plain-text briefing when the LLM is unavailable."""
+        if alerts_count == 0:
+            return (
+                f"Low risk. No active alerts for {scope} today. Conditions look "
+                "suitable for typical outdoor travel plans."
+            )
         return (
-            f"## {scope} Summary (Fallback)\n"
-            "The language model is temporarily unavailable, so this summary was generated "
-            "from structured alert metadata.\n\n"
-            f"- Alerts analyzed: {alerts_count}\n"
-            "- Next step: retry generation once LLM connectivity is restored."
+            f"Moderate risk. {alerts_count} active alert(s) are in effect for {scope}. "
+            "Our briefing service is temporarily unavailable — open the Alerts tab for "
+            "the individual notices while we retry."
         )
 
     def _resolve_model(self, is_premium: bool = False) -> str:
@@ -80,25 +83,24 @@ class Summarizer:
             for a in alerts
         ]
 
-        user_msg = prompts.DAILY_DIGEST_USER.format(
+        user_msg = prompts.NATIONWIDE_BRIEFING_USER.format(
             count=len(alerts),
             date=date.today().strftime("%B %d, %Y"),
-            city="the monitored area",
-            state="N/A",
-            zip_code="N/A",
             alerts_json=json.dumps(alerts_data, indent=2),
         )
 
         try:
-            text, tokens, model = self._call_llm(prompts.TRIP_PACKING_SYSTEM, user_msg, is_premium=is_premium)
+            text, tokens, model = self._call_llm(
+                prompts.TRAVELER_BRIEFING_SYSTEM, user_msg, is_premium=is_premium
+            )
         except Exception as exc:
             logger.warning("LLM daily digest fallback activated: %s", exc)
-            text = self._build_fallback_summary(len(alerts), "Daily Digest")
+            text = self._build_fallback_summary(len(alerts), "the US")
             tokens = 0
             model = "fallback-no-llm"
 
         summary = Summary(
-            title=f"Travel Safety Briefing — {date.today().strftime('%b %d, %Y')}",
+            title=f"Traveler Briefing — {date.today().strftime('%b %d, %Y')}",
             content=text,
             summary_type="daily",
             alert_ids=json.dumps([a.id for a in alerts]) if settings.NORMALIZATION_DUAL_WRITE_LEGACY_JSON else None,
@@ -138,7 +140,7 @@ class Summarizer:
             for a in alerts
         ]
 
-        user_msg = prompts.TRIP_PACKING_USER.format(
+        user_msg = prompts.TRAVELER_BRIEFING_USER.format(
             count=len(alerts),
             city=city,
             state=state,
@@ -148,15 +150,17 @@ class Summarizer:
         )
 
         try:
-            text, tokens, model = self._call_llm(prompts.TRIP_PACKING_SYSTEM, user_msg, is_premium=is_premium)
+            text, tokens, model = self._call_llm(
+                prompts.TRAVELER_BRIEFING_SYSTEM, user_msg, is_premium=is_premium
+            )
         except Exception as exc:
             logger.warning("LLM local digest fallback activated for %s, %s: %s", city, state, exc)
-            text = self._build_fallback_summary(len(alerts), f"Local Digest for {city}, {state}")
+            text = self._build_fallback_summary(len(alerts), f"{city}, {state}")
             tokens = 0
             model = "fallback-no-llm"
 
         summary = Summary(
-            title=f"Travel Briefing: {city}, {state} — {date.today().strftime('%b %d, %Y')}",
+            title=f"Traveler Briefing: {city}, {state} — {date.today().strftime('%b %d, %Y')}",
             content=text,
             summary_type="local",
             alert_ids=json.dumps([a.id for a in alerts]) if settings.NORMALIZATION_DUAL_WRITE_LEGACY_JSON else None,

@@ -86,8 +86,16 @@ def _reverse_geocode_zip(lat: float, lon: float) -> str | None:
         return None
 
 
+_POPULATED_PLACE_TYPES = {"city", "town", "village", "hamlet", "suburb", "neighbourhood"}
+
+
 def _city_to_coords(query: str) -> tuple[float, float, str, str, str | None] | None:
-    """Geocode a city name to (lat, lon, city, state, zip_code) using Nominatim."""
+    """Geocode a city name to (lat, lon, city, state, zip_code) using Nominatim.
+
+    Rejects results that resolve to administrative boundaries (states, counties)
+    rather than populated places — a query like "Texas" should return None rather
+    than a nonsensical {city: "Texas", state: "TX"} record.
+    """
     try:
         resp = httpx.get(
             "https://nominatim.openstreetmap.org/search",
@@ -95,7 +103,7 @@ def _city_to_coords(query: str) -> tuple[float, float, str, str, str | None] | N
                 "q": query,
                 "countrycodes": "us",
                 "format": "json",
-                "limit": 1,
+                "limit": 5,
                 "addressdetails": 1,
             },
             headers={"User-Agent": "RiskRadar/1.0 (school-project)"},
@@ -107,7 +115,26 @@ def _city_to_coords(query: str) -> tuple[float, float, str, str, str | None] | N
         if not results:
             return None
 
-        hit = results[0]
+        # Pick the first result that's a populated place (city/town/village),
+        # not a state/county/region. Nominatim's addresstype tells us what kind
+        # of place the top-level hit is.
+        hit = None
+        for r in results:
+            addr_type = r.get("addresstype", "")
+            r_addr = r.get("address", {})
+            if addr_type in _POPULATED_PLACE_TYPES:
+                hit = r
+                break
+            # Fallback: addresstype might be "administrative" but the address
+            # block still contains a concrete city/town/village — accept those.
+            if addr_type != "state" and addr_type != "country" and (
+                r_addr.get("city") or r_addr.get("town") or r_addr.get("village")
+            ):
+                hit = r
+                break
+        if hit is None:
+            return None
+
         lat = float(hit["lat"])
         lon = float(hit["lon"])
 
@@ -138,6 +165,48 @@ def _city_to_coords(query: str) -> tuple[float, float, str, str, str | None] | N
 def _is_zip(q: str) -> bool:
     """Check if a query string looks like a US zip code."""
     return bool(re.match(r"^\d{5}$", q.strip()))
+
+
+def _parse_state_intent(q: str) -> str | None:
+    """Extract a 2-letter US state code from the 'state' portion of 'City, State'.
+
+    Returns the 2-letter state code when the query explicitly names a state
+    (either as a 2-letter abbreviation or an unambiguous prefix of a full
+    state name). Returns None when the query has no comma, when the state
+    portion is too short to disambiguate, or when the state isn't a valid US
+    state.
+
+    Examples:
+        "Houston, TX"      -> "TX"
+        "Houston, Texas"   -> "TX"
+        "Houston, Tex"     -> "TX"   (unique prefix of Texas)
+        "Houston, Te"      -> None   (ambiguous: Texas or Tennessee)
+        "Houston"          -> None
+        "Dallas, XX"       -> None   (not a real state)
+    """
+    if "," not in q:
+        return None
+    after = q.rsplit(",", 1)[1].strip()
+    if len(after) == 0:
+        return None
+
+    # Exact 2-letter abbreviation
+    if len(after) == 2 and after.isalpha():
+        code = after.upper()
+        return code if code in _STATE_ABBREVS.values() else None
+
+    # Full-name prefix match, case-insensitive
+    if len(after) >= 3:
+        lowered = after.lower()
+        matches = [
+            code for full, code in _STATE_ABBREVS.items()
+            if full.lower().startswith(lowered)
+        ]
+        # Only accept an unambiguous single match — typing "Te" could mean
+        # Texas or Tennessee, so bail out rather than guess.
+        if len(matches) == 1:
+            return matches[0]
+    return None
 
 
 # ── NWS on-demand fetch ──────────────────────────────────────────────
@@ -224,8 +293,14 @@ def _aqi_to_severity(aqi: int) -> str:
     return "critical"
 
 
-def _fetch_airnow(zip_code: str) -> list[dict]:
-    """Fetch current air quality for a zip code from AirNow."""
+def _airnow_observations(zip_code: str) -> list[dict]:
+    """Fetch raw AirNow observations as scalar dicts.
+
+    Returns a list of observations like:
+        {aqi, parameter, category, area, state, date, latitude, longitude}
+
+    Empty list when no API key is configured or the request fails.
+    """
     api_key = settings.AIRNOW_API_KEY
     if not api_key:
         return []
@@ -245,14 +320,31 @@ def _fetch_airnow(zip_code: str) -> list[dict]:
     except Exception:
         return []
 
-    results = []
+    observations = []
     for raw in raw_items:
-        aqi = raw.get("AQI", 0)
-        param = raw.get("ParameterName", "Unknown")
-        date = raw.get("DateObserved", "").strip()
-        area = raw.get("ReportingArea", "")
-        state = raw.get("StateCode", "")
-        category = raw.get("Category", {}).get("Name", "")
+        observations.append({
+            "aqi": raw.get("AQI", 0),
+            "parameter": raw.get("ParameterName", "Unknown"),
+            "category": raw.get("Category", {}).get("Name", ""),
+            "area": raw.get("ReportingArea", ""),
+            "state": raw.get("StateCode", ""),
+            "date": raw.get("DateObserved", "").strip(),
+            "latitude": raw.get("Latitude"),
+            "longitude": raw.get("Longitude"),
+        })
+    return observations
+
+
+def _fetch_airnow(zip_code: str) -> list[dict]:
+    """Fetch current air quality for a zip code from AirNow, shaped as alerts."""
+    results = []
+    for obs in _airnow_observations(zip_code):
+        aqi = obs["aqi"]
+        param = obs["parameter"]
+        date = obs["date"]
+        area = obs["area"]
+        state = obs["state"]
+        category = obs["category"]
 
         results.append({
             "source": "airnow",
@@ -261,8 +353,8 @@ def _fetch_airnow(zip_code: str) -> list[dict]:
             "severity": _aqi_to_severity(aqi),
             "title": f"{param} AQI: {aqi} ({category})",
             "description": f"Air quality in {area}, {state}: {param} AQI is {aqi} ({category}). Observed {date}.",
-            "latitude": raw.get("Latitude"),
-            "longitude": raw.get("Longitude"),
+            "latitude": obs["latitude"],
+            "longitude": obs["longitude"],
             "location_name": f"{area}, {state}",
             "event_start": date or None,
             "event_end": None,
@@ -282,8 +374,14 @@ _POLLEN_SEVERITY = {
 }
 
 
-def _fetch_pollen(lat: float, lon: float) -> list[dict]:
-    """Fetch pollen forecast from Google Pollen API for a location."""
+def _pollen_observations(lat: float, lon: float) -> list[dict]:
+    """Fetch raw pollen types from Google Pollen API as scalar dicts.
+
+    Returns a list of in-season pollen types like:
+        {name, category, value, description, date}
+
+    Empty list when no API key is configured or the request fails.
+    """
     api_key = settings.GOOGLE_POLLEN_API_KEY
     if not api_key:
         return []
@@ -304,7 +402,7 @@ def _fetch_pollen(lat: float, lon: float) -> list[dict]:
         logger.exception("Google Pollen API fetch failed for lat=%s lon=%s", lat, lon)
         return []
 
-    results = []
+    observations = []
     for day_info in data.get("dailyInfo", []):
         date_obj = day_info.get("date", {})
         date_str = f"{date_obj.get('year', 1970)}-{date_obj.get('month', 1):02d}-{date_obj.get('day', 1):02d}" if date_obj else ""
@@ -314,26 +412,42 @@ def _fetch_pollen(lat: float, lon: float) -> list[dict]:
                 continue
 
             index_info = pollen_type.get("indexInfo", {})
-            display_name = pollen_type.get("displayName", "Pollen")
-            category = index_info.get("category", "Unknown")
-            value = index_info.get("value", 0)
-            description_text = index_info.get("indexDescription", "")
-
-            full_desc = f"{display_name} pollen: {category} (index {value}). {description_text}"
-
-            results.append({
-                "source": "google_pollen",
-                "source_id": f"pollen_{display_name.lower()}_{date_str}_{round(lat, 2)}_{round(lon, 2)}",
-                "alert_type": "pollen",
-                "severity": _POLLEN_SEVERITY.get(category, "moderate"),
-                "title": f"{display_name} Pollen: {category} ({value}/5)",
-                "description": full_desc,
-                "latitude": lat,
-                "longitude": lon,
-                "location_name": None,
-                "event_start": date_str or None,
-                "event_end": None,
+            observations.append({
+                "name": pollen_type.get("displayName", "Pollen"),
+                "category": index_info.get("category", "Unknown"),
+                "value": index_info.get("value", 0),
+                "description": index_info.get("indexDescription", ""),
+                "date": date_str,
             })
+
+    return observations
+
+
+def _fetch_pollen(lat: float, lon: float) -> list[dict]:
+    """Fetch pollen forecast from Google Pollen API, shaped as alerts."""
+    results = []
+    for obs in _pollen_observations(lat, lon):
+        name = obs["name"]
+        category = obs["category"]
+        value = obs["value"]
+        date_str = obs["date"]
+        description_text = obs["description"]
+
+        full_desc = f"{name} pollen: {category} (index {value}). {description_text}"
+
+        results.append({
+            "source": "google_pollen",
+            "source_id": f"pollen_{name.lower()}_{date_str}_{round(lat, 2)}_{round(lon, 2)}",
+            "alert_type": "pollen",
+            "severity": _POLLEN_SEVERITY.get(category, "moderate"),
+            "title": f"{name} Pollen: {category} ({value}/5)",
+            "description": full_desc,
+            "latitude": lat,
+            "longitude": lon,
+            "location_name": None,
+            "event_start": date_str or None,
+            "event_end": None,
+        })
 
     return results
 
@@ -506,10 +620,18 @@ def search_location(q: str = Query(..., min_length=2, description="City name or 
 
 @router.get("/autocomplete")
 def autocomplete_location(q: str = Query(..., min_length=2, description="Partial city name")):
-    """Return up to 5 city suggestions for typeahead search."""
+    """Return up to 5 city suggestions for typeahead search.
+
+    Respects an explicit state in the query. Typing "Houston, Texas" will
+    filter out Houston, MO — because the user has already committed to a
+    state. Typing "Houston" or "Houston, Te" (ambiguous state prefix) will
+    not filter. Also skips non-populated-place hits (counties, states).
+    """
     if _is_zip(q):
         # No autocomplete for zip codes
         return []
+
+    intent_state = _parse_state_intent(q)
 
     try:
         resp = httpx.get(
@@ -518,7 +640,7 @@ def autocomplete_location(q: str = Query(..., min_length=2, description="Partial
                 "q": q,
                 "countrycodes": "us",
                 "format": "json",
-                "limit": 5,
+                "limit": 10,  # Fetch extra — we may filter down
                 "addressdetails": 1,
             },
             headers={"User-Agent": settings.NWS_USER_AGENT},
@@ -530,15 +652,24 @@ def autocomplete_location(q: str = Query(..., min_length=2, description="Partial
         results = []
         for hit in resp.json():
             addr = hit.get("address", {})
+            addr_type = hit.get("addresstype", "")
             city = addr.get("city") or addr.get("town") or addr.get("village")
             if not city:
                 continue
+            # Skip non-populated-place hits like states, counties, regions
+            if addr_type not in _POPULATED_PLACE_TYPES and addr_type not in ("", "administrative"):
+                continue
             state_full = addr.get("state", "")
             state = _STATE_ABBREVS.get(state_full, state_full[:2].upper() if state_full else "")
+            # Honor explicit state intent — drop mismatched states
+            if intent_state and state != intent_state:
+                continue
             label = f"{city}, {state}" if state else city
             # Avoid duplicate labels
             if not any(r["label"] == label for r in results):
                 results.append({"label": label, "city": city, "state": state})
+            if len(results) >= 5:
+                break
 
         return results
     except Exception:
@@ -557,3 +688,72 @@ def get_location_info(zip_code: str):
 
     lat, lon, city, state = location
     return {"zip_code": zip_code, "city": city, "state": state, "latitude": lat, "longitude": lon}
+
+
+# ── Lightweight scalar endpoints for dashboard widgets ──────────────
+
+@router.get("/aqi")
+def get_air_quality(zip_code: str):
+    """Return the current worst-case air quality reading for a zip code.
+
+    Picks the single highest-AQI pollutant from AirNow's current observations
+    (AirNow returns one row per pollutant — PM2.5, Ozone, etc.).
+    """
+    if len(zip_code) != 5 or not zip_code.isdigit():
+        raise HTTPException(status_code=400, detail="Invalid zip code")
+
+    if not settings.AIRNOW_API_KEY:
+        raise HTTPException(status_code=503, detail="Air quality data unavailable")
+
+    observations = _airnow_observations(zip_code)
+    if not observations:
+        raise HTTPException(status_code=404, detail=f"No air quality data for zip code {zip_code}")
+
+    worst = max(observations, key=lambda o: o.get("aqi", 0))
+    return {
+        "aqi": worst["aqi"],
+        "category": worst["category"],
+        "pollutant": worst["parameter"],
+        "observed_at": worst["date"],
+        "area": f"{worst['area']}, {worst['state']}".strip(", "),
+    }
+
+
+@router.get("/pollen")
+def get_pollen(zip_code: str):
+    """Return the current pollen reading for a zip code.
+
+    Looks up coordinates from the zip, calls Google Pollen API, and returns
+    an overall severity (max across in-season types) plus per-type breakdown.
+    """
+    if len(zip_code) != 5 or not zip_code.isdigit():
+        raise HTTPException(status_code=400, detail="Invalid zip code")
+
+    if not settings.GOOGLE_POLLEN_API_KEY:
+        raise HTTPException(status_code=503, detail="Pollen data unavailable")
+
+    location = _zip_to_coords(zip_code)
+    if not location:
+        raise HTTPException(status_code=404, detail=f"Could not find location for zip code {zip_code}")
+
+    lat, lon, _city, _state = location
+    observations = _pollen_observations(lat, lon)
+    if not observations:
+        raise HTTPException(status_code=404, detail=f"No pollen data for zip code {zip_code}")
+
+    # Overall = the type with the highest numeric value (Google uses 0–5 scale)
+    overall_obs = max(observations, key=lambda o: o.get("value", 0))
+
+    return {
+        "overall": overall_obs["category"],
+        "overall_value": overall_obs["value"],
+        "types": [
+            {
+                "name": o["name"],
+                "category": o["category"],
+                "value": o["value"],
+            }
+            for o in observations
+        ],
+        "observed_at": overall_obs["date"],
+    }

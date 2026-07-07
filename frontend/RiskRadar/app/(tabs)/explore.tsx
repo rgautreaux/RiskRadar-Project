@@ -3,19 +3,24 @@ import {
   Animated,
   ImageSourcePropType,
   ScrollView,
+  SafeAreaView,
   View,
   StyleSheet,
   ActivityIndicator,
   RefreshControl,
+  TouchableOpacity,
+  Text,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 
 
-import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
 import { Colors, Spacing, Radius, Shadows } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { apiFetch } from '@/utils/api';
 import { useAuth } from '@/contexts/auth-context';
+import { useCurrentLocation } from '@/contexts/location-context';
 import { RiskCard } from '@/components/risk-card';
 import { SectionHeader } from '@/components/section-header';
 import { HazardChip } from '@/components/hazard-chip';
@@ -113,44 +118,45 @@ interface AlertItem {
 export default function AlertsScreen() {
   const scheme = useColorScheme() ?? 'light';
   const palette = Colors[scheme];
+  const router = useRouter();
   const { user } = useAuth();
+  const { currentLocation } = useCurrentLocation();
   const [alerts, setAlerts] = useState<AlertItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
 
+  // Resolve which zip to use: shared (searched) location > user home > fallback
+  const resolvedZip = currentLocation?.zipCode ?? user?.zip_code ?? null;
+  const resolvedCity = currentLocation
+    ? `${currentLocation.city}, ${currentLocation.state}`
+    : null;
+
   const toggleFilter = (type: string) => {
     setActiveFilter(prev => prev === type ? null : type);
   };
-
-  // Prefetch location-based data (pollen, air quality) once on mount
-  const hasPrefetched = useRef(false);
 
   const fetchAlerts = useCallback(async () => {
     try {
       setError(null);
 
-      // On first load, hit the location endpoint to populate pollen + air quality in the DB
-      if (!hasPrefetched.current) {
-        const zip = user?.zip_code || '70506';
-        try {
-          await apiFetch<AlertItem[]>(`/location/alerts?zip_code=${zip}`);
-          hasPrefetched.current = true;
-        } catch {
-          // Ignore — we'll still try the regular alerts endpoint
-        }
+      // Prefer location-specific alerts when we have a zip code
+      if (resolvedZip) {
+        const data = await apiFetch<AlertItem[]>(`/location/alerts?zip_code=${resolvedZip}`);
+        setAlerts(data);
+      } else {
+        // No location at all — fall back to global latest alerts
+        const data = await apiFetch<AlertItem[]>('/alerts/?limit=50');
+        setAlerts(data);
       }
-
-      const data = await apiFetch<AlertItem[]>('/alerts/?limit=50');
-      setAlerts(data);
     } catch {
       setError('Could not load alerts. Is the backend running?');
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [user?.zip_code]);
+  }, [resolvedZip]);
 
   useEffect(() => {
     fetchAlerts();
@@ -183,12 +189,14 @@ export default function AlertsScreen() {
 
   if (loading) {
     return (
-      <ThemedView style={[styles.container, styles.centered]}>
-        <ActivityIndicator size="large" color={palette.primary} />
-        <ThemedText type="body" style={{ marginTop: Spacing.md }}>
-          Loading alerts...
-        </ThemedText>
-      </ThemedView>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
+        <View style={[styles.container, styles.centered]}>
+          <ActivityIndicator size="large" color={palette.primary} />
+          <ThemedText type="body" style={{ marginTop: Spacing.md }}>
+            Loading alerts{resolvedCity ? ` for ${resolvedCity}` : ''}…
+          </ThemedText>
+        </View>
+      </SafeAreaView>
     );
   }
 
@@ -212,7 +220,7 @@ export default function AlertsScreen() {
     : alerts;
 
   return (
-    <ThemedView style={styles.container}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
       {/* Branded Section Header */}
       <SectionHeader
         title="Alerts"
@@ -220,25 +228,45 @@ export default function AlertsScreen() {
         style={styles.sectionHeader}
       />
 
-      {/* Hazard Chips Row */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.hazardChipsRow}
-        style={{ marginBottom: Spacing.md }}
+      {/* Location pill — shows which city these alerts are for */}
+      <TouchableOpacity
+        style={[styles.locationPill, { backgroundColor: palette.surfaceMuted, borderColor: palette.border }]}
+        onPress={() => router.push('/(tabs)')}
+        activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel={
+          resolvedCity
+            ? `Alerts for ${resolvedCity}. Tap to change location.`
+            : 'No location selected. Tap to choose a location.'
+        }
       >
-        {hazardChips.map((chip) => (
-          <HazardChip
-            key={chip.hazardType}
-            hazardType={chip.hazardType}
-            label={chip.label}
-            iconSource={chip.icon}
-            isActive={activeFilter === chip.hazardType}
-            onPress={() => toggleFilter(chip.hazardType)}
-            style={{ marginRight: Spacing.sm }}
-          />
-        ))}
-      </ScrollView>
+        <Ionicons name="location" size={14} color={palette.primary} />
+        <Text style={[styles.locationPillText, { color: palette.text }]} numberOfLines={1}>
+          {resolvedCity ?? 'Search a city on Home to filter alerts'}
+        </Text>
+        <Ionicons name="chevron-forward" size={14} color={palette.textSecondary} />
+      </TouchableOpacity>
+
+      {/* Hazard Chips Row */}
+      <View style={styles.chipsWrapper}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.hazardChipsRow}
+        >
+          {hazardChips.map((chip) => (
+            <HazardChip
+              key={chip.hazardType}
+              hazardType={chip.hazardType}
+              label={chip.label}
+              iconSource={chip.icon}
+              isActive={activeFilter === chip.hazardType}
+              onPress={() => toggleFilter(chip.hazardType)}
+              style={{ marginRight: Spacing.sm }}
+            />
+          ))}
+        </ScrollView>
+      </View>
 
       {/* Alerts List */}
       <ScrollView
@@ -305,13 +333,16 @@ export default function AlertsScreen() {
           </View>
         )}
       </ScrollView>
-    </ThemedView>
+    </SafeAreaView>
   );
 }
 
 
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+  },
   container: {
     flex: 1,
   },
@@ -321,10 +352,35 @@ const styles = StyleSheet.create({
   },
   sectionHeader: {
     paddingBottom: 0,
+    paddingTop: Spacing.sm,
+  },
+  locationPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'flex-start',
+    marginHorizontal: Spacing.lg,
+    marginTop: Spacing.xs,
+    marginBottom: Spacing.sm,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+    borderWidth: 1,
+    maxWidth: '80%',
+  },
+  locationPillText: {
+    fontSize: 13,
+    fontWeight: '600',
+    flexShrink: 1,
+  },
+  chipsWrapper: {
+    // Fixed height stops the horizontal ScrollView from flex-stretching vertically,
+    // which was creating the big empty gap before the alert list.
+    height: 56,
+    marginBottom: Spacing.xs,
   },
   hazardChipsRow: {
     paddingHorizontal: Spacing.md,
-    paddingBottom: Spacing.sm,
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -333,7 +389,8 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.md,
+    paddingTop: Spacing.xs,
+    paddingBottom: Spacing.xl,
   },
   alertsContainer: {
     gap: Spacing.md,
