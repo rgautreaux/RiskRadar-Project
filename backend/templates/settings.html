@@ -1,0 +1,166 @@
+<!--
+  RiskRadar - Settings Page
+
+  HOW IT WORKS:
+    1. On load, fetches GET /api/v1/users/me to populate the form.
+    2. User edits their preferences (ZIP, alert types, severity).
+    3. "Save" sends PUT /api/v1/users/{id}/preferences to update.
+    4. Notification settings call GET/PUT /api/v1/users/notifications.
+
+  API ENDPOINTS USED:
+    - GET  /api/v1/users/me
+    - PUT  /api/v1/users/{id}/preferences
+    - GET  /api/v1/users/notifications
+    - PUT  /api/v1/users/notifications
+    - GET  /api/v1/health
+-->
+{% extends "base.html" %}
+
+{% block title %}Settings{% endblock %}
+
+{% block navbar %}
+<div class="navbar">
+    <a href="/dashboard" class="brand">RiskRadar</a>
+    <nav aria-label="Primary navigation">
+        <a href="/dashboard">Alerts</a>
+        <a href="/summaries">Summaries</a>
+        <a href="/settings" class="active">Settings</a>
+        <button id="logout-btn" type="button" onclick="logout()">Logout</button>
+    </nav>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <h1 class="stack-gap-lg">Settings</h1>
+
+    <!-- User profile / preferences -->
+    <div class="settings-form stack-gap-lg">
+        <h2 class="section-heading">Profile & Preferences</h2>
+        <form id="prefs-form">
+            <div class="form-group">
+                <label for="display_name">Display Name</label>
+                <input type="text" id="display_name" readonly>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" readonly>
+            </div>
+            <div class="form-group">
+                <label for="zip_code">ZIP Code</label>
+                <input type="text" id="zip_code" placeholder="e.g. 70801">
+            </div>
+            <div class="form-group">
+                <label for="notify_severity">Minimum Alert Severity</label>
+                <select id="notify_severity">
+                    <option value="low">Low (all alerts)</option>
+                    <option value="moderate">Moderate and above</option>
+                    <option value="high">High and above</option>
+                    <option value="critical">Critical only</option>
+                </select>
+            </div>
+            <p class="error-msg" id="prefs-error" role="alert" aria-live="assertive"></p>
+            <p id="prefs-success" class="status-success" hidden>Preferences saved!</p>
+            <button type="submit" class="btn btn-primary auto-width">Save Preferences</button>
+        </form>
+    </div>
+
+    <!-- System health -->
+    <div class="settings-form">
+        <h2 class="section-heading">System Health</h2>
+        <div id="health-info" aria-live="polite">
+            <div class="loading">Checking system health...</div>
+        </div>
+        <button class="btn btn-secondary mt-lg" onclick="loadHealth()">
+            Refresh
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    if (!isLoggedIn()) { window.location.href = '/'; }
+
+    let currentUserId = null;
+
+    /**
+     * Load user profile from GET /api/v1/users/me.
+     * Populates the settings form with current values.
+     */
+    async function loadProfile() {
+        const res = await apiFetch('/api/v1/users/me');
+        if (!res || !res.ok) return;
+        const user = await res.json();
+
+        currentUserId = user.id;
+        document.getElementById('display_name').value = user.display_name || '';
+        document.getElementById('email').value = user.email || '';
+        document.getElementById('zip_code').value = user.zip_code || '';
+        document.getElementById('notify_severity').value = user.notify_severity || 'high';
+    }
+
+    /**
+     * Load system health from GET /api/v1/health.
+     * Shows database status, alert count, and last scrape info.
+     */
+    async function loadHealth() {
+        const container = document.getElementById('health-info');
+        try {
+            const res = await apiFetch('/api/v1/health');
+            if (!res || !res.ok) {
+                container.innerHTML = '<p class="status-error panel-note">Could not reach health endpoint.</p>';
+                return;
+            }
+            const health = await res.json();
+            container.innerHTML = `
+                <p class="health-item"><strong>Status:</strong> ${health.status}</p>
+                <p class="health-item"><strong>Database:</strong> ${health.database}</p>
+                <p class="health-item"><strong>Total Alerts:</strong> ${health.alert_count}</p>
+                ${health.last_scrape ? `
+                    <p class="health-item"><strong>Last Scrape:</strong> ${health.last_scrape.source}
+                    (${health.last_scrape.status}) at ${health.last_scrape.completed_at}</p>
+                ` : '<p class="health-item"><strong>Last Scrape:</strong> None yet</p>'}
+            `;
+        } catch (err) {
+            container.innerHTML = '<p class="status-error panel-note">Error checking health.</p>';
+        }
+    }
+
+    // Save preferences form handler
+    document.getElementById('prefs-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const errorEl = document.getElementById('prefs-error');
+        const successEl = document.getElementById('prefs-success');
+        errorEl.dataset.visible = 'false';
+        successEl.hidden = true;
+
+        if (!currentUserId) return;
+
+        const body = {
+            zip_code: document.getElementById('zip_code').value || null,
+            notify_severity: document.getElementById('notify_severity').value,
+        };
+
+        try {
+            // PUT /api/v1/users/{id}/preferences
+            const res = await apiFetch(`/api/v1/users/${currentUserId}/preferences`, 'PUT', body);
+            if (res && res.ok) {
+                successEl.hidden = false;
+                setTimeout(() => { successEl.hidden = true; }, 3000);
+            } else {
+                const err = await res.json();
+                errorEl.textContent = err.detail || 'Failed to save';
+                errorEl.dataset.visible = 'true';
+            }
+        } catch (err) {
+            errorEl.textContent = 'Network error';
+            errorEl.dataset.visible = 'true';
+        }
+    });
+
+    // Load data on page load
+    loadProfile();
+    loadHealth();
+</script>
+{% endblock %}

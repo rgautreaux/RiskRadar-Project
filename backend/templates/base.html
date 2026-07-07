@@ -1,0 +1,92 @@
+<!--
+  RiskRadar - Base HTML template.
+
+  All pages extend this template. It provides:
+    - The <head> with CSS link
+    - Navigation bar (shown only when logged in)
+    - A content block for each page
+    - Shared JavaScript helpers for API calls
+
+  HOW THE FRONTEND CONNECTS TO THE BACKEND:
+    - After login, the JWT token is stored in localStorage.
+    - The apiFetch() helper automatically adds the Authorization header
+      to every request: "Bearer <token>".
+    - All API calls go to /api/v1/* endpoints on the same server.
+    - If any API call returns 401, the user is redirected to login.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" content="#0b5fa5">
+    <title>RiskRadar - {% block title %}Environmental Alerts{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    {% block navbar %}{% endblock %}
+
+    <main id="main-content">
+    {% block content %}{% endblock %}
+    </main>
+
+    <script>
+    /**
+     * API HELPER — used by all pages to call the backend.
+     *
+     * This function wraps fetch() and:
+     *   1. Prepends the base URL (same origin).
+     *   2. Adds the JWT token from localStorage as a Bearer token.
+     *   3. Sets Content-Type to application/json for POST/PUT.
+     *   4. Redirects to login if the server returns 401 (expired token).
+     *
+     * Usage:
+     *   const alerts = await apiFetch('/api/v1/alerts');
+     *   const result = await apiFetch('/api/v1/users/login', 'POST', {email, password});
+     */
+    async function apiFetch(url, method = 'GET', body = null) {
+        const headers = {};
+        const token = localStorage.getItem('riskradar_token');
+
+        // Attach JWT token if we have one
+        if (token) {
+            headers['Authorization'] = 'Bearer ' + token;
+        }
+
+        const options = { method, headers };
+
+        if (body) {
+            headers['Content-Type'] = 'application/json';
+            options.body = JSON.stringify(body);
+        }
+
+        const response = await fetch(url, options);
+
+        // If unauthorized, redirect to login page
+        if (response.status === 401) {
+            localStorage.removeItem('riskradar_token');
+            window.location.href = '/';
+            return null;
+        }
+
+        return response;
+    }
+
+    // Logout handler — clears the token and redirects to login
+    function logout() {
+        localStorage.removeItem('riskradar_token');
+        localStorage.removeItem('riskradar_user');
+        window.location.href = '/';
+    }
+
+    // Check if user is logged in (has a token)
+    function isLoggedIn() {
+        return !!localStorage.getItem('riskradar_token');
+    }
+    </script>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

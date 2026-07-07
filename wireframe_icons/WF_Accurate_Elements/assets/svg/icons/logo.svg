@@ -1,0 +1,23 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="logo-gradient" x1="24" y1="0" x2="24" y2="48" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6366F1"/>
+      <stop offset="1" stop-color="#4F46E5"/>
+    </linearGradient>
+    <filter id="logo-shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="0" dy="2" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.3"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <circle cx="24" cy="24" r="20" fill="url(#logo-gradient)" filter="url(#logo-shadow)"/>
+  <path d="M24 10L28.5 19.5L20.5 19.5L14 32L18 24L24 10Z" fill="#FCD34D" stroke="#FDE68A" stroke-width="1.5"/>
+  <circle cx="24" cy="28" r="7" fill="white"/>
+  <path d="M20.5 28L22.5 30.5L27.5 25" stroke="#10B981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

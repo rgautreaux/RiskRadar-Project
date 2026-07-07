@@ -1,0 +1,166 @@
+<!--
+  RiskRadar - Alerts Dashboard
+
+  HOW IT WORKS:
+    1. On page load, fetches GET /api/v1/alerts/stats for summary numbers.
+    2. Fetches GET /api/v1/alerts with optional filter query params.
+    3. Renders alert cards grouped by severity.
+    4. Filters (type, severity, source) re-fetch the alerts list.
+
+  API ENDPOINTS USED:
+    - GET /api/v1/alerts?alert_type=X&severity=Y&source=Z&limit=50
+    - GET /api/v1/alerts/stats
+    - GET /api/v1/health
+-->
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block navbar %}
+<div class="navbar">
+    <a href="/dashboard" class="brand">RiskRadar</a>
+    <nav aria-label="Primary navigation">
+        <a href="/dashboard" class="active">Alerts</a>
+        <a href="/summaries">Summaries</a>
+        <a href="/settings">Settings</a>
+        <button id="logout-btn" type="button" onclick="logout()">Logout</button>
+    </nav>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <!-- Stats row — numbers from GET /api/v1/alerts/stats -->
+    <div class="stats-row" id="stats-row">
+        <div class="stat-card">
+            <div class="stat-number" id="stat-total">--</div>
+            <div class="stat-label">Total Alerts</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="stat-critical">--</div>
+            <div class="stat-label">Critical</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="stat-high">--</div>
+            <div class="stat-label">High</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="stat-moderate">--</div>
+            <div class="stat-label">Moderate</div>
+        </div>
+    </div>
+
+    <!-- Filters — these become query params on GET /api/v1/alerts -->
+    <div class="filters">
+        <select id="filter-type" aria-label="Filter alerts by type">
+            <option value="">All Types</option>
+            <option value="weather">Weather</option>
+            <option value="air_quality">Air Quality</option>
+            <option value="wildfire">Wildfire</option>
+            <option value="pollution">Pollution</option>
+            <option value="earthquake">Earthquake</option>
+        </select>
+        <select id="filter-severity" aria-label="Filter alerts by severity">
+            <option value="">All Severities</option>
+            <option value="critical">Critical</option>
+            <option value="high">High</option>
+            <option value="moderate">Moderate</option>
+            <option value="low">Low</option>
+        </select>
+        <select id="filter-source" aria-label="Filter alerts by source">
+            <option value="">All Sources</option>
+            <option value="nws">NWS</option>
+            <option value="airnow">AirNow</option>
+            <option value="epa">EPA</option>
+            <option value="firms">FIRMS</option>
+            <option value="usgs_earthquakes">USGS</option>
+        </select>
+        <button class="btn btn-secondary" onclick="loadAlerts()">Apply Filters</button>
+    </div>
+
+    <!-- Alert cards list -->
+    <div id="alerts-list" aria-live="polite">
+        <div class="loading">Loading alerts...</div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Redirect to login if not authenticated
+    if (!isLoggedIn()) { window.location.href = '/'; }
+
+    /**
+     * Load alert statistics from GET /api/v1/alerts/stats.
+     * Updates the stat cards at the top of the page.
+     */
+    async function loadStats() {
+        const res = await apiFetch('/api/v1/alerts/stats');
+        if (!res || !res.ok) return;
+        const stats = await res.json();
+
+        document.getElementById('stat-total').textContent = stats.total || 0;
+        document.getElementById('stat-critical').textContent = stats.by_severity.critical || 0;
+        document.getElementById('stat-high').textContent = stats.by_severity.high || 0;
+        document.getElementById('stat-moderate').textContent = stats.by_severity.moderate || 0;
+    }
+
+    /**
+     * Load alerts from GET /api/v1/alerts with filter query params.
+     * Each alert is rendered as a card with severity color-coding.
+     */
+    async function loadAlerts() {
+        const params = new URLSearchParams();
+        const type = document.getElementById('filter-type').value;
+        const severity = document.getElementById('filter-severity').value;
+        const source = document.getElementById('filter-source').value;
+
+        if (type) params.set('alert_type', type);
+        if (severity) params.set('severity', severity);
+        if (source) params.set('source', source);
+        params.set('limit', '50');
+
+        const res = await apiFetch('/api/v1/alerts?' + params.toString());
+        const container = document.getElementById('alerts-list');
+
+        if (!res || !res.ok) {
+            container.innerHTML = '<div class="empty-state">Failed to load alerts.</div>';
+            return;
+        }
+
+        const alerts = await res.json();
+
+        if (alerts.length === 0) {
+            container.innerHTML = '<div class="empty-state">No alerts found. Scrapers may still be collecting data.</div>';
+            return;
+        }
+
+        container.innerHTML = alerts.map(alert => `
+            <div class="card severity-${alert.severity}">
+                <div class="card-title">
+                    ${escapeHtml(alert.title)}
+                    <span class="badge badge-${alert.severity}">${alert.severity}</span>
+                </div>
+                <div class="card-meta">
+                    <span>Source: ${alert.source}</span>
+                    <span>Type: ${alert.alert_type}</span>
+                    ${alert.location_name ? '<span>Location: ' + escapeHtml(alert.location_name) + '</span>' : ''}
+                    <span>Fetched: ${new Date(alert.fetched_at).toLocaleString()}</span>
+                </div>
+                ${alert.description ? '<p>' + escapeHtml(alert.description).substring(0, 200) + '</p>' : ''}
+            </div>
+        `).join('');
+    }
+
+    /** Escape HTML special chars to prevent XSS */
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Load data on page load
+    loadStats();
+    loadAlerts();
+</script>
+{% endblock %}

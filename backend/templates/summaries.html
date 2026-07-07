@@ -1,0 +1,129 @@
+<!--
+  RiskRadar - Summaries Page
+
+  HOW IT WORKS:
+    1. On page load, fetches GET /api/v1/summaries to list past digests.
+    2. The "Generate New Summary" button sends POST /api/v1/summaries/generate.
+    3. That endpoint calls the LLM (DeepSeek/OpenAI/Anthropic) to create
+       a markdown digest of the last 24 hours of alerts.
+    4. The response is stored in the summaries table and displayed here.
+
+  API ENDPOINTS USED:
+    - GET  /api/v1/summaries
+    - GET  /api/v1/summaries/latest
+    - POST /api/v1/summaries/generate
+-->
+{% extends "base.html" %}
+
+{% block title %}Summaries{% endblock %}
+
+{% block navbar %}
+<div class="navbar">
+    <a href="/dashboard" class="brand">RiskRadar</a>
+    <nav aria-label="Primary navigation">
+        <a href="/dashboard">Alerts</a>
+        <a href="/summaries" class="active">Summaries</a>
+        <a href="/settings">Settings</a>
+        <button id="logout-btn" type="button" onclick="logout()">Logout</button>
+    </nav>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <h1>AI-Generated Summaries</h1>
+        <button class="btn btn-primary" id="generate-btn" onclick="generateSummary()">
+            Generate New Summary
+        </button>
+    </div>
+
+    <div id="summaries-list" aria-live="polite">
+        <div class="loading">Loading summaries...</div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    if (!isLoggedIn()) { window.location.href = '/'; }
+
+    /**
+     * Load all summaries from GET /api/v1/summaries.
+     * Each summary contains LLM-generated markdown content.
+     */
+    async function loadSummaries() {
+        const res = await apiFetch('/api/v1/summaries?limit=20');
+        const container = document.getElementById('summaries-list');
+
+        if (!res || !res.ok) {
+            container.innerHTML = '<div class="empty-state">Failed to load summaries.</div>';
+            return;
+        }
+
+        const summaries = await res.json();
+
+        if (summaries.length === 0) {
+            container.innerHTML = '<div class="empty-state">No summaries yet. Click "Generate New Summary" to create one from recent alerts.</div>';
+            return;
+        }
+
+        container.innerHTML = summaries.map(s => `
+            <div class="card">
+                <div class="card-title">${escapeHtml(s.title)}</div>
+                <div class="card-meta">
+                    <span>Type: ${s.summary_type}</span>
+                    <span>Generated: ${new Date(s.generated_at).toLocaleString()}</span>
+                    ${s.model_used ? '<span>Model: ' + s.model_used + '</span>' : ''}
+                </div>
+                <div class="summary-content">${formatMarkdown(s.content)}</div>
+            </div>
+        `).join('');
+    }
+
+    /**
+     * Generate a new summary by calling POST /api/v1/summaries/generate.
+     * This triggers the LLM summarizer on the backend.
+     */
+    async function generateSummary() {
+        const btn = document.getElementById('generate-btn');
+        btn.textContent = 'Generating...';
+        btn.disabled = true;
+
+        try {
+            const res = await apiFetch('/api/v1/summaries/generate', 'POST');
+            if (res && res.ok) {
+                await loadSummaries(); // Refresh the list
+            } else {
+                const err = await res.json();
+                alert(err.detail || 'Failed to generate summary');
+            }
+        } catch (err) {
+            alert('Error generating summary: ' + err.message);
+        } finally {
+            btn.textContent = 'Generate New Summary';
+            btn.disabled = false;
+        }
+    }
+
+    /** Simple markdown-to-HTML conversion for summary content */
+    function formatMarkdown(text) {
+        return escapeHtml(text)
+            .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+            .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+            .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+            .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.+?)\*/g, '<em>$1</em>')
+            .replace(/^- (.+)$/gm, '<li>$1</li>')
+            .replace(/\n/g, '<br>');
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    loadSummaries();
+</script>
+{% endblock %}

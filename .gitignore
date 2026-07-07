@@ -1,0 +1,89 @@
+# Python cache files - should never be committed
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+ENV/
+
+
+
+# Distribution / packaging
+*.egg-info/
+dist/
+build/
+
+*.egg
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE files
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/dictionaries
+.idea/shelf
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node modules (frontend)
+node_modules/
+
+
+# Test and coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local SQLite artifacts
+*.db
+*.sqlite
+*.sqlite3
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+/.claude
+/.vs/Team6Project.slnx/FileContentIndex
+/.vs/Team6Project/CopilotIndices/18.5.39108.44903
+# Development docs and notes
+.workspace_docs
+/.vs/CopilotSnapshots/4DD36DE5518E084198AEA08CC0988AC9/D843021122F83145AA49A67DFB709C49/13D776A61D694AF25BE253FE0DF10FC6
+/.vs/CopilotSnapshots/4DD36DE5518E084198AEA08CC0988AC9/D843021122F83145AA49A67DFB709C49/C2B6A1C7BB6964DB52F75F629446AC63
+/.vs/CopilotSnapshots/4DD36DE5518E084198AEA08CC0988AC9/D843021122F83145AA49A67DFB709C49/C2C8D00F2106255FAEECA584179FFC9D
+/.vs/CopilotSnapshots/4DD36DE5518E084198AEA08CC0988AC9/state.mpack
+/.vs/Team6Project.slnx/copilot-chat/81fcd077/sessions/e56dd34d-8e51-4108-98ae-a08cc0988ac9
+/.vs/slnx.sqlite
+/.vs/slnx.sqlite-journal

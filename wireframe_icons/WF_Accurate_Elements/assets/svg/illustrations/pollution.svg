@@ -1,0 +1,134 @@
+<svg width="240" height="240" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="pollution-water-gradient" x1="120" y1="140" x2="120" y2="200" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5EEAD4" stop-opacity="0.6"/>
+      <stop offset="0.5" stop-color="#2DD4BF" stop-opacity="0.7"/>
+      <stop offset="1" stop-color="#14B8A6" stop-opacity="0.8"/>
+    </linearGradient>
+    <linearGradient id="pollution-smoke-gradient" x1="120" y1="40" x2="120" y2="120" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#78716C" stop-opacity="0.4"/>
+      <stop offset="1" stop-color="#57534E" stop-opacity="0.7"/>
+    </linearGradient>
+    <linearGradient id="factory-gradient" x1="120" y1="100" x2="120" y2="180" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#64748B"/>
+      <stop offset="1" stop-color="#475569"/>
+    </linearGradient>
+    <filter id="pollution-blur">
+      <feGaussianBlur stdDeviation="3.5"/>
+    </filter>
+    <filter id="pollution-shadow">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="0" dy="2" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.4"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background pollution haze -->
+  <rect x="20" y="30" width="200" height="100" fill="#E7E5E4" opacity="0.5" rx="10"/>
+  
+  <!-- Factory building -->
+  <g filter="url(#pollution-shadow)">
+    <rect x="70" y="110" width="100" height="70" rx="4" fill="url(#factory-gradient)"/>
+    
+    <!-- Factory windows -->
+    <rect x="85" y="125" width="15" height="18" rx="1" fill="#334155" opacity="0.8"/>
+    <rect x="110" y="125" width="15" height="18" rx="1" fill="#334155" opacity="0.8"/>
+    <rect x="135" y="125" width="15" height="18" rx="1" fill="#334155" opacity="0.8"/>
+    
+    <rect x="85" y="150" width="15" height="18" rx="1" fill="#334155" opacity="0.8"/>
+    <rect x="110" y="150" width="15" height="18" rx="1" fill="#334155" opacity="0.8"/>
+    <rect x="135" y="150" width="15" height="18" rx="1" fill="#334155" opacity="0.8"/>
+    
+    <!-- Loading bay -->
+    <rect x="98" y="160" width="24" height="20" fill="#1E293B"/>
+  </g>
+  
+  <!-- Factory smokestacks -->
+  <g filter="url(#pollution-shadow)">
+    <rect x="85" y="80" width="15" height="35" rx="2" fill="#475569"/>
+    <rect x="120" y="70" width="15" height="45" rx="2" fill="#475569"/>
+    <rect x="145" y="85" width="15" height="30" rx="2" fill="#475569"/>
+  </g>
+  
+  <!-- Toxic smoke -->
+  <g filter="url(#pollution-blur)">
+    <ellipse cx="92" cy="70" rx="18" ry="22" fill="url(#pollution-smoke-gradient)"/>
+    <ellipse cx="90" cy="50" rx="22" ry="26" fill="#78716C" opacity="0.5"/>
+    <ellipse cx="88" cy="30" rx="25" ry="28" fill="#A8A29E" opacity="0.4"/>
+    
+    <ellipse cx="127" cy="60" rx="20" ry="24" fill="url(#pollution-smoke-gradient)"/>
+    <ellipse cx="128" cy="40" rx="24" ry="28" fill="#78716C" opacity="0.5"/>
+    <ellipse cx="130" cy="20" rx="26" ry="30" fill="#A8A29E" opacity="0.45"/>
+    
+    <ellipse cx="152" cy="75" rx="16" ry="20" fill="url(#pollution-smoke-gradient)"/>
+    <ellipse cx="154" cy="58" rx="20" ry="24" fill="#78716C" opacity="0.5"/>
+    <ellipse cx="156" cy="40" rx="22" ry="26" fill="#A8A29E" opacity="0.4"/>
+  </g>
+  
+  <!-- Toxic particles in air -->
+  <g opacity="0.6">
+    <circle cx="50" cy="60" r="3" fill="#78716C"/>
+    <circle cx="65" cy="50" r="2.5" fill="#A8A29E"/>
+    <circle cx="175" cy="65" r="3.5" fill="#78716C"/>
+    <circle cx="190" cy="55" r="2.5" fill="#A8A29E"/>
+    <circle cx="40" cy="75" r="2" fill="#D6D3D1"/>
+    <circle cx="200" cy="80" r="3" fill="#D6D3D1"/>
+  </g>
+  
+  <!-- Polluted water -->
+  <rect x="30" y="170" width="180" height="40" fill="url(#pollution-water-gradient)" opacity="0.7" rx="4"/>
+  
+  <!-- Oil/chemical spills on water -->
+  <ellipse cx="60" cy="185" rx="25" ry="15" fill="#8B5CF6" opacity="0.4" filter="url(#pollution-blur)"/>
+  <ellipse cx="120" cy="190" rx="35" ry="18" fill="#A855F7" opacity="0.35" filter="url(#pollution-blur)"/>
+  <ellipse cx="175" cy="187" rx="28" ry="16" fill="#C084FC" opacity="0.4" filter="url(#pollution-blur)"/>
+  
+  <!-- Toxic waste barrels -->
+  <g transform="translate(180, 155)">
+    <rect x="-10" y="0" width="20" height="25" rx="2" fill="#EF4444" filter="url(#pollution-shadow)"/>
+    <ellipse cx="0" cy="0" rx="10" ry="4" fill="#DC2626"/>
+    <ellipse cx="0" cy="25" rx="10" ry="4" fill="#B91C1C"/>
+    <line x1="-8" y1="8" x2="8" y2="8" stroke="#FEE2E2" stroke-width="2"/>
+    <line x1="-8" y1="17" x2="8" y2="17" stroke="#FEE2E2" stroke-width="2"/>
+    <!-- Hazard symbol -->
+    <circle cx="0" cy="12.5" r="5" fill="none" stroke="#FEF2F2" stroke-width="1.5"/>
+    <path d="M-2 12.5L0 9L2 12.5Z" fill="#FEF2F2"/>
+  </g>
+  
+  <!-- Drainage pipe -->
+  <ellipse cx="35" cy="178" rx="12" ry="8" fill="#334155"/>
+  <rect x="23" y="175" width="12" height="6" fill="#475569"/>
+  
+  <!-- Toxic liquid dripping -->
+  <path d="M35 186C35 186 33 192 33 195C33 197 34 198 35 198C36 198 37 197 37 195C37 192 35 186 35 186Z" 
+        fill="#84CC16" opacity="0.7"/>
+  
+  <!-- Warning signs -->
+  <g transform="translate(200, 120)">
+    <polygon points="0,-10 8.66,5 -8.66,5" fill="#FEF08A" stroke="#EAB308" stroke-width="2"/>
+    <path d="M0 -4V1" stroke="#B45309" stroke-width="1.5" stroke-linecap="round"/>
+    <circle cx="0" cy="3.5" r="1" fill="#B45309"/>
+  </g>
+  
+  <!-- Pollution particles rising -->
+  <g opacity="0.5">
+    <circle cx="70" cy="95" r="2.5" fill="#D97706">
+      <animateTransform attributeName="transform" type="translate" values="0,0; -2,-15; -4,-30" dur="4s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.5;0.8;0" dur="4s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="130" cy="90" r="3" fill="#F59E0B">
+      <animateTransform attributeName="transform" type="translate" values="0,0; 3,-18; 5,-35" dur="3.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.5;0.8;0" dur="3.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="155" cy="100" r="2" fill="#FCD34D">
+      <animateTransform attributeName="transform" type="translate" values="0,0; -3,-12; -5,-25" dur="4.2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.5;0.8;0" dur="4.2s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+</svg>

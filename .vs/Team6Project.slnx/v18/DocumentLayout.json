@@ -1,0 +1,237 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\quihu\\OneDrive\\Desktop\\Project\\Team6Project\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\quihu\\OneDrive\\Desktop\\Project\\Team6Project\\README.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|MarkdownPreview",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:README.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|MarkdownPreview"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\quihu\\OneDrive\\Desktop\\Project\\Team6Project\\README.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:README.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\quihu\\OneDrive\\Desktop\\Project\\Team6Project\\backend\\frontend\\routes.py||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:backend\\frontend\\routes.py||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\quihu\\OneDrive\\Desktop\\Project\\Team6Project\\backend\\static\\css\\style.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:backend\\static\\css\\style.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\quihu\\OneDrive\\Desktop\\Project\\Team6Project\\backend\\templates\\login.html||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:backend\\templates\\login.html||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\quihu\\OneDrive\\Desktop\\Project\\Team6Project\\backend\\main.py||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:backend\\main.py||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\quihu\\OneDrive\\Desktop\\Project\\Team6Project\\backend\\tests\\test_scraper_db_integration.py||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:backend\\tests\\test_scraper_db_integration.py||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\quihu\\OneDrive\\Desktop\\Project\\Team6Project\\backend\\tests\\__init__.py||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:backend\\tests\\__init__.py||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\quihu\\OneDrive\\Desktop\\Project\\Team6Project\\backend\\tests\\test_registry.py||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:backend\\tests\\test_registry.py||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\quihu\\OneDrive\\Desktop\\Project\\Team6Project\\backend\\tests\\test_models.py||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:backend\\tests\\test_models.py||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\quihu\\OneDrive\\Desktop\\Project\\Team6Project\\backend\\tests\\test_api_users.py||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:backend\\tests\\test_api_users.py||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\quihu\\OneDrive\\Desktop\\Project\\Team6Project\\backend\\tests\\test_api_summaries.py||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:backend\\tests\\test_api_summaries.py||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\quihu\\OneDrive\\Desktop\\Project\\Team6Project\\backend\\tests\\test_api_alerts.py||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:backend\\tests\\test_api_alerts.py||{8B382828-6202-11D1-8870-0000F87579D2}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 2,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "README.md [Preview]",
+              "DocumentMoniker": "C:\\Users\\quihu\\OneDrive\\Desktop\\Project\\Team6Project\\README.md",
+              "RelativeDocumentMoniker": "README.md",
+              "ToolTip": "C:\\Users\\quihu\\OneDrive\\Desktop\\Project\\Team6Project\\README.md [Preview]",
+              "RelativeToolTip": "README.md [Preview]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2026-04-08T03:01:08.879Z",
+              "EditorCaption": " [Preview]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "README.md",
+              "DocumentMoniker": "C:\\Users\\quihu\\OneDrive\\Desktop\\Project\\Team6Project\\README.md",
+              "RelativeDocumentMoniker": "README.md",
+              "ToolTip": "C:\\Users\\quihu\\OneDrive\\Desktop\\Project\\Team6Project\\README.md",
+              "RelativeToolTip": "README.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2026-04-08T03:01:00.49Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "routes.py",
+              "DocumentMoniker": "C:\\Users\\quihu\\OneDrive\\Desktop\\Project\\Team6Project\\backend\\frontend\\routes.py",
+              "RelativeDocumentMoniker": "backend\\frontend\\routes.py",
+              "ToolTip": "C:\\Users\\quihu\\OneDrive\\Desktop\\Project\\Team6Project\\backend\\frontend\\routes.py",
+              "RelativeToolTip": "backend\\frontend\\routes.py",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
+              "WhenOpened": "2026-04-01T23:55:14.421Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "style.css",
+              "DocumentMoniker": "C:\\Users\\quihu\\OneDrive\\Desktop\\Project\\Team6Project\\backend\\static\\css\\style.css",
+              "RelativeDocumentMoniker": "backend\\static\\css\\style.css",
+              "ToolTip": "C:\\Users\\quihu\\OneDrive\\Desktop\\Project\\Team6Project\\backend\\static\\css\\style.css",
+              "RelativeToolTip": "backend\\static\\css\\style.css",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
+              "WhenOpened": "2026-04-01T23:55:07.523Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "login.html",
+              "DocumentMoniker": "C:\\Users\\quihu\\OneDrive\\Desktop\\Project\\Team6Project\\backend\\templates\\login.html",
+              "RelativeDocumentMoniker": "backend\\templates\\login.html",
+              "ToolTip": "C:\\Users\\quihu\\OneDrive\\Desktop\\Project\\Team6Project\\backend\\templates\\login.html",
+              "RelativeToolTip": "backend\\templates\\login.html",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
+              "WhenOpened": "2026-04-01T23:54:58.212Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "main.py",
+              "DocumentMoniker": "C:\\Users\\quihu\\OneDrive\\Desktop\\Project\\Team6Project\\backend\\main.py",
+              "RelativeDocumentMoniker": "backend\\main.py",
+              "ToolTip": "C:\\Users\\quihu\\OneDrive\\Desktop\\Project\\Team6Project\\backend\\main.py",
+              "RelativeToolTip": "backend\\main.py",
+              "ViewState": "AgIAAA8AAAAAAAAAAAAAADgAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
+              "WhenOpened": "2026-04-01T23:54:49.871Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "__init__.py",
+              "DocumentMoniker": "C:\\Users\\quihu\\OneDrive\\Desktop\\Project\\Team6Project\\backend\\tests\\__init__.py",
+              "RelativeDocumentMoniker": "backend\\tests\\__init__.py",
+              "ToolTip": "C:\\Users\\quihu\\OneDrive\\Desktop\\Project\\Team6Project\\backend\\tests\\__init__.py",
+              "RelativeToolTip": "backend\\tests\\__init__.py",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
+              "WhenOpened": "2026-04-01T23:54:47.7Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "test_scraper_db_integration.py",
+              "DocumentMoniker": "C:\\Users\\quihu\\OneDrive\\Desktop\\Project\\Team6Project\\backend\\tests\\test_scraper_db_integration.py",
+              "RelativeDocumentMoniker": "backend\\tests\\test_scraper_db_integration.py",
+              "ToolTip": "C:\\Users\\quihu\\OneDrive\\Desktop\\Project\\Team6Project\\backend\\tests\\test_scraper_db_integration.py",
+              "RelativeToolTip": "backend\\tests\\test_scraper_db_integration.py",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
+              "WhenOpened": "2026-04-01T23:54:44.994Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "test_registry.py",
+              "DocumentMoniker": "C:\\Users\\quihu\\OneDrive\\Desktop\\Project\\Team6Project\\backend\\tests\\test_registry.py",
+              "RelativeDocumentMoniker": "backend\\tests\\test_registry.py",
+              "ToolTip": "C:\\Users\\quihu\\OneDrive\\Desktop\\Project\\Team6Project\\backend\\tests\\test_registry.py",
+              "RelativeToolTip": "backend\\tests\\test_registry.py",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
+              "WhenOpened": "2026-04-01T23:54:42.225Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "test_models.py",
+              "DocumentMoniker": "C:\\Users\\quihu\\OneDrive\\Desktop\\Project\\Team6Project\\backend\\tests\\test_models.py",
+              "RelativeDocumentMoniker": "backend\\tests\\test_models.py",
+              "ToolTip": "C:\\Users\\quihu\\OneDrive\\Desktop\\Project\\Team6Project\\backend\\tests\\test_models.py",
+              "RelativeToolTip": "backend\\tests\\test_models.py",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
+              "WhenOpened": "2026-04-01T23:54:40.205Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "test_api_users.py",
+              "DocumentMoniker": "C:\\Users\\quihu\\OneDrive\\Desktop\\Project\\Team6Project\\backend\\tests\\test_api_users.py",
+              "RelativeDocumentMoniker": "backend\\tests\\test_api_users.py",
+              "ToolTip": "C:\\Users\\quihu\\OneDrive\\Desktop\\Project\\Team6Project\\backend\\tests\\test_api_users.py",
+              "RelativeToolTip": "backend\\tests\\test_api_users.py",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
+              "WhenOpened": "2026-04-01T23:54:38.404Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "test_api_summaries.py",
+              "DocumentMoniker": "C:\\Users\\quihu\\OneDrive\\Desktop\\Project\\Team6Project\\backend\\tests\\test_api_summaries.py",
+              "RelativeDocumentMoniker": "backend\\tests\\test_api_summaries.py",
+              "ToolTip": "C:\\Users\\quihu\\OneDrive\\Desktop\\Project\\Team6Project\\backend\\tests\\test_api_summaries.py",
+              "RelativeToolTip": "backend\\tests\\test_api_summaries.py",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
+              "WhenOpened": "2026-04-01T23:54:35.317Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "test_api_alerts.py",
+              "DocumentMoniker": "C:\\Users\\quihu\\OneDrive\\Desktop\\Project\\Team6Project\\backend\\tests\\test_api_alerts.py",
+              "RelativeDocumentMoniker": "backend\\tests\\test_api_alerts.py",
+              "ToolTip": "C:\\Users\\quihu\\OneDrive\\Desktop\\Project\\Team6Project\\backend\\tests\\test_api_alerts.py",
+              "RelativeToolTip": "backend\\tests\\test_api_alerts.py",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
+              "WhenOpened": "2026-04-01T23:54:27.219Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

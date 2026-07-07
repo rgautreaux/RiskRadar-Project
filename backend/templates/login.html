@@ -1,0 +1,74 @@
+<!--
+  RiskRadar - Login Page
+
+  HOW IT WORKS:
+    1. User enters email + password.
+    2. JavaScript sends POST /api/v1/users/login with { email, password }.
+    3. The backend verifies credentials and returns { access_token, token_type }.
+    4. The token is saved to localStorage.
+    5. User is redirected to /dashboard.
+-->
+{% extends "base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <h1>RiskRadar</h1>
+    <p class="subtitle">Environmental Alert Dashboard</p>
+
+    <form id="login-form">
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="you@example.com" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Your password" required>
+        </div>
+        <p class="error-msg" id="error-msg" role="alert" aria-live="assertive"></p>
+        <button type="submit" class="btn btn-primary">Sign In</button>
+    </form>
+
+    <p class="link-text">
+        Don't have an account? <a href="/register">Register here</a>
+    </p>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // If already logged in, go straight to dashboard
+    if (isLoggedIn()) {
+        window.location.href = '/dashboard';
+    }
+
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const errorEl = document.getElementById('error-msg');
+        errorEl.dataset.visible = 'false';
+
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+
+        try {
+            // POST /api/v1/users/login -> returns { access_token, token_type }
+            const res = await apiFetch('/api/v1/users/login', 'POST', { email, password });
+
+            if (res.ok) {
+                const data = await res.json();
+                // Store the JWT token in localStorage for future API calls
+                localStorage.setItem('riskradar_token', data.access_token);
+                window.location.href = '/dashboard';
+            } else {
+                const err = await res.json();
+                errorEl.textContent = err.detail || 'Login failed';
+                errorEl.dataset.visible = 'true';
+            }
+        } catch (err) {
+            errorEl.textContent = 'Network error - is the server running?';
+            errorEl.dataset.visible = 'true';
+        }
+    });
+</script>
+{% endblock %}

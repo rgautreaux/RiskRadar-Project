@@ -1,0 +1,144 @@
+## Contributions and Roles (as of Apr 12, 2026)
+
+- All member roles and contributions have been updated to reflect the April 2, 2026 documentation synchronization and audit.
+- All top-level documentation, progress logs, and transcripts are now in sync and audit-ready.
+- Each member’s contributions and evolving roles are listed in correct chronological order for historical accuracy.
+- Phase 3 (User Email & Password Security: migration logging + monitoring) implementation and evidence packaging are complete; backend/security lead sign-off remains an external approval gate.
+- The Apr 2, 2026 documentation follow-up and verification pass refreshed the transcript, progress log, reflection, TODO, README, and planning docs without changing the validated implementation state.
+- Rebecca also completed the Apr 2, 2026 documentation sync follow-up, keeping the transcript, progress log, reflection, TODO, README, and sprint tracking aligned.
+- The Apr 10, 2026 audit-trail sync and status-confirmation pass refreshed the transcript, progress log, reflection, TODO, README, and sprint tracking so Rebecca’s current closure boundary remains explicit.
+- The Apr 10, 2026 migration-verification sync pass captured successful migration test/script evidence and propagated it across all audit-facing docs.
+- The Apr 10, 2026 critical regression expansion pass added backend coverage for location, summary, system, and auth/notification paths and validated full backend pytest status at `107 passed`.
+- The Apr 11, 2026 demo-readiness implementation pass delivered server-driven alerts filtering, in-app backend demo tooling, and final users+alerts root command validation (`40 passed, 0 failed`).
+- The Apr 12, 2026 coordination verification refresh captured the latest backend baseline (`172 passed, 3 skipped`), migration-focused suite (`13 passed`), and local readiness-gate status so the audit trail reflects the current promotion boundary.
+- The Apr 12, 2026 Phase 2/3 coordination passes added shared-task owner/evidence artifacts, unblocked frontend verification tooling (`npm install`), and recorded frontend-owner escalation paths for remaining static-check code issues.
+- The Apr 12, 2026 Rebecca-safe closeout pass finalized the remaining coordination/documentation tasks and left only owner-dependent follow-ups open.
+- The Apr 12, 2026 implementation follow-up pass completed additive DB safety enhancements (`schema_drift_check.py`, `safety_gate.py`, and new-user plaintext-email protection with legacy-login compatibility), validated full backend status at `176 passed, 3 skipped`, and synchronized a categorized push-ready commit stack.
+
+### Qui Huynh
+- Project lead, backend architecture, database design, API development, code review, documentation.
+- Led backend API endpoint design, database models, and integration with MariaDB/SQLite.
+- Supported API testing, troubleshooting, and documentation.
+
+### Noah Benoit
+- Security lead, authentication, compliance, and risk mitigation.
+- Led User Security Plan, implemented authentication (JWT, bcrypt), user management, and security audits.
+- Oversaw compliance and contributed to documentation.
+
+### Ben Manuel
+- Frontend developer, UI/UX implementation, and mobile app integration.
+- Developed React Native mobile app, implemented UI components, navigation, and onboarding flows.
+- Integrated frontend with backend API and contributed to summary dashboard features.
+
+### Max Compeaux
+- AI backend developer, LLM integration, and backend support.
+- Developed AI-powered summarization module, implemented daily digest generation, prompt engineering, and supported backend integration and documentation.
+
+### Rebecca Gautreaux
+- Documentation lead, database administrator, and progress tracking.
+- Led database schema design, migration planning, and test/staging setup.
+- Implemented and documented User Security Plan preparatory work, maintained project documentation, progress logs, and transcripts.
+- Supported backend test coverage, validation, and documentation synchronization.
+- Led the April 2, 2026 documentation synchronization and audit, ensuring all project records are in sync and audit-ready.
+- Implemented Phase 3 migration logging/monitoring hardening and assembled backend/security review handoff artifacts.
+- Coordinated the Apr 2, 2026 follow-up verification pass and synchronized the remaining audit-facing documentation after the repository health checks completed.
+- Resolved the April 2, 2026 frontend parser/type cleanup pass and synchronized the documentation updates that followed.
+- Coordinated the April 2, 2026 documentation follow-up pass so the transcript, progress log, reflection, TODO, sprint tracking, QA note, README, and AUTHORS remained synchronized.
+- Carried the latest documentation follow-up through to completion so the session history and top-level audit trail remained consistent.
+- Confirmed on Apr 10, 2026 that Rebecca has no further implementation steps on her side; only external backend/security sign-off remains.
+- Recorded the Apr 10, 2026 migration verification results and synchronized the documentation bundle to keep the audit trail current.
+- Implemented and validated Apr 10, 2026 backend critical regression expansion across location, summary, system, and user/auth flows, followed by a full backend suite pass (`107 passed`, warnings only).
+- Implemented Apr 11, 2026 demo-readiness updates (`docs/PROJECT_DEMO.md`, persisted demo settings, backend-driven alert filters, in-app backend health/scrape demo actions), then completed final root users+alerts API cleanup validation (`40 passed, 0 failed`).
+- Completed Apr 11, 2026 migration verification evidence reruns and full backend confirmation (`159 passed, 3 skipped`), then synchronized audit-tracking docs and closed the scraper/DB/summary regression-checklist task.
+- Completed Apr 11, 2026 merge-blocker remediation for branch integration by fixing migration schema/index portability, restricting Phase 3 migration bootstrap scope, tightening migration test patch strictness, and synchronizing branch/doc state after conflict-resolution merge from `main`.
+- Completed Apr 12, 2026 coordination verification refresh and evidence sync by capturing backend/migration evidence, appending timestamped readiness artifacts, and keeping the audit-facing docs aligned with the current non-passing local preflight snapshot.
+- Completed Apr 12, 2026 Phase 2/3 Rebecca-safe coordination implementation: added owner/evidence tracking artifacts, cleared frontend dependency blocker, and documented owner-routed static-check follow-up without touching teammate-owned implementation files.
+- Completed Apr 12, 2026 Rebecca-safe closeout synchronization by finalizing top-level tracking updates and explicitly scoping remaining items to non-Rebecca owners.
+- Completed Apr 12, 2026 database safety follow-up implementation by adding schema-drift and unified safety-gate tooling, hardening new-user email persistence behavior, expanding compatibility regressions, and pushing categorized commit groups for easier PR review.
+
+### Celeste George
+- Frontend developer, UI/UX research, and QA.
+- Contributed to frontend development, asset mapping, wireframe implementation, and component styling.
+- Supported documentation, project planning, and QA.
+
+---
+# INFX 490 - Project Authors
+
+
+### **Qui Huynh**
+- ULID: C00405970
+- Role: Backend Developer
+- Email: 
+- **Contributions:**
+  - Designed and implemented backend API endpoints (alerts, summaries, users, system)
+  - Developed and maintained database models and migrations
+  - Integrated backend with MariaDB/SQLite and ensured ORM compatibility
+  - Supported API testing, troubleshooting, and documentation
+
+### **Noah Benoit**
+- ULID: C00397372
+- Role: Security Lead
+- Email: njbenoit1@gmail.com
+- **Contributions:**
+  - Led security planning and implementation (User Security Plan)
+  - Implemented authentication (JWT, bcrypt) and user management
+  - Conducted security audits and contributed to documentation
+  - Oversaw compliance and risk mitigation strategies
+
+### **Ben Manuel**
+- ULID: C00477234
+- Role: Frontend Developer
+- Email: 
+- **Contributions:**
+  - Developed React Native mobile app (Expo Router)
+  - Implemented UI components, navigation, and onboarding flows
+  - Integrated frontend with backend API
+  - Contributed to UI/UX design, wireframe implementation, and summary dashboard features
+
+### **Max Compeaux**
+- ULID: C00513380
+- Role: AI Backend Developer
+- Email: maxcompeaux@gmail.com
+- **Contributions:**
+  - Developed AI-powered summarization module (LLM integration)
+  - Implemented daily digest generation and prompt engineering
+  - Supported backend integration, API testing, and troubleshooting
+  - Contributed to documentation and technical planning
+
+### **Rebecca Gautreaux**
+- ULID: C00460817
+- Role: Database Administrator
+- Email: rebecca.gautreaux@gmail.com
+- **Contributions:**
+  - Led database schema design, migration planning, and test/staging setup
+  - Implemented and documented safe, preparatory work for User Security Plan (migration, rollback, logging, monitoring, staging)
+  - Created and maintained project documentation, progress logs, and transcripts
+  - Supported backend test coverage, validation, and documentation synchronization
+  - Captured the Apr 12, 2026 coordination verification refresh, including backend/migration evidence and readiness artifacts, while preserving append-only documentation chronology
+  - Implemented Apr 12, 2026 Phase 2/3 coordination artifacts and owner-safe frontend verification escalation tracking
+  - Implemented Apr 12, 2026 DB safety follow-up enhancements (schema drift checker, unified migration safety gate, new-user plaintext-email protection with legacy login compatibility) and coordinated categorized PR-ready push synchronization
+
+### **Celeste George**
+- ULID: C00465845
+- Role: Frontend Developer
+- Email: Celeste12204@gmail.com
+- **Contributions:**
+  - Contributed to frontend development and UI/UX research
+  - Assisted with asset mapping, wireframe implementation, and component styling
+  - Supported documentation, project planning, and QA
+
+---
+
+
+## Archived Contributions Snapshot (as of Mar 30, 2026)
+
+- **Qui Huynh**: Project lead, backend architecture, database design, API development, code review, documentation. Led backend API endpoint design, database models, and integration with MariaDB/SQLite. Supported API testing, troubleshooting, and documentation.
+- **Noah Benoit**: Security lead, authentication, compliance, and risk mitigation. Led User Security Plan, implemented authentication (JWT, bcrypt), user management, and security audits. Oversaw compliance and contributed to documentation.
+- **Ben Manuel**: Frontend developer, UI/UX implementation, and mobile app integration. Developed React Native mobile app, implemented UI components, navigation, and onboarding flows. Integrated frontend with backend API and contributed to summary dashboard features.
+- **Max Compeaux**: AI backend developer, LLM integration, and backend support. Developed AI-powered summarization module, implemented daily digest generation, prompt engineering, and supported backend integration and documentation.
+- **Rebecca Gautreaux**: Documentation lead, database administrator, and progress tracking. Led database schema design, migration planning, and test/staging setup. Implemented and documented User Security Plan preparatory work, maintained project documentation, progress logs, and transcripts. Supported backend test coverage, validation, and documentation synchronization.
+- **Celeste George**: Frontend developer, UI/UX research, and QA. Contributed to frontend development, asset mapping, wireframe implementation, and component styling. Supported documentation, project planning, and QA.
+
+All contributions are listed in chronological order and reflect the current state of the project. Roles are updated as of this session to ensure historical accuracy and auditability.
+
+---

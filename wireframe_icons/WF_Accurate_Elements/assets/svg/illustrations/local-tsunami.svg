@@ -1,0 +1,84 @@
+<svg width="300" height="300" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="local-tsunami-shadow">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="0" dy="1" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.3"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- House (partially submerged) -->
+  <rect x="100" y="200" width="100" height="60" fill="#FEF3C7" filter="url(#local-tsunami-shadow)"/>
+  
+  <!-- Roof -->
+  <path d="M 85 200 L 150 155 L 215 200 Z" fill="#DC2626" filter="url(#local-tsunami-shadow)"/>
+  <path d="M 85 200 L 150 155 L 215 200 Z" fill="#B91C1C" opacity="0.3"/>
+  
+  <!-- Door (partially submerged) -->
+  <rect x="130" y="220" width="25" height="40" fill="#78716C"/>
+  <circle cx="148" cy="240" r="2.5" fill="#D6D3D1"/>
+  
+  <!-- Window -->
+  <rect x="165" y="210" width="25" height="25" fill="#60A5FA" opacity="0.7"/>
+  <line x1="177.5" y1="210" x2="177.5" y2="235" stroke="#3B82F6" stroke-width="2"/>
+  <line x1="165" y1="222.5" x2="190" y2="222.5" stroke="#3B82F6" stroke-width="2"/>
+  
+  <!-- Large tsunami wave (left) -->
+  <g filter="url(#local-tsunami-shadow)">
+    <!-- Wave base -->
+    <path d="M 0 220 Q 15 200 30 205 Q 40 210 50 200 Q 60 190 70 195 Q 80 200 85 205 L 85 270 L 0 270 Z" 
+          fill="#1E40AF" opacity="0.9"/>
+    <path d="M 5 225 Q 20 205 35 210 Q 45 215 55 205 Q 65 195 75 200 Q 85 205 90 210 L 90 270 L 5 270 Z" 
+          fill="#2563EB" opacity="0.85"/>
+    <path d="M 10 230 Q 25 210 40 215 Q 50 220 60 210 Q 70 200 80 205 Q 90 210 95 215 L 95 270 L 10 270 Z" 
+          fill="#3B82F6" opacity="0.8"/>
+    
+    <!-- Wave crest -->
+    <ellipse cx="40" cy="200" rx="32" ry="22" fill="#BAE6FD" opacity="0.7"/>
+    <ellipse cx="52" cy="195" rx="28" ry="18" fill="#E0F2FE" opacity="0.8"/>
+    <path d="M 25 205 Q 40 190 55 200 Q 65 208 75 202" stroke="#F0F9FF" stroke-width="2" fill="none" opacity="0.6"/>
+  </g>
+  
+  <!-- Large tsunami wave (right) -->
+  <g filter="url(#local-tsunami-shadow)">
+    <!-- Wave base -->
+    <path d="M 215 215 Q 230 195 245 200 Q 255 205 265 195 Q 275 185 285 190 Q 295 195 300 200 L 300 270 L 215 270 Z" 
+          fill="#1E40AF" opacity="0.9"/>
+    <path d="M 220 220 Q 235 200 250 205 Q 260 210 270 200 Q 280 190 290 195 Q 300 200 305 205 L 305 270 L 220 270 Z" 
+          fill="#2563EB" opacity="0.85"/>
+    <path d="M 225 225 Q 240 205 255 210 Q 265 215 275 205 Q 285 195 295 200 Q 305 205 310 210 L 310 270 L 225 270 Z" 
+          fill="#3B82F6" opacity="0.8"/>
+    
+    <!-- Wave crest -->
+    <ellipse cx="250" cy="195" rx="32" ry="22" fill="#BAE6FD" opacity="0.7"/>
+    <ellipse cx="262" cy="190" rx="28" ry="18" fill="#E0F2FE" opacity="0.8"/>
+    <path d="M 235 200 Q 250 185 265 195 Q 275 203 285 197" stroke="#F0F9FF" stroke-width="2" fill="none" opacity="0.6"/>
+  </g>
+  
+  <!-- Water covering lower part of house -->
+  <rect x="85" y="240" width="130" height="30" fill="#3B82F6" opacity="0.4"/>
+  
+  <!-- Water spray/foam particles -->
+  <circle cx="35" cy="185" r="4" fill="#E0F2FE" opacity="0.7"/>
+  <circle cx="48" cy="178" r="3.5" fill="#DBEAFE" opacity="0.7"/>
+  <circle cx="62" cy="183" r="3" fill="#BFDBFE" opacity="0.6"/>
+  <circle cx="240" cy="180" r="4" fill="#E0F2FE" opacity="0.7"/>
+  <circle cx="255" cy="173" r="3.5" fill="#DBEAFE" opacity="0.7"/>
+  <circle cx="270" cy="178" r="3" fill="#BFDBFE" opacity="0.6"/>
+  
+  <!-- Bubbles in water -->
+  <circle cx="120" cy="250" r="3" fill="#BFDBFE" opacity="0.5"/>
+  <circle cx="145" cy="245" r="2.5" fill="#DBEAFE" opacity="0.5"/>
+  <circle cx="170" cy="252" r="3.5" fill="#BFDBFE" opacity="0.5"/>
+  <circle cx="190" cy="248" r="2" fill="#E0F2FE" opacity="0.5"/>
+  
+  <!-- Ripples around house -->
+  <ellipse cx="100" cy="242" rx="20" ry="8" fill="none" stroke="#60A5FA" stroke-width="2" opacity="0.4"/>
+  <ellipse cx="200" cy="245" rx="25" ry="10" fill="none" stroke="#60A5FA" stroke-width="2" opacity="0.4"/>
+</svg>

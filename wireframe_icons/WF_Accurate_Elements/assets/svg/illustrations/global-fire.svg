@@ -1,0 +1,55 @@
+<svg width="300" height="300" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="fire-glow-global">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Globe -->
+  <circle cx="150" cy="150" r="90" fill="#0EA5E9"/>
+  
+  <!-- Continents on globe -->
+  <path d="M 110 130 Q 100 125 95 135 Q 92 145 100 155 Q 110 165 120 155 Q 130 145 125 135 Q 120 128 110 130 Z" fill="#4ADE80"/>
+  <path d="M 170 120 Q 165 115 160 120 Q 155 130 160 142 Q 165 155 180 160 Q 195 163 205 155 Q 212 145 210 135 Q 205 125 195 123 Q 185 122 170 120 Z" fill="#4ADE80"/>
+  <path d="M 100 170 Q 95 175 95 185 Q 97 197 105 205 Q 115 210 125 205 Q 132 198 130 188 Q 127 180 120 175 Q 112 172 100 170 Z" fill="#4ADE80"/>
+  <path d="M 190 175 Q 188 180 190 188 Q 193 195 200 198 Q 207 200 213 196 Q 218 190 216 183 Q 214 177 208 175 Q 202 174 190 175 Z" fill="#4ADE80"/>
+  
+  <!-- Fire 1 (top left) - on North America area -->
+  <g transform="translate(95, 125)">
+    <ellipse cx="0" cy="20" rx="18" ry="8" fill="#FED7AA" opacity="0.3"/>
+    <path d="M 0 0 C 0 0 8 5 8 12 C 8 19 4 23 0 23 C -4 23 -8 19 -8 12 C -8 5 0 0 0 0 Z" fill="#EF4444" filter="url(#fire-glow-global)"/>
+    <path d="M 0 3 C 0 3 6 7 6 13 C 6 19 3 22 0 22 C -3 22 -6 19 -6 13 C -6 7 0 3 0 3 Z" fill="#FB923C"/>
+    <path d="M 0 6 C 0 6 4 9 4 14 C 4 19 2 21 0 21 C -2 21 -4 19 -4 14 C -4 9 0 6 0 6 Z" fill="#FCD34D"/>
+    <ellipse cx="0" cy="14" rx="2" ry="4" fill="#FEF08A"/>
+  </g>
+  
+  <!-- Fire 2 (top right) - on Europe/Asia -->
+  <g transform="translate(185, 135)">
+    <ellipse cx="0" cy="20" rx="18" ry="8" fill="#FED7AA" opacity="0.3"/>
+    <path d="M 0 0 C 0 0 8 5 8 12 C 8 19 4 23 0 23 C -4 23 -8 19 -8 12 C -8 5 0 0 0 0 Z" fill="#EF4444" filter="url(#fire-glow-global)"/>
+    <path d="M 0 3 C 0 3 6 7 6 13 C 6 19 3 22 0 22 C -3 22 -6 19 -6 13 C -6 7 0 3 0 3 Z" fill="#FB923C"/>
+    <path d="M 0 6 C 0 6 4 9 4 14 C 4 19 2 21 0 21 C -2 21 -4 19 -4 14 C -4 9 0 6 0 6 Z" fill="#FCD34D"/>
+    <ellipse cx="0" cy="14" rx="2" ry="4" fill="#FEF08A"/>
+  </g>
+  
+  <!-- Fire 3 (bottom left) - on South America -->
+  <g transform="translate(110, 185)">
+    <ellipse cx="0" cy="18" rx="16" ry="7" fill="#FED7AA" opacity="0.3"/>
+    <path d="M 0 0 C 0 0 7 4 7 10 C 7 17 3 20 0 20 C -3 20 -7 17 -7 10 C -7 4 0 0 0 0 Z" fill="#EF4444" filter="url(#fire-glow-global)"/>
+    <path d="M 0 2 C 0 2 5 6 5 11 C 5 17 2 19 0 19 C -2 19 -5 17 -5 11 C -5 6 0 2 0 2 Z" fill="#FB923C"/>
+    <path d="M 0 5 C 0 5 3 8 3 12 C 3 17 1 19 0 19 C -1 19 -3 17 -3 12 C -3 8 0 5 0 5 Z" fill="#FCD34D"/>
+  </g>
+  
+  <!-- Fire 4 (right side) - on Africa -->
+  <g transform="translate(200, 170)">
+    <ellipse cx="0" cy="20" rx="18" ry="8" fill="#FED7AA" opacity="0.3"/>
+    <path d="M 0 0 C 0 0 8 5 8 12 C 8 19 4 23 0 23 C -4 23 -8 19 -8 12 C -8 5 0 0 0 0 Z" fill="#EF4444" filter="url(#fire-glow-global)"/>
+    <path d="M 0 3 C 0 3 6 7 6 13 C 6 19 3 22 0 22 C -3 22 -6 19 -6 13 C -6 7 0 3 0 3 Z" fill="#FB923C"/>
+    <path d="M 0 6 C 0 6 4 9 4 14 C 4 19 2 21 0 21 C -2 21 -4 19 -4 14 C -4 9 0 6 0 6 Z" fill="#FCD34D"/>
+    <ellipse cx="0" cy="14" rx="2" ry="4" fill="#FEF08A"/>
+  </g>
+</svg>
