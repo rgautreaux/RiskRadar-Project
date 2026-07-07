@@ -1,0 +1,76 @@
+## Plan: RiskRadar Security Hardening
+
+RiskRadar cannot guarantee perfect security, but this plan makes the new travel, collaboration, and assistant features significantly safer by adding defense-in-depth controls, secure release gates, and explicit verification for the threat classes named in the expansion docs.
+
+**Steps**
+1. Phase 0: Establish the security baseline and threat model. Classify assets and data flows for trips, sharing, health data, routing, events, and Golby. Create a living threat register covering account takeover, broken authorization, injection, prompt injection, supply-chain compromise, abuse/DoS, data leakage, provider compromise, and insider misuse. Map every threat to an owner, mitigation, and verification gate.
+2. Phase 1: Harden backend authentication and authorization, depends on phase 0. Centralize row-level access checks for all trip, itinerary, packing, route, event, and assistant endpoints. Add stronger session controls, refresh-token rotation, revocation, step-up auth for risky actions, MFA for privileged roles, public-link token entropy/expiry/revocation, and brute-force detection. Enforce object-level authorization and deny-by-default behavior for shared and public surfaces.
+3. Phase 2: Protect data at rest and in transit, parallel with phase 1. Encrypt sensitive health, identity, collaboration, and sharing data at rest and in backups; add field-level encryption for high-risk fields. Add secure deletion, retention enforcement, redaction in logs and shared views, and backup restore verification. Ensure provider integrations use least-privilege secrets and rotation.
+4. Phase 3: Secure all API surfaces and AI/provider calls, depends on phase 1 and 2. Add strict CORS allowlists, security headers, CSRF defenses, request validation, rate limiting, idempotency keys, SSRF protection, and safe error handling. For Golby and any LLM-backed features, add prompt-injection defenses, tool allowlists, citation checks, confidence thresholds, and human-review gating for high-risk outputs. Add circuit breakers and degraded-mode responses for external event, routing, and assistant providers.
+5. Phase 4: Harden the frontend and mobile surfaces, depends on phase 1 to 3. Remove any unsafe assumptions in login, settings, sharing, itinerary, packing, and emergency CTA flows. Enforce secure token storage, logout handling, redaction of sensitive fields, safe deep-link handling, anti-clickjacking behavior, and clear permission boundaries in web and Expo UI. Add UX states for failed auth, revoked shares, low-confidence advice, and emergency-only modes.
+6. Phase 5: Lock down DevOps, CI/CD, and supply chain, parallel with phases 1 to 4. Add SAST, DAST, secret scanning, dependency scanning, container scanning, and IaC scanning to every build. Generate and review SBOMs, pin and audit dependencies, sign builds where possible, and block merges/releases on critical findings. Add WAF/bot mitigation, DDoS throttling, least-privilege infrastructure roles, managed key rotation, and tested backup/restore drills.
+7. Phase 6: Build security observability and incident response, depends on phases 1 to 5. Emit structured logs with PII/secret redaction, security metrics for auth failures and abuse signals, and alerts for suspicious provider behavior, brute-force attempts, and guardrail triggers. Maintain incident runbooks for token leaks, provider compromise, data exfiltration, and unsafe assistant behavior. Run tabletop exercises and restore rehearsals before canary and GA.
+8. Phase 7: Verify, gate, and roll out, depends on phases 0 to 6. Require passing security tests, penetration testing, restore validation, and remediation of critical/high findings before rollout. Use feature flags and canary releases with explicit rollback triggers. Do not promote any feature unless its backend, frontend, and DevOps checklist items are complete and verified.
+
+**Backend checklist**
+- Enforce least-privilege RBAC and object-level authorization on every trip, itinerary, packing, route, event, sharing, and assistant endpoint.
+- Add MFA and step-up authentication for privileged users and sensitive actions like share creation, permission changes, and health-profile edits.
+- Rotate refresh tokens, invalidate sessions on logout, and detect token reuse.
+- Harden public links with opaque tokens, short expiry, revocation, brute-force throttling, and audit logging.
+- Add strict input validation, parameterized queries, CSRF defenses, SSRF protection, upload/content validation, and safe error messages.
+- Encrypt sensitive fields, redact logs, apply retention rules, and prove secure deletion across primary data, replicas, caches, and exports.
+- Apply AI safety controls: prompt-injection filtering, citation validation, tool allowlists, confidence thresholds, and manual review for high-risk advice.
+- Add rate limits, anomaly detection, abuse counters, and circuit breakers for all public and provider-backed endpoints.
+
+**Frontend checklist**
+- Store tokens safely, prevent accidental persistence of secrets, and clear state on logout or permission loss.
+- Redact sensitive health, identity, and collaboration data in all shared and public views by default.
+- Add safe handling for share links, invite links, and deep links, including expired/revoked states.
+- Use defensive UI states for low-confidence advice, degraded mode, provider outages, and emergency-only flows.
+- Add CSP-compatible rendering patterns, anti-clickjacking behavior, and secure form handling.
+- Make it obvious when data is private, shared, or public, and never expose health data in collaborator/public mode.
+- Add security-focused UX copy for permissions, sharing, and consent so users understand risk before they act.
+
+**DevOps checklist**
+- Add SAST, DAST, secret scanning, dependency scanning, container scanning, and IaC scanning to CI.
+- Generate SBOMs and block release on critical/high findings or unreviewed secrets.
+- Pin, review, and update dependencies; require approval for high-risk package changes.
+- Harden infrastructure with least-privilege roles, managed secrets, key rotation, WAF/bot protection, and DDoS throttling.
+- Use encrypted backups, test restores regularly, and document recovery time and recovery point objectives.
+- Add security telemetry dashboards and alerting for auth abuse, brute force, suspicious provider behavior, and data-exfiltration indicators.
+- Require a penetration test or red-team review before full rollout, and fail the rollout if critical issues remain open.
+
+**Relevant files**
+- `c:\Team6Project\docs\expansion\RISKRADAR_EXPANSION_OVERVIEW.md` — security posture, threat model, and phase-level hardening requirements.
+- `c:\Team6Project\docs\expansion\RISKRADAR_SPRINT_ROADMAP.md` — sprint sequencing, acceptance gates, and release blockers.
+- `c:\Team6Project\backend\main.py` — app bootstrap, CORS, middleware, and route wiring.
+- `c:\Team6Project\backend\auth\security.py` — auth, token creation, token validation, and encryption helpers.
+- `c:\Team6Project\backend\config\settings.py` — security-related configuration and feature flags.
+- `c:\Team6Project\backend\api\router.py` — API registration point for shared security enforcement.
+- `c:\Team6Project\backend\templates\base.html` — web security headers, forms, and shared shell behavior.
+- `c:\Team6Project\backend\templates\login.html` and `c:\Team6Project\backend\templates\register.html` — auth UX hardening.
+- `c:\Team6Project\frontend\RiskRadar\app\_layout.tsx` — app-wide frontend shell and route guards.
+- `c:\Team6Project\frontend\RiskRadar\contexts\auth-context.tsx` — client auth state and token handling.
+- `c:\Team6Project\frontend\RiskRadar\utils\api.ts` — API client security behavior and shared request handling.
+- `c:\Team6Project\frontend\RiskRadar\app\auth\login.tsx` and `c:\Team6Project\frontend\RiskRadar\app\auth\registration.tsx` — auth UI and input handling.
+- `c:\Team6Project\frontend\RiskRadar\app\main\settings.tsx` — privacy, sharing, and emergency settings surfaces.
+- `c:\Team6Project\frontend\RiskRadar\app\(tabs)\index.tsx` and `c:\Team6Project\frontend\RiskRadar\app\main\home.tsx` — public-facing content and redaction checks.
+- `c:\Team6Project\backend\tests\` — security, auth, privacy, and provider-failure test coverage to add.
+
+**Verification**
+1. Run backend auth and authorization tests, plus new tests for share tokens, revocation, brute-force throttling, and redaction.
+2. Run frontend checks for auth flows, shared/public view redaction, logout behavior, and expired/revoked-link states.
+3. Run CI security scans: SAST, DAST, secret scan, dependency scan, container scan, and SBOM generation.
+4. Perform a staged penetration test or red-team review and track every critical/high issue to closure before rollout.
+5. Complete restore drills, rollback rehearsal, and canary rollback tests before moving past limited release.
+
+**Decisions**
+- Security must be treated as a release gate, not a documentation-only promise.
+- The expansion docs should describe controls and verification, not claim perfect security.
+- Any high-risk medical, safety, or assistant behavior must be gated by deterministic checks and human review when confidence is low.
+- Shared/public views must default to redacted output rather than relying on downstream consumers to hide sensitive fields.
+
+**Further Considerations**
+1. Decide whether to add a dedicated security owner or security champion for the expansion work.
+2. Decide whether the project will adopt a formal pentest/red-team milestone before broader rollout or only before GA.
+3. Decide whether backup encryption, key rotation, and secret management should use the existing backend stack or a managed vault service.

@@ -1,0 +1,41 @@
+openapi: 3.0.0
+info:
+  title: RiskRadar Parity Stubs
+  version: 1.0.0
+paths:
+  /api/v1/trips/{trip_id}/safety:
+    get:
+      summary: Get safety incidents and area scores for a trip
+      parameters:
+        - name: trip_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+  /api/v1/trips/{trip_id}/places:
+    get:
+      summary: Get places (food, markets) near trip geometry
+      parameters:
+        - name: trip_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+  /api/v1/trips/{trip_id}/lodging:
+    get:
+      summary: Get lodging recommendations for trip
+      parameters:
+        - name: trip_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK

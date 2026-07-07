@@ -9,6 +9,17 @@ import openai
 
 from config.settings import settings
 from db.models import Alert, Summary
+"""LLM summarizer — generates daily digests and breaking alert summaries."""
+
+import json
+import logging
+from datetime import date, datetime, timedelta, timezone
+
+import openai
+from sqlalchemy.orm import Session
+
+from config.settings import settings
+from db.models import Alert, Summary
 from db.normalization import ensure_alert_location, ensure_alert_raw_payload, set_summary_alert_ids
 import llm.prompts as prompts
 
@@ -32,38 +43,35 @@ class Summarizer:
 
     def _resolve_model(self, is_premium: bool = False) -> str:
         """Return the LLM model name for the given user tier."""
-        guest_model = settings.LLM_MODEL_GUEST.strip()
-        premium_model = settings.LLM_MODEL_PREMIUM.strip()
+        explicit = getattr(settings, "LLM_MODEL", "").strip()
+        if explicit:
+            return explicit
 
-        if is_premium:
-            return premium_model
-        return guest_model
+        guest_model = (settings.LLM_MODEL_GUEST or "").strip() or "gpt-4o-mini"
+        premium_model = (settings.LLM_MODEL_PREMIUM or "").strip() or guest_model
+        return premium_model if is_premium else guest_model
 
     def _call_llm(self, system: str, user: str, is_premium: bool = False) -> tuple[str, int, str]:
         """Call the configured LLM provider. Returns (text, token_count, model_used)."""
         api_key = settings.OPENROUTER_API_KEY.strip() or settings.LLM_API_KEY.strip()
 
-        if api_key:
-            model = self._resolve_model(is_premium)
-            client = openai.OpenAI(
-                    base_url="https://openrouter.ai/api/v1",
-                    api_key=api_key,
-                )
-
-            completion = client.chat.completions.create(
-                model=model,
-                messages=[
-                    {"role": "system", "content": system},
-                    {"role": "user", "content": user},
-                ],
-            )
-
-            text = completion.choices[0].message.content
-            tokens = completion.usage.total_tokens if completion.usage else 0
-            return text, tokens, model
-        else:
+        if not api_key:
             raise ValueError("No LLM API key configured")
-        
+
+        model = self._resolve_model(is_premium)
+        client = openai.OpenAI(base_url="https://openrouter.ai/api/v1", api_key=api_key)
+        completion = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": system},
+                {"role": "user", "content": user},
+            ],
+        )
+
+        text = completion.choices[0].message.content
+        tokens = completion.usage.total_tokens if completion.usage else 0
+        return text, tokens, model
+
     def generate_daily_digest(self, db: Session, since_hours: int = 24, is_premium: bool = False) -> Summary | None:
         cutoff = datetime.now(timezone.utc) - timedelta(hours=since_hours)
         alerts = db.query(Alert).filter(Alert.fetched_at >= cutoff).all()
@@ -91,9 +99,22 @@ class Summarizer:
 
         try:
             text, tokens, model = self._call_llm(
-                prompts.TRAVELER_BRIEFING_SYSTEM, user_msg, is_premium=is_premium
+                prompts.TRAVELER_BRIEFING_SYSTEM,
+                user_msg,
+                is_premium=is_premium,
             )
-        except Exception as exc:
+        except (
+            openai.APIConnectionError,
+            openai.APIStatusError,
+            openai.RateLimitError,
+            openai.AuthenticationError,
+            openai.BadRequestError,
+            RuntimeError,
+            ValueError,
+            KeyError,
+            AttributeError,
+            IndexError,
+        ) as exc:
             logger.warning("LLM daily digest fallback activated: %s", exc)
             text = self._build_fallback_summary(len(alerts), "the US")
             tokens = 0
@@ -151,9 +172,21 @@ class Summarizer:
 
         try:
             text, tokens, model = self._call_llm(
-                prompts.TRAVELER_BRIEFING_SYSTEM, user_msg, is_premium=is_premium
+                prompts.TRAVELER_BRIEFING_SYSTEM,
+                user_msg,
+                is_premium=is_premium,
             )
-        except Exception as exc:
+        except (
+            openai.APIConnectionError,
+            openai.APIStatusError,
+            openai.RateLimitError,
+            openai.AuthenticationError,
+            openai.BadRequestError,
+            ValueError,
+            KeyError,
+            AttributeError,
+            IndexError,
+        ) as exc:
             logger.warning("LLM local digest fallback activated for %s, %s: %s", city, state, exc)
             text = self._build_fallback_summary(len(alerts), f"{city}, {state}")
             tokens = 0

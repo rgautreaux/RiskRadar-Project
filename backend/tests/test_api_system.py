@@ -95,7 +95,7 @@ def test_trigger_scrape_reports_partial_failure(test_client, sample_user, monkey
     assert len(data["results"]) == 2
     assert data["results"][0]["status"] == "success"
     assert data["results"][1]["status"] == "error"
-    assert "scraper exploded" in data["results"][1]["error"]
+    assert data["results"][1]["error"] == "Scraper execution failed"
 
 
 def test_notify_subscribers_requires_auth(test_client, sample_alerts):

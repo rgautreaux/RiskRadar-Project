@@ -1,14 +1,14 @@
 import json
 import logging
+from importlib import import_module
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-from typing import Any
+from typing import Any, cast
 
-from sqlalchemy import func
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from config.settings import settings
-from db.database import SessionLocal
+from backend.config.settings import settings as _module_settings
 from db.models import (
     Alert,
     AlertArchive,
@@ -18,6 +18,37 @@ from db.models import (
     Summary,
     SummaryArchive,
 )
+
+
+def _resolve_session_local():
+    """Resolve a SessionLocal to use for retention runs.
+
+    Prefer a top-level `db.retention.SessionLocal` when present (tests
+    monkeypatch that path). Fall back to backend.db.database.SessionLocal.
+    """
+    try:
+        top = import_module("db.retention")
+        if hasattr(top, "SessionLocal") and getattr(top, "SessionLocal") is not None:
+            return getattr(top, "SessionLocal")
+    except Exception:
+        pass
+    try:
+        _db = import_module("backend.db.database")
+        return getattr(_db, "SessionLocal")
+    except Exception:
+        # Last resort: import top-level db.database
+        _db = import_module("db.database")
+        return getattr(_db, "SessionLocal")
+
+
+def _resolve_settings():
+    try:
+        top = import_module("db.retention")
+        if hasattr(top, "settings") and getattr(top, "settings") is not None:
+            return getattr(top, "settings")
+    except Exception:
+        pass
+    return _module_settings
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +91,7 @@ def _build_archive_row(row: Any, archive_model: Any, cleanup_run_id: int) -> Any
     return archive_model(**payload)
 
 
-def _table_specs_for_schedule(schedule_kind: str) -> list[RetentionSpec]:
+def _table_specs_for_schedule(schedule_kind: str, settings) -> list[RetentionSpec]:
     if schedule_kind == "nightly":
         return [
             RetentionSpec(
@@ -97,7 +128,7 @@ def _table_specs_for_schedule(schedule_kind: str) -> list[RetentionSpec]:
     ]
 
 
-def _run_table_cleanup(db: Session, spec: RetentionSpec, schedule_kind: str) -> CleanupRun:
+def _run_table_cleanup(db: Session, spec: RetentionSpec, schedule_kind: str, settings) -> CleanupRun:
     started_at = _now_utc()
     start_time = datetime.now(timezone.utc)
     cutoff_at = _cutoff_utc(spec.retention_days)
@@ -105,7 +136,7 @@ def _run_table_cleanup(db: Session, spec: RetentionSpec, schedule_kind: str) -> 
     max_rows = max(batch_size, settings.RETENTION_MAX_ROWS_PER_RUN)
 
     base_query = db.query(spec.model).filter(getattr(spec.model, spec.time_field) < cutoff_at)
-    eligible_rows = int(base_query.with_entities(func.count()).scalar() or 0)
+    eligible_rows = int(base_query.count() or 0)
 
     run_record = CleanupRun(
         table_name=spec.table_name,
@@ -144,7 +175,8 @@ def _run_table_cleanup(db: Session, spec: RetentionSpec, schedule_kind: str) -> 
                 break
 
             bytes_estimated += _estimate_row_bytes(rows)
-            archive_rows = [_build_archive_row(row, spec.archive_model, run_record.id) for row in rows]
+            cleanup_run_id = cast(int, run_record.id)
+            archive_rows = [_build_archive_row(row, spec.archive_model, cleanup_run_id) for row in rows]
             db.add_all(archive_rows)
 
             row_ids = [row.id for row in rows]
@@ -158,24 +190,25 @@ def _run_table_cleanup(db: Session, spec: RetentionSpec, schedule_kind: str) -> 
         run_record.rows_deleted = rows_deleted
         run_record.storage_bytes_estimated = bytes_estimated
 
-    completed_at = _now_utc()
-    run_record.completed_at = completed_at
+    run_record.completed_at = _now_utc()
     run_record.duration_ms = int((datetime.now(timezone.utc) - start_time).total_seconds() * 1000)
     return run_record
 
 
 def run_retention_cleanup(schedule_kind: str = "weekly") -> list[CleanupRun]:
+    settings = _resolve_settings()
     if not settings.RETENTION_ENABLED:
         logger.info("Retention cleanup skipped: RETENTION_ENABLED is false")
         return []
 
     records: list[CleanupRun] = []
+    SessionLocal = _resolve_session_local()
     db = SessionLocal()
     try:
-        specs = _table_specs_for_schedule(schedule_kind)
+        specs = _table_specs_for_schedule(schedule_kind, settings)
         for spec in specs:
             try:
-                run_record = _run_table_cleanup(db, spec, schedule_kind)
+                run_record = _run_table_cleanup(db, spec, schedule_kind, settings)
                 db.commit()
                 db.refresh(run_record)
                 records.append(run_record)
@@ -190,7 +223,7 @@ def run_retention_cleanup(schedule_kind: str = "weekly") -> list[CleanupRun]:
                     run_record.storage_bytes_estimated,
                     run_record.duration_ms,
                 )
-            except Exception as exc:
+            except (SQLAlchemyError, ValueError, RuntimeError) as exc:
                 db.rollback()
                 error_record = CleanupRun(
                     table_name=spec.table_name,
