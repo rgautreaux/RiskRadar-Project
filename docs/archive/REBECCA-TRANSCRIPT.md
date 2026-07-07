@@ -3290,6 +3290,28 @@ TypeError: cannot use 'tuple' as a dict key (unhashable type: 'dict')
 INFO:     127.0.0.1:51133 - "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 Not Found
 INFO:     127.0.0.1:51133 - "GET /favicon.ico HTTP/1.1" 404 Not Found
 INFO:     127.0.0.1:51133 - "GET / HTTP/1.1" 500 Internal Server Error
+
+User: Remove the Starlette pin from your requirements.txt (delete or comment out both lines with starlette==0.36.3), while keeping Jinja2 pinned to 3.1.3 and MarkupSafe to 2.1.3.
+
+Then perform: ```pip install --upgrade --force-reinstall -r backend/requirements.txt```
+
+Once this is done, resinstall requirements/dependencies and restart the backend as described
+
+GitHub Copilot: Generating patch (13 lines) in [](file:///c%3A/Team6Project/backend/requirements.txt)
+
+
+```
+
+```
+
+
+Ran terminal command: pip install --upgrade --force-reinstall -r backend/requirements.txt
+
+Ran terminal command: pip install --upgrade --force-reinstall -r backend/requirements.txt
+
+Ran terminal command: py -m uvicorn main:app --host 127.0.0.1 --port 8000 --reload --log-level debug
+
+Made changes.
 ERROR:    Exception in ASGI application
 Traceback (most recent call last):
   File "C:\Team6Project\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 420, in run_asgi
