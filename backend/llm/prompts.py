@@ -52,3 +52,14 @@ Total alerts: {count}
 </alerts>
 
 Generate a trip packing guide for the destination and dates above."""
+
+DAILY_DIGEST_USER = """\
+Date: {date}
+Region: United States (nationwide)
+Total alerts: {count}
+
+<alerts>
+{alerts_json}
+</alerts>
+
+Generate a nationwide travel safety briefing summarising the most important active alerts above."""

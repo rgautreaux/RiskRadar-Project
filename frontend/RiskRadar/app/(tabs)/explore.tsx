@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Animated,
   ImageSourcePropType,
@@ -7,7 +7,6 @@ import {
   StyleSheet,
   ActivityIndicator,
   RefreshControl,
-  TouchableOpacity,
 } from 'react-native';
 
 
@@ -16,6 +15,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Colors, Spacing, Radius, Shadows } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { apiFetch } from '@/utils/api';
+import { useAuth } from '@/contexts/auth-context';
 import { RiskCard } from '@/components/risk-card';
 import { SectionHeader } from '@/components/section-header';
 import { HazardChip } from '@/components/hazard-chip';
@@ -113,30 +113,36 @@ interface AlertItem {
 export default function AlertsScreen() {
   const scheme = useColorScheme() ?? 'light';
   const palette = Colors[scheme];
+  const { user } = useAuth();
   const [alerts, setAlerts] = useState<AlertItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeFilter, setActiveFilter] = useState<'all' | 'critical' | 'weather' | 'airquality'>('all');
+  const [activeFilter, setActiveFilter] = useState<string | null>(null);
 
-  const buildAlertsPath = useCallback((filter: 'all' | 'critical' | 'weather' | 'airquality') => {
-    const params = new URLSearchParams({ limit: '50' });
+  const toggleFilter = (type: string) => {
+    setActiveFilter(prev => prev === type ? null : type);
+  };
 
-    if (filter === 'critical') {
-      params.set('severity', 'critical');
-    } else if (filter === 'weather') {
-      params.set('alert_type', 'weather');
-    } else if (filter === 'airquality') {
-      params.set('alert_type', 'air_quality');
-    }
-
-    return `/alerts/?${params.toString()}`;
-  }, []);
+  // Prefetch location-based data (pollen, air quality) once on mount
+  const hasPrefetched = useRef(false);
 
   const fetchAlerts = useCallback(async () => {
     try {
       setError(null);
-      const data = await apiFetch<AlertItem[]>(buildAlertsPath(activeFilter));
+
+      // On first load, hit the location endpoint to populate pollen + air quality in the DB
+      if (!hasPrefetched.current) {
+        const zip = user?.zip_code || '70506';
+        try {
+          await apiFetch<AlertItem[]>(`/location/alerts?zip_code=${zip}`);
+          hasPrefetched.current = true;
+        } catch {
+          // Ignore — we'll still try the regular alerts endpoint
+        }
+      }
+
+      const data = await apiFetch<AlertItem[]>('/alerts/?limit=50');
       setAlerts(data);
     } catch {
       setError('Could not load alerts. Is the backend running?');
@@ -144,7 +150,7 @@ export default function AlertsScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [activeFilter, buildAlertsPath]);
+  }, [user?.zip_code]);
 
   useEffect(() => {
     fetchAlerts();
@@ -175,44 +181,6 @@ export default function AlertsScreen() {
     }
   };
 
-  const priorityRank = (severity: string) => {
-    switch (getSeverityLevel(severity)) {
-      case 'critical':
-        return 0;
-      case 'high':
-        return 1;
-      case 'moderate':
-        return 2;
-      default:
-        return 3;
-    }
-  };
-
-  const filteredAlerts = useMemo(() => {
-    return [...alerts].sort((left, right) => {
-      const severityDiff = priorityRank(left.severity) - priorityRank(right.severity);
-      if (severityDiff !== 0) {
-        return severityDiff;
-      }
-
-      const leftTime = new Date(left.fetched_at || left.created_at).getTime();
-      const rightTime = new Date(right.fetched_at || right.created_at).getTime();
-      return rightTime - leftTime;
-    });
-  }, [alerts]);
-
-  // const formatTime = (dateStr: string) => {
-  //   const date = new Date(dateStr);
-  //   const now = new Date();
-  //   const diffMs = now.getTime() - date.getTime();
-  //   const diffMins = Math.floor(diffMs / 60000);
-  //   if (diffMins < 60) return `${diffMins}m ago`;
-  //   const diffHrs = Math.floor(diffMins / 60);
-  //   if (diffHrs < 24) return `${diffHrs}h ago`;
-  //   const diffDays = Math.floor(diffHrs / 24);
-  //   return `${diffDays}d ago`;
-  // };
-
   if (loading) {
     return (
       <ThemedView style={[styles.container, styles.centered]}>
@@ -225,7 +193,6 @@ export default function AlertsScreen() {
   }
 
 
-  // Example hazard chips (static for now, could be dynamic)
   const hazardChips = [
     { hazardType: 'weather', label: 'Weather', icon: hazardIconMap.weather },
     { hazardType: 'airquality', label: 'Air Quality', icon: hazardIconMap.airquality },
@@ -237,19 +204,19 @@ export default function AlertsScreen() {
     { hazardType: 'fire', label: 'Fire', icon: hazardIconMap.fire },
   ];
 
-  const filterChips = [
-    { key: 'all', label: 'All' },
-    { key: 'critical', label: 'Critical First' },
-    { key: 'weather', label: 'Weather' },
-    { key: 'airquality', label: 'Air Quality' },
-  ] as const;
+  const filteredAlerts = activeFilter
+    ? alerts.filter(alert => {
+        const typeKey = (alert.alert_type || '').toLowerCase().replace(/[^a-z]/g, '');
+        return typeKey === activeFilter || typeKey.includes(activeFilter) || activeFilter.includes(typeKey);
+      })
+    : alerts;
 
   return (
     <ThemedView style={styles.container}>
       {/* Branded Section Header */}
       <SectionHeader
         title="Alerts"
-        subtitle={`${filteredAlerts.length} active alert${filteredAlerts.length !== 1 ? 's' : ''}`}
+        subtitle={`${filteredAlerts.length} active alert${filteredAlerts.length !== 1 ? 's' : ''}${activeFilter ? ` · filtered` : ''}`}
         style={styles.sectionHeader}
       />
 
@@ -266,49 +233,12 @@ export default function AlertsScreen() {
             hazardType={chip.hazardType}
             label={chip.label}
             iconSource={chip.icon}
-            isActive={false}
+            isActive={activeFilter === chip.hazardType}
+            onPress={() => toggleFilter(chip.hazardType)}
             style={{ marginRight: Spacing.sm }}
           />
         ))}
       </ScrollView>
-
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.filterChipsRow}
-        style={{ marginBottom: Spacing.sm }}
-      >
-        {filterChips.map((chip) => {
-          const isActive = activeFilter === chip.key;
-          return (
-            <TouchableOpacity
-              key={chip.key}
-              onPress={() => setActiveFilter(chip.key)}
-              style={[
-                styles.filterChip,
-                {
-                  backgroundColor: isActive ? palette.primary : palette.surfaceMuted,
-                  borderColor: isActive ? palette.primary : palette.border,
-                },
-              ]}
-            >
-              <ThemedText
-                type="meta"
-                lightColor={isActive ? palette.white : palette.textSecondary}
-                darkColor={isActive ? palette.white : palette.textSecondary}
-              >
-                {chip.label}
-              </ThemedText>
-            </TouchableOpacity>
-          );
-        })}
-      </ScrollView>
-
-      <View style={styles.priorityBanner}>
-        <ThemedText type="meta" lightColor={palette.textSecondary} darkColor={palette.textSecondary}>
-          Demo priority view: critical alerts and major hazards appear first when a filter is active.
-        </ThemedText>
-      </View>
 
       {/* Alerts List */}
       <ScrollView
@@ -397,29 +327,6 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.sm,
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  filterChipsRow: {
-    paddingHorizontal: Spacing.md,
-    paddingBottom: Spacing.xs,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  filterChip: {
-    marginRight: Spacing.sm,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: 10,
-    borderRadius: Radius.pill,
-    borderWidth: 1,
-  },
-  priorityBanner: {
-    marginHorizontal: Spacing.md,
-    marginBottom: Spacing.sm,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    borderRadius: Radius.md,
-    backgroundColor: 'rgba(11, 95, 165, 0.08)',
-    borderWidth: 1,
-    borderColor: 'rgba(11, 95, 165, 0.18)',
   },
   scrollView: {
     flex: 1,

@@ -1,5 +1,5 @@
 import math
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
@@ -90,15 +90,13 @@ def list_alerts(
     db: Session = Depends(get_db),
     current_user: User | None = Depends(get_current_user_optional),
 ):
-    valid_alert_types = {"weather", "air_quality", "wildfire", "pollution", "earthquake"}
+    valid_alert_types = {"weather", "air_quality", "wildfire", "pollution", "earthquake", "pollen"}
     valid_severity = {"low", "moderate", "high", "critical"}
 
     if alert_type and alert_type not in valid_alert_types:
-        from fastapi import HTTPException
         raise HTTPException(status_code=422, detail="Invalid alert_type")
 
     if severity and severity not in valid_severity:
-        from fastapi import HTTPException
         raise HTTPException(status_code=422, detail="Invalid severity")
 
     q = db.query(Alert)
@@ -187,6 +185,5 @@ def alert_stats(db: Session = Depends(get_db)):
 def get_alert(alert_id: int, db: Session = Depends(get_db)):
     alert = db.query(Alert).filter(Alert.id == alert_id).first()
     if not alert:
-        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Alert not found")
     return alert

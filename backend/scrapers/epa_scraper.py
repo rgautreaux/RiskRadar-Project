@@ -10,13 +10,28 @@ from config.settings import settings
 from scrapers.base_scraper import BaseScraper
 
 
+# Resolve the default state from the configured default zip code at import time.
+def _default_state() -> str:
+    """Look up state abbreviation for the configured DEFAULT_ZIP_CODE."""
+    try:
+        resp = httpx.get(
+            f"https://api.zippopotam.us/us/{settings.DEFAULT_ZIP_CODE}",
+            timeout=10,
+        )
+        if resp.status_code == 200:
+            return resp.json()["places"][0]["state abbreviation"]
+    except Exception:
+        pass
+    return "CA"  # ultimate fallback
+
+
 class EPAScraper(BaseScraper):
     source_name = "epa"
     alert_type = "pollution"
 
     def fetch_raw_data(self) -> list[dict]:
-        # Query TRI facilities in California (default state)
-        url = "https://data.epa.gov/efservice/tri_facility/state_abbr/CA/rows/0:24/JSON"
+        state = _default_state()
+        url = f"https://data.epa.gov/efservice/tri_facility/state_abbr/{state}/rows/0:24/JSON"
 
         resp = httpx.get(url, timeout=30)
         resp.raise_for_status()

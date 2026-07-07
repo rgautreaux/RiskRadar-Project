@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=str(BASE_DIR.parent / ".env"),
         env_file_encoding="utf-8",
+        extra="ignore",
     )
 
     # Database
@@ -35,6 +36,8 @@ class Settings(BaseSettings):
     NASA_FIRMS_MAP_KEY: str = ""
     FIRECRAWL_API_KEY: str = ""
     OpenAQ_API_KEY: str = ""
+    OPENWEATHER_API_KEY: str = ""
+    GOOGLE_POLLEN_API_KEY: str = ""
 
     # --- Notifications ---
     NOTIFICATION_PROVIDER: str = "noop"
@@ -50,6 +53,7 @@ class Settings(BaseSettings):
     DEFAULT_LAT: float = 34.0522
     DEFAULT_LON: float = -118.2437
     SCRAPE_INTERVAL_MINUTES: int = 30
+    LOCATION_CACHE_TTL_MINUTES: int = 30
     RETENTION_ENABLED: bool = False
     RETENTION_DRY_RUN: bool = True
     RETENTION_BATCH_SIZE: int = 500

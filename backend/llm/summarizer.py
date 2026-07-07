@@ -81,7 +81,7 @@ class Summarizer:
             for a in alerts
         ]
 
-        user_msg = prompts.TRIP_PACKING_USER.format(
+        user_msg = prompts.DAILY_DIGEST_USER.format(
             count=len(alerts),
             date=date.today().strftime("%B %d, %Y"),
             city="the monitored area",
@@ -99,7 +99,7 @@ class Summarizer:
             model = "fallback-no-llm"
 
         summary = Summary(
-            title=f"Environmental Digest — {date.today().strftime('%b %d, %Y')}",
+            title=f"Travel Safety Briefing — {date.today().strftime('%b %d, %Y')}",
             content=text,
             summary_type="daily",
             alert_ids=json.dumps([a.id for a in alerts]) if settings.NORMALIZATION_DUAL_WRITE_LEGACY_JSON else None,
@@ -126,7 +126,7 @@ class Summarizer:
     def generate_local_digest(
         self, db: Session, alerts: list, city: str, state: str, zip_code: str, is_premium: bool = False
     ) -> "Summary":
-        """Generate a summary scoped to a specific location."""
+        """Generate a travel-focused summary scoped to a specific location."""
         alerts_data = [
             {
                 "type": a.alert_type,
@@ -141,9 +141,9 @@ class Summarizer:
 
         user_msg = prompts.TRIP_PACKING_USER.format(
             count=len(alerts),
-            date=date.today().strftime("%B %d, %Y"),
             city=city,
             state=state,
+            date=date.today().strftime("%B %d, %Y"),
             zip_code=zip_code,
             alerts_json=json.dumps(alerts_data, indent=2),
         )
@@ -157,7 +157,7 @@ class Summarizer:
             model = "fallback-no-llm"
 
         summary = Summary(
-            title=f"Local Digest for {city}, {state} — {date.today().strftime('%b %d, %Y')}",
+            title=f"Travel Briefing: {city}, {state} — {date.today().strftime('%b %d, %Y')}",
             content=text,
             summary_type="local",
             alert_ids=json.dumps([a.id for a in alerts]) if settings.NORMALIZATION_DUAL_WRITE_LEGACY_JSON else None,

@@ -45,7 +45,6 @@ def generate_summary(db: Session = Depends(get_db)):
     summarizer = Summarizer()
     summary = summarizer.generate_daily_digest(db)
     if not summary:
-        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="No alerts to summarize")
     return summary
 
@@ -54,7 +53,7 @@ def generate_local_summary(
     zip_code: str = Query(..., min_length=5, max_length=5, pattern=r"^\d{5}$"),
     db: Session = Depends(get_db),
 ):
-    from api.location import _zip_to_coords, _fetch_nws_alerts, _fetch_airnow
+    from api.location import _zip_to_coords, _fetch_nws_alerts, _fetch_airnow, _fetch_pollen
 
     location = _zip_to_coords(zip_code)
     if not location:
@@ -63,7 +62,7 @@ def generate_local_summary(
     lat, lon, city, state = location
 
     # Fetch fresh alerts for this location
-    raw_alerts = _fetch_nws_alerts(lat, lon, state) + _fetch_airnow(zip_code)
+    raw_alerts = _fetch_nws_alerts(lat, lon, state) + _fetch_airnow(zip_code) + _fetch_pollen(lat, lon)
 
     # Store in DB (dedup by source + source_id) and collect alert objects
     local_alerts: list[Alert] = []

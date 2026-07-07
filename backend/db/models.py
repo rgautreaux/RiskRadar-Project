@@ -13,10 +13,10 @@ class Alert(Base):
     __tablename__ = "alerts"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    source = Column(Text, nullable=False)            # 'airnow', 'epa', 'nws', 'firms'
+    source = Column(String(100), nullable=False)      # 'airnow', 'epa', 'nws', 'firms'
     source_id = Column(Text)                          # dedup key from the API
-    alert_type = Column(Text, nullable=False)         # 'air_quality', 'weather', 'wildfire', 'pollution'
-    severity = Column(Text, nullable=False, default="moderate")
+    alert_type = Column(String(100), nullable=False)  # 'air_quality', 'weather', 'wildfire', 'pollution'
+    severity = Column(String(50), nullable=False, default="moderate")
     title = Column(Text, nullable=False)
     description = Column(Text)
     raw_data = Column(JSON)                           # Legacy raw source payload (deprecated)
@@ -46,7 +46,7 @@ class Summary(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     title = Column(Text, nullable=False)
     content = Column(Text, nullable=False)            # LLM-generated markdown
-    summary_type = Column(Text, nullable=False, default="daily")
+    summary_type = Column(String(50), nullable=False, default="daily")
     alert_ids = Column(Text)                          # Legacy JSON array of alert IDs (deprecated)
     region = Column(Text)
     generated_at = Column(DateTime(timezone=True), nullable=False, default=_now)
@@ -94,12 +94,29 @@ class User(Base):
 # NOTE: Migration required to populate email_encrypted and email_hmac from email.
 
 
+class SavedDestination(Base):
+    __tablename__ = "saved_destinations"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    city = Column(Text, nullable=False)
+    state = Column(Text)
+    zip_code = Column(Text)
+    latitude = Column(Float, nullable=False)
+    longitude = Column(Float, nullable=False)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=_now)
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "city", "state", name="uq_user_destination"),
+    )
+
+
 class ScrapeLog(Base):
     __tablename__ = "scrape_log"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    source = Column(Text, nullable=False)
-    status = Column(Text, nullable=False)             # 'success', 'failure', 'partial'
+    source = Column(String(100), nullable=False)
+    status = Column(String(50), nullable=False)        # 'success', 'failure', 'partial'
     alerts_fetched = Column(Integer, default=0)
     alerts_new = Column(Integer, default=0)
     error_message = Column(Text)
@@ -222,7 +239,6 @@ class AlertRawPayload(Base):
     alert = relationship("Alert", back_populates="raw_payload_entry")
 
 
-
 class ScrapeLogArchive(Base):
     __tablename__ = "scrape_log_archive"
 
@@ -240,18 +256,6 @@ class ScrapeLogArchive(Base):
     cleanup_run_id = Column(Integer, ForeignKey("cleanup_runs.id", ondelete="SET NULL"))
 
 
-# Migration logging table for email/password migration
-class MigrationLog(Base):
-    __tablename__ = "migration_log"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    timestamp = Column(DateTime(timezone=True), nullable=False, default=_now)
-    user_id = Column(Integer)
-    action = Column(Text)
-    status = Column(Text)
-    error_message = Column(Text)
-
-
 class CleanupRun(Base):
     __tablename__ = "cleanup_runs"
 
@@ -265,7 +269,7 @@ class CleanupRun(Base):
     storage_bytes_estimated = Column(Integer, nullable=False, default=0)
     duration_ms = Column(Integer, nullable=False, default=0)
     dry_run = Column(Integer, nullable=False, default=1)
-    status = Column(Text, nullable=False, default="success")
+    status = Column(String(50), nullable=False, default="success")
     error_message = Column(Text)
     started_at = Column(DateTime(timezone=True), nullable=False, default=_now)
     completed_at = Column(DateTime(timezone=True), nullable=False, default=_now)
@@ -273,6 +277,17 @@ class CleanupRun(Base):
     __table_args__ = (
         Index("idx_cleanup_runs_status_started_at", "status", "started_at"),
     )
+
+
+class MigrationLog(Base):
+    __tablename__ = "migration_log"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    timestamp = Column(DateTime(timezone=True), nullable=False, default=_now)
+    user_id = Column(Integer, nullable=True)
+    action = Column(Text, nullable=True)
+    status = Column(Text, nullable=True)
+    error_message = Column(Text, nullable=True)
 
 
 class NotificationDispatchLog(Base):
@@ -285,7 +300,7 @@ class NotificationDispatchLog(Base):
     recipients_total = Column(Integer, nullable=False, default=0)
     sent_count = Column(Integer, nullable=False, default=0)
     failed_count = Column(Integer, nullable=False, default=0)
-    status = Column(Text, nullable=False, default="success")
+    status = Column(String(50), nullable=False, default="success")
     error_message = Column(Text)
     created_at = Column(DateTime(timezone=True), nullable=False, default=_now)
 

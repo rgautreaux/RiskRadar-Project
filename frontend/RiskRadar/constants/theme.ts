@@ -28,22 +28,22 @@ const fontFamilies =
   };
 
 export const BrandPalette = {
-  primary: '#0B5FA5',
-  primaryDark: '#083B73',
-  secondary: '#D9ECFB',
-  warning: '#F59E0B',
-  danger: '#D64545',
-  surface: '#F6FAFD',
-  surfaceMuted: '#EAF2F8',
-  border: '#C7D8E6',
-  textPrimary: '#16324A',
-  textSecondary: '#5B748A',
-  success: '#2E8B57',
+  primary: '#2D6A4F',
+  primaryDark: '#1B4332',
+  secondary: '#E8F0E4',
+  warning: '#E09F3E',
+  danger: '#C1413D',
+  surface: '#FAF8F5',
+  surfaceMuted: '#F0EDE8',
+  border: '#D5CFC5',
+  textPrimary: '#2C2C2C',
+  textSecondary: '#6B6560',
+  success: '#40916C',
   white: '#FFFFFF',
-  shadow: 'rgba(8, 59, 115, 0.14)',
+  shadow: 'rgba(27, 67, 50, 0.10)',
 } as const;
 
-const lightColors = {
+const themeColors = {
   text: BrandPalette.textPrimary,
   textSecondary: BrandPalette.textSecondary,
   background: BrandPalette.surface,
@@ -66,32 +66,9 @@ const lightColors = {
   white: BrandPalette.white,
 };
 
-const darkColors = {
-  text: '#E6F2FF',
-  textSecondary: '#A9C0D6',
-  background: '#0E1B2A',
-  tint: '#5FA8E6',
-  icon: '#5FA8E6',
-  tabIconDefault: '#A9C0D6',
-  tabIconSelected: '#5FA8E6',
-  surface: '#0E1B2A',
-  surfaceMuted: '#16293B',
-  border: '#2F4A63',
-  danger: '#FF6B6B',
-  warning: '#F8B84E',
-  success: '#4FBF8A',
-  shadow: 'rgba(0, 0, 0, 0.40)',
-  card: '#16293B',
-  link: '#5FA8E6',
-  primary: '#5FA8E6',
-  primaryDark: '#1B4F8A',
-  secondary: '#1C2E40',
-  white: '#FFFFFF',
-};
-
 export const Colors = {
-  light: lightColors,
-  dark: darkColors,
+  light: themeColors,
+  dark: themeColors,
 };
 
 export const Fonts = fontFamilies;
@@ -158,12 +135,16 @@ export const Typography = {
   },
 } as const;
 
+export const SafeArea = {
+  paddingTop: Platform.OS === 'android' ? Spacing.md : 0,
+} as const;
+
 export const Shadows = {
   card: {
     shadowColor: BrandPalette.primaryDark,
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.14,
-    shadowRadius: 24,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
   },
 } as const;

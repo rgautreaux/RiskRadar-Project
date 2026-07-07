@@ -1,5 +1,8 @@
 # RiskRadar Backend
 
+// Copilot: Summarize backend-specific innovations and implementation status for analysis.
+# RiskRadar Backend
+
 ## Scheduled Archive and Deletion System
 
 RiskRadar includes a scheduled job system that automatically archives and deletes out-of-date alerts, summaries, and scrape logs to keep the database clean and performant.

@@ -1,5 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { apiFetch, setToken, removeToken, getToken } from '@/utils/api';
+
+const GUEST_MODE_KEY = 'riskradar_guest_mode';
 
 interface User {
   id: number;
@@ -26,8 +29,10 @@ interface AuthState {
   user: User | null;
   isLoading: boolean;
   isLoggedIn: boolean;
+  isGuest: boolean;
   isDevUserMode: boolean;
   toggleDevUserMode: () => void;
+  enterGuestMode: () => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   register: (displayName: string, email: string, password: string, zipCode?: string) => Promise<void>;
   savePreferences: (updates: Partial<UserPrefsUpdate>) => Promise<void>;
@@ -39,6 +44,7 @@ const AuthContext = createContext<AuthState | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isGuest, setIsGuest] = useState(false);
   const [isDevUserMode, setIsDevUserMode] = useState(false);
 
   const toggleDevUserMode = useCallback(() => {
@@ -57,7 +63,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     created_at: new Date().toISOString()
   };
 
-  // Check for existing token on mount
+  // Check for existing token or guest mode on mount
   useEffect(() => {
     (async () => {
       try {
@@ -65,14 +71,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (token) {
           const me = await apiFetch<User>('/users/me');
           setUser(me);
+        } else {
+          const guest = await AsyncStorage.getItem(GUEST_MODE_KEY);
+          if (guest === 'true') setIsGuest(true);
         }
       } catch {
         // Token expired or invalid — clear it
         await removeToken();
+        const guest = await AsyncStorage.getItem(GUEST_MODE_KEY);
+        if (guest === 'true') setIsGuest(true);
       } finally {
         setIsLoading(false);
       }
     })();
+  }, []);
+
+  const enterGuestMode = useCallback(async () => {
+    await AsyncStorage.setItem(GUEST_MODE_KEY, 'true');
+    setIsGuest(true);
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
@@ -119,7 +135,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = useCallback(async () => {
     await removeToken();
+    await AsyncStorage.removeItem(GUEST_MODE_KEY);
     setUser(null);
+    setIsGuest(false);
   }, []);
 
   return (
@@ -128,8 +146,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user: isDevUserMode ? fakeUser : user,
         isLoading,
         isLoggedIn: isDevUserMode ? true : !!user,
+        isGuest,
         isDevUserMode,
         toggleDevUserMode,
+        enterGuestMode,
         login,
         register,
         savePreferences,

@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, Image, StyleSheet, ViewStyle, ImageSourcePropType } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, Image, StyleSheet, ViewStyle, ImageSourcePropType, Animated } from 'react-native';
 import { Colors, Spacing, Radius, Fonts } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
@@ -40,17 +40,45 @@ export function HazardChip({
   const scheme = useColorScheme() ?? 'light';
   const palette = Colors[scheme];
 
-  const chipBg = isActive ? palette.primary : palette.surface;
+  const scale = useRef(new Animated.Value(1)).current;
+  const bgAnim = useRef(new Animated.Value(isActive ? 1 : 0)).current;
+
+  useEffect(() => {
+    // Scale pulse on activation
+    if (isActive) {
+      Animated.sequence([
+        Animated.timing(scale, { toValue: 1.08, duration: 120, useNativeDriver: true }),
+        Animated.timing(scale, { toValue: 1, duration: 150, useNativeDriver: true }),
+      ]).start();
+    }
+    // Animate background interpolation
+    Animated.timing(bgAnim, {
+      toValue: isActive ? 1 : 0,
+      duration: 200,
+      useNativeDriver: false, // backgroundColor can't use native driver
+    }).start();
+  }, [isActive]);
+
+  const animatedBg = bgAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [palette.surface, palette.primary],
+  });
+
+  const animatedBorder = bgAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [palette.border, palette.primary],
+  });
+
   const chipText = isActive ? palette.white : palette.text;
-  const chipBorder = isActive ? palette.primary : palette.border;
 
   return (
-    <View
+    <Animated.View
       style={[
         styles.container,
         {
-          backgroundColor: chipBg,
-          borderColor: chipBorder,
+          backgroundColor: animatedBg,
+          borderColor: animatedBorder,
+          transform: [{ scale }],
         },
         style,
       ]}
@@ -111,7 +139,7 @@ export function HazardChip({
           ]}
         />
       )}
-    </View>
+    </Animated.View>
   );
 }
 

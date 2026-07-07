@@ -1,5 +1,7 @@
 # Migration Scripts
 
+> **Production-ready scripts** are in this folder. Draft/planning files have been moved to `archive/` and are not for production use.
+
 This folder will contain migration scripts for email encryption and password hashing upgrades.
 
 - Draft scripts here before executing in production.
