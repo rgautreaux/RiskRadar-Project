@@ -1,8 +1,8 @@
-"""FestivalsAPI - integrating festival information.
+"""FourSquare - collecting and integrating geospatial information.
 
-API docs: https://festivals-tech.github.io/api.html
-Code docs: https://festivals-tech.github.io/code.html
-Further credentials to access vehicle history API can be requested or public available credentials can be used (with limited scope).
+API docs: https://docs.foursquare.com/developer/reference/foursquare-apis-overview
+Console docs: https://docs.foursquare.com/developer/docs/developer-console-overview
+Requires an API key (free registration).
 """
 
 import httpx
@@ -21,16 +21,16 @@ def _aqi_to_severity(aqi: int) -> str:
     return "critical"
 
 
-class FestivalAPIScraper(BaseScraper):
-    source_name = "festivals_api"
-    alert_type = "festival"
+class FourSquareScraper(BaseScraper):
+    source_name = "foursquare"
+    alert_type = "geospace"
 
     def fetch_raw_data(self) -> list[dict]:
         # If API key not configured, avoid making external HTTP calls during tests
         if not settings.FESTIVALS_API_KEY:
             return []
 
-        url = "https://festivals-tech.github.io/api.html/aq/observation/zipCode/current/"
+        url = "https://docs.foursquare.com/developer/reference/foursquare-apis-overview/aq/observation/zipCode/current/"
         params = {
             "format": "application/json",
             "zipCode": settings.DEFAULT_ZIP_CODE,
