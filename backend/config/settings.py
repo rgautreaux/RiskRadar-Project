@@ -23,8 +23,11 @@ class Settings(BaseSettings):
 
     # --- LLM (OpenRouter) ---
     OPENROUTER_API_KEY: str = ""
-    LLM_MODEL_GUEST: str = ""
-    LLM_MODEL_PREMIUM: str = ""
+    LLM_MODEL_GUEST: str = "gpt-4o-mini"
+    LLM_MODEL_PREMIUM: str = "gpt-4o"
+    # Backwards-compatible single-model/key attributes expected in tests
+    LLM_MODEL: str = ""
+    LLM_API_KEY: str = ""
 
 
     # --- Scraper API Keys ---

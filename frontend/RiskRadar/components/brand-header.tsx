@@ -12,6 +12,10 @@ export interface BrandHeaderProps {
   style?: ViewStyle;
   /** Scope: 'local' or 'global' */
   scope?: 'local' | 'global';
+  /** Show the scope (Local/Global) chip on the right */
+  showScope?: boolean;
+  /** Show the notification bell button on the right */
+  showNotification?: boolean;
 }
 
 /**
@@ -27,6 +31,8 @@ export function BrandHeader({
   onNotificationPress,
   style,
   scope = 'local',
+  showScope = true,
+  showNotification = true,
 }: BrandHeaderProps) {
   const scheme = useColorScheme() ?? 'light';
   const palette = Colors[scheme];
@@ -34,10 +40,6 @@ export function BrandHeader({
   const logoSource = isAlert
     ? require('@/assets/icons/branding/RiskRadar_ALERT_Logo.png')
     : require('@/assets/icons/branding/RiskRadar_STND_Logo.png');
-
-  const brandTextSource = isAlert
-    ? require('@/assets/icons/branding/RiskRadar_ALERT_Text.png')
-    : require('@/assets/icons/branding/RiskRadar_STND_Text.png');
 
   const notifIconSource = isAlert
     ? require('@/assets/icons/navigation/RiskRadar_ALERT_NotifIcon.png')
@@ -57,35 +59,37 @@ export function BrandHeader({
           style={styles.logo}
           resizeMode="contain"
         />
-        <Image
-          source={brandTextSource}
-          style={styles.brandText}
-          resizeMode="contain"
-        />
+        <Text style={[styles.wordmark, { color: palette.white, fontFamily: Fonts.sans }]}>
+          RiskRadar
+        </Text>
       </View>
 
-      <View style={styles.rightSection}>
-        {/* SD2: Scope Identity Chip */}
-        <View style={[styles.scopeIndicator, { backgroundColor: palette.surface }]}> 
-          <Image source={scopeIcon} style={styles.scopeIcon} resizeMode="contain" />
-          <View style={{ width: 4 }} />
-          <View>
-            <Text style={{ color: palette.text, fontFamily: Fonts.sans, fontWeight: '600', fontSize: 13 }}>{scopeLabel}</Text>
-          </View>
-        </View>
+      {(showScope || showNotification) && (
+        <View style={styles.rightSection}>
+          {showScope && (
+            <View style={[styles.scopeIndicator, { backgroundColor: palette.surface }]}>
+              <Image source={scopeIcon} style={styles.scopeIcon} resizeMode="contain" />
+              <View style={{ width: 4 }} />
+              <Text style={{ color: palette.text, fontFamily: Fonts.sans, fontWeight: '600', fontSize: 13 }}>
+                {scopeLabel}
+              </Text>
+            </View>
+          )}
 
-        {/* Notification Button */}
-        <View
-          style={[styles.notificationButton, { backgroundColor: palette.surface }]}
-          onTouchEnd={onNotificationPress}
-        >
-          <Image
-            source={notifIconSource}
-            style={styles.notificationIcon}
-            resizeMode="contain"
-          />
+          {showNotification && (
+            <View
+              style={[styles.notificationButton, { backgroundColor: palette.surface }]}
+              onTouchEnd={onNotificationPress}
+            >
+              <Image
+                source={notifIconSource}
+                style={styles.notificationIcon}
+                resizeMode="contain"
+              />
+            </View>
+          )}
         </View>
-      </View>
+      )}
     </View>
   );
 }
@@ -105,13 +109,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   logo: {
-    width: 40,
-    height: 40,
+    width: 36,
+    height: 36,
     marginRight: Spacing.sm,
   },
-  brandText: {
-    height: 24,
-    flex: 1,
+  wordmark: {
+    fontSize: 20,
+    fontWeight: '700',
+    letterSpacing: 0.2,
   },
   rightSection: {
     flexDirection: 'row',

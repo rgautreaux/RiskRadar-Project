@@ -109,7 +109,11 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <BrandHeader style={{ paddingTop: 12, paddingBottom: 8 }} />
+      <BrandHeader
+        style={{ paddingTop: 12, paddingBottom: 12 }}
+        showScope={false}
+        showNotification={false}
+      />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.container}
@@ -117,8 +121,10 @@ export default function LoginScreen() {
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => router.replace('/')}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
         >
-          <Ionicons name="arrow-back" size={24} color={palette.text} />
+          <Ionicons name="arrow-back" size={22} color={palette.text} />
         </TouchableOpacity>
 
         <FadeInView delay={0} style={styles.headerContainer}>
@@ -202,39 +208,35 @@ export default function LoginScreen() {
 
 function getStyles(palette: typeof Colors.light | typeof Colors.dark) {
   return StyleSheet.create({
+    // Safe area matches the header so the notch blends with the dark bar.
     safeArea: {
       flex: 1,
-      backgroundColor: palette.card,
+      backgroundColor: palette.primaryDark,
     },
     container: {
       flex: 1,
       justifyContent: 'center',
       paddingHorizontal: 24,
+      // The scrollable body uses the app's cream background.
+      backgroundColor: palette.background,
     },
     backButton: {
       position: 'absolute',
-      top: 20,
-      left: 24,
+      top: 16,
+      left: 16,
       width: 40,
       height: 40,
       borderRadius: 20,
       backgroundColor: palette.surfaceMuted,
+      borderWidth: 1,
+      borderColor: palette.border,
       justifyContent: 'center',
       alignItems: 'center',
       zIndex: 10,
     },
     headerContainer: {
       alignItems: 'center',
-      marginBottom: 40,
-    },
-    iconContainer: {
-      width: 80,
-      height: 80,
-      borderRadius: 24,
-      backgroundColor: palette.secondary,
-      justifyContent: 'center',
-      alignItems: 'center',
-      marginBottom: 24,
+      marginBottom: 36,
     },
     title: {
       fontSize: 28,
@@ -306,27 +308,6 @@ function getStyles(palette: typeof Colors.light | typeof Colors.dark) {
       color: palette.primary,
       fontSize: 14,
       fontWeight: '600',
-    },
-    loginButton: {
-      backgroundColor: palette.primary,
-      borderRadius: 16,
-      height: 56,
-      justifyContent: 'center',
-      alignItems: 'center',
-      shadowColor: palette.primary,
-      shadowOffset: {
-        width: 0,
-        height: 4,
-      },
-      shadowOpacity: 0.3,
-      shadowRadius: 4.65,
-      elevation: 8,
-    },
-    loginButtonText: {
-      color: palette.white,
-      fontSize: 16,
-      fontWeight: '600',
-      letterSpacing: 0.5,
     },
     footerContainer: {
       flexDirection: 'row',

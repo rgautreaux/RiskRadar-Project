@@ -149,7 +149,7 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'} backgroundColor={palette.background} />
+      <StatusBar barStyle="dark-content" backgroundColor={palette.background} />
       
       {/* Header */}
       <View style={styles.header}>
@@ -160,7 +160,8 @@ export default function SettingsScreen() {
           <Ionicons name="arrow-back" size={24} color={palette.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Settings</Text>
-        <View style={{ width: 40 }} /> {/* Spacer for alignment */}
+        {/* Spacer to balance the back button and center the title */}
+        <View style={{ width: 40 }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>

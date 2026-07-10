@@ -1,3 +1,6 @@
+import logging
+from datetime import datetime, timedelta, timezone
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
@@ -5,7 +8,16 @@ from db.database import get_db
 from db.models import Alert, Summary
 from schemas.summary import SummaryOut
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix="/summaries", tags=["Summaries"])
+
+# How long a generated local summary is considered "fresh" before we
+# regenerate. Within this window, revisits to the same ZIP return the
+# cached row instead of paying another LLM call. An hour matches how often
+# NWS/AirNow refresh their underlying alerts and keeps our token spend
+# bounded without starving users of new information.
+LOCAL_SUMMARY_TTL = timedelta(hours=1)
 
 
 @router.get("", response_model=list[SummaryOut])
@@ -51,6 +63,7 @@ def generate_summary(db: Session = Depends(get_db)):
 @router.post("/generate/local", response_model=SummaryOut)
 def generate_local_summary(
     zip_code: str = Query(..., min_length=5, max_length=5, pattern=r"^\d{5}$"),
+    force: bool = Query(False, description="Bypass the cache and regenerate even if a fresh summary exists"),
     db: Session = Depends(get_db),
 ):
     from api.location import _zip_to_coords, _fetch_nws_alerts, _fetch_airnow, _fetch_pollen
@@ -60,6 +73,39 @@ def generate_local_summary(
         raise HTTPException(status_code=404, detail=f"Could not find location for zip code {zip_code}")
 
     lat, lon, city, state = location
+
+    # Return a cached summary if we generated one for this ZIP within the TTL.
+    # Regenerating on every revisit burns 3-10s per request and spends LLM
+    # tokens for content that hasn't changed. `region` is stored as
+    # "City, ST 12345" so `.contains(zip_code)` keys on the 5-digit ZIP.
+    # `force=true` lets the client bypass the cache (e.g. pull-to-refresh).
+    if not force:
+        cutoff = datetime.now(timezone.utc) - LOCAL_SUMMARY_TTL
+        cached = (
+            db.query(Summary)
+            .filter(
+                Summary.summary_type == "local",
+                Summary.region.contains(zip_code),
+                Summary.generated_at >= cutoff,
+            )
+            .order_by(Summary.generated_at.desc())
+            .first()
+        )
+        if cached:
+            # SQLite stores DateTime(timezone=True) as naive ISO strings, so
+            # cached.generated_at comes back tz-naive in tests. Postgres keeps
+            # the timezone. Treat naive values as UTC for the age calculation
+            # instead of crashing on mixed tz arithmetic.
+            cached_at = cached.generated_at
+            if cached_at.tzinfo is None:
+                cached_at = cached_at.replace(tzinfo=timezone.utc)
+            age_minutes = (datetime.now(timezone.utc) - cached_at).total_seconds() / 60
+            logger.info(
+                "Local summary cache HIT for %s (%s, %s) — age %.1f min",
+                zip_code, city, state, age_minutes,
+            )
+            return cached
+        logger.info("Local summary cache MISS for %s (%s, %s) — generating", zip_code, city, state)
 
     # Fetch fresh alerts for this location
     raw_alerts = _fetch_nws_alerts(lat, lon, state) + _fetch_airnow(zip_code) + _fetch_pollen(lat, lon)

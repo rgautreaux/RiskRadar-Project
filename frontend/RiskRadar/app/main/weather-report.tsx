@@ -169,7 +169,7 @@ export default function WeatherReport() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'} backgroundColor={palette.background} />
+      <StatusBar barStyle="dark-content" backgroundColor={palette.background} />
 
       {/* Header */}
       <View style={styles.header}>
@@ -254,9 +254,9 @@ export default function WeatherReport() {
             </FadeInView>
           )}
 
-          {/* AI Summary */}
+          {/* Traveler Briefing */}
           <FadeInView delay={300} style={styles.section}>
-            <Text style={styles.sectionTitle}>AI Summary</Text>
+            <Text style={styles.sectionTitle}>Today&apos;s Briefing</Text>
             <View style={styles.summaryCard}>
               {summary ? (
                 <>

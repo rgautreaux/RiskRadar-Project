@@ -7,6 +7,7 @@ import 'react-native-reanimated';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { AuthProvider, useAuth } from '@/contexts/auth-context';
+import { LocationProvider } from '@/contexts/location-context';
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -15,7 +16,9 @@ export const unstable_settings = {
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <RootNavigator />
+      <LocationProvider>
+        <RootNavigator />
+      </LocationProvider>
     </AuthProvider>
   );
 }
@@ -27,7 +30,7 @@ function RootNavigator() {
 
   const navigationTheme: Theme = {
     ...DefaultTheme,
-    dark: scheme === 'dark',
+    dark: false,
     colors: {
       ...DefaultTheme.colors,
       primary: palette.primary,
@@ -52,7 +55,7 @@ function RootNavigator() {
         >
           <ActivityIndicator size="large" color={palette.primary} />
         </View>
-        <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} backgroundColor={palette.primaryDark} />
+        <StatusBar style="dark" backgroundColor={palette.primaryDark} />
       </ThemeProvider>
     );
   }
@@ -78,7 +81,7 @@ function RootNavigator() {
           }}
         />
       </Stack>
-      <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} backgroundColor={palette.primaryDark} />
+      <StatusBar style="dark" backgroundColor={palette.primaryDark} />
     </ThemeProvider>
   );
 }

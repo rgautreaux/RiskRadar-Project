@@ -144,7 +144,11 @@ export default function RegistrationScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <BrandHeader style={{ paddingTop: 12, paddingBottom: 8 }} />
+      <BrandHeader
+        style={{ paddingTop: 12, paddingBottom: 12 }}
+        showScope={false}
+        showNotification={false}
+      />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardAvoidingView}
@@ -311,12 +315,14 @@ export default function RegistrationScreen() {
 
 function getStyles(palette: typeof Colors.light | typeof Colors.dark) {
   return StyleSheet.create({
+    // Safe area matches the header so the notch blends with the dark bar.
     safeArea: {
       flex: 1,
-      backgroundColor: palette.card,
+      backgroundColor: palette.primaryDark,
     },
     keyboardAvoidingView: {
       flex: 1,
+      backgroundColor: palette.background,
     },
     scrollContent: {
       flexGrow: 1,

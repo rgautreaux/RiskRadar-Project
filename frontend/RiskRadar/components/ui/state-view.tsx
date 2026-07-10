@@ -22,7 +22,7 @@ interface StateViewProps {
 
 export function StateView({
   state,
-  loadingText = 'Loading...',
+  loadingText = 'Loading\u2026',
   emptyText = 'No data available',
   emptyIcon = 'document-outline',
   errorText = 'Something went wrong',
@@ -63,7 +63,13 @@ export function StateView({
           {errorText}
         </Text>
         {onRetry && (
-          <TouchableOpacity style={styles.retryButton} onPress={onRetry}>
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={onRetry}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Retry"
+          >
             <Text style={[styles.retryText, { color: palette.primary }]}>
               Try Again
             </Text>

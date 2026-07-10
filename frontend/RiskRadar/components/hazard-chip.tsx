@@ -71,74 +71,80 @@ export function HazardChip({
 
   const chipText = isActive ? palette.white : palette.text;
 
+  // NOTE: transform (scale) is animated with useNativeDriver: true, while
+  // backgroundColor/borderColor must use useNativeDriver: false. Mixing both
+  // drivers on a single Animated.View crashes with
+  // "Attempting to run JS driven animation on animated node that has been moved to native".
+  // We keep them split: outer view drives scale (native), inner drives colors (JS).
   return (
-    <Animated.View
-      style={[
-        styles.container,
-        {
-          backgroundColor: animatedBg,
-          borderColor: animatedBorder,
-          transform: [{ scale }],
-        },
-        style,
-      ]}
-      onTouchEnd={onPress}
-    >
-      {/* Icon */}
-      <Image
-        source={iconSource}
-        style={styles.icon}
-        resizeMode="contain"
-      />
-
-      {/* Label */}
-      <Text
+    <Animated.View style={{ transform: [{ scale }] }}>
+      <Animated.View
         style={[
-          styles.label,
+          styles.container,
           {
-            color: chipText,
-            fontFamily: Fonts.sans,
-            fontWeight: '600',
+            backgroundColor: animatedBg,
+            borderColor: animatedBorder,
           },
+          style,
         ]}
+        onTouchEnd={onPress}
       >
-        {label}
-      </Text>
+        {/* Icon */}
+        <Image
+          source={iconSource}
+          style={styles.icon}
+          resizeMode="contain"
+        />
 
-      {/* Badge (if provided) */}
-      {badge !== undefined && (
-        <View
+        {/* Label */}
+        <Text
           style={[
-            styles.badge,
+            styles.label,
             {
-              backgroundColor: isActive ? palette.white : palette.danger,
+              color: chipText,
+              fontFamily: Fonts.sans,
+              fontWeight: '600',
             },
           ]}
         >
-          <Text
+          {label}
+        </Text>
+
+        {/* Badge (if provided) */}
+        {badge !== undefined && (
+          <View
             style={[
-              styles.badgeText,
+              styles.badge,
               {
-                color: isActive ? palette.danger : palette.white,
-                fontFamily: Fonts.sans,
-                fontWeight: '700',
+                backgroundColor: isActive ? palette.white : palette.danger,
               },
             ]}
           >
-            {badge}
-          </Text>
-        </View>
-      )}
+            <Text
+              style={[
+                styles.badgeText,
+                {
+                  color: isActive ? palette.danger : palette.white,
+                  fontFamily: Fonts.sans,
+                  fontWeight: '700',
+                },
+              ]}
+            >
+              {badge}
+            </Text>
+          </View>
+        )}
 
-      {/* Alert Indicator Dot */}
-      {isActive && (
-        <View
-          style={[
-            styles.alertIndicator,
-            { backgroundColor: palette.danger },
-          ]}
-        />
-      )}
+        {/* Alert Indicator Dot */}
+        {isActive && (
+          <View
+            style={[
+              styles.alertIndicator,
+              { backgroundColor: palette.danger },
+            ]}
+          />
+        )}
+      </Animated.View>
     </Animated.View>
   );
 }

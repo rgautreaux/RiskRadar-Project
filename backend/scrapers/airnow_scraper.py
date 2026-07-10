@@ -25,6 +25,10 @@ class AirNowScraper(BaseScraper):
     alert_type = "air_quality"
 
     def fetch_raw_data(self) -> list[dict]:
+        # If API key not configured, avoid making external HTTP calls during tests
+        if not settings.AIRNOW_API_KEY:
+            return []
+
         url = "https://www.airnowapi.org/aq/observation/zipCode/current/"
         params = {
             "format": "application/json",

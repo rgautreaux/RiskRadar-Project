@@ -1,31 +1,23 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Image, StyleSheet } from 'react-native';
+import { Image, ImageSourcePropType, StyleSheet } from 'react-native';
 
 import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors, Radius, Spacing } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
-const homeTabIcon = {
-  // Standard (non-alert) state: green colors
-  standard: require('@/assets/icons/navigation/RiskRadar_STND_HomeBttn.png'),
-  // Alert state: red colors
-  alert: require('@/assets/icons/navigation/RiskRadar_ALERT_HomeBttn.png'),
+const TAB_ICONS = {
+  home: require('@/assets/icons/navigation/RiskRadar_STND_HomeBttn.png') as ImageSourcePropType,
+  alerts: require('@/assets/icons/navigation/RiskRadar_ALERT_HomeBttn.png') as ImageSourcePropType,
+  saved: require('@/assets/icons/navigation/RiskRadar_DEST_Global_Icon.png') as ImageSourcePropType,
 };
 
-/**
- * HomeTabIcon renders the home tab icon with alert-aware coloring.
- * - When focused (active): shows standard variant (green)
- * - When unfocused (inactive): shows alert variant (red)
- * 
- * In the future, this can be enhanced to show actual alert state from app context.
- */
-function HomeTabIcon({ focused }: { focused: boolean }) {
+/** TabIcon renders a branded PNG icon with subtle focus opacity. */
+function TabIcon({ source, focused }: { source: ImageSourcePropType; focused: boolean }) {
   return (
     <Image
-      source={focused ? homeTabIcon.standard : homeTabIcon.alert}
-      style={styles.homeIcon}
+      source={source}
+      style={[styles.tabIcon, { opacity: focused ? 1 : 0.55 }]}
       resizeMode="contain"
     />
   );
@@ -58,21 +50,21 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ focused }) => <HomeTabIcon focused={focused} />,
+          tabBarIcon: ({ focused }) => <TabIcon source={TAB_ICONS.home} focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="explore"
         options={{
           title: 'Alerts',
-          tabBarIcon: ({ color }) => <IconSymbol size={24} name="bell.fill" color={color} />,
+          tabBarIcon: ({ focused }) => <TabIcon source={TAB_ICONS.alerts} focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="saved"
         options={{
           title: 'Saved',
-          tabBarIcon: ({ color }) => <IconSymbol size={24} name="bookmark.fill" color={color} />,
+          tabBarIcon: ({ focused }) => <TabIcon source={TAB_ICONS.saved} focused={focused} />,
         }}
       />
     </Tabs>
@@ -97,8 +89,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     paddingBottom: 2,
   },
-  homeIcon: {
-    width: 30,
-    height: 30,
+  tabIcon: {
+    width: 28,
+    height: 28,
   },
 });

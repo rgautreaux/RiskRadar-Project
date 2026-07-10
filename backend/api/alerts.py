@@ -1,7 +1,7 @@
 import math
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
 from sqlalchemy import func
+from sqlalchemy.orm import Session
 
 from db.database import get_db
 from db.models import Alert, User, ZipGeo
@@ -165,18 +165,25 @@ def list_alerts(
 
 @router.get("/stats", response_model=AlertStats)
 def alert_stats(db: Session = Depends(get_db)):
-    total = db.query(func.count(Alert.id)).scalar()
-
-    by_type = dict(
-        db.query(Alert.alert_type, func.count(Alert.id))
-        .group_by(Alert.alert_type)
-        .all()
-    )
-    by_severity = dict(
-        db.query(Alert.severity, func.count(Alert.id))
-        .group_by(Alert.severity)
-        .all()
-    )
+    total = db.query(Alert.id).count()
+    by_type = {
+        alert_type: count
+        for alert_type, count in (
+            db.query(Alert.alert_type, func.count(Alert.id))
+            .group_by(Alert.alert_type)
+            .all()
+        )
+        if alert_type
+    }
+    by_severity = {
+        severity: count
+        for severity, count in (
+            db.query(Alert.severity, func.count(Alert.id))
+            .group_by(Alert.severity)
+            .all()
+        )
+        if severity
+    }
 
     return AlertStats(total=total or 0, by_type=by_type, by_severity=by_severity)
 
