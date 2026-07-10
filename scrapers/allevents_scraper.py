@@ -1,1 +1,1 @@
-from backend.scrapers.epa_scraper import *
+from backend.scrapers.allevents_scraper import *
