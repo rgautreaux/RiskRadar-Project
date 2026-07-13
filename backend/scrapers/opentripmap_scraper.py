@@ -1,7 +1,7 @@
-"""Allevents - integrating event information.
+"""Open Trip Map - provides data for 10 million tourist attractions and facilities around the world
 
-API docs: https://allevents.developer.azure-api.net/apis
-Offers a free tier for developers to get started and prototype. The free access tier is for basic or limited use, with the scope not fully detailed and intended for prototyping, small-scale testing, or low-volume requests
+API docs: https://dev.opentripmap.org/docs
+Free to use!
 """
 
 import httpx
@@ -10,21 +10,21 @@ from config.settings import settings
 from scrapers.base_scraper import BaseScraper
 
 
-class AlleventsScraper(BaseScraper):
-    source_name = "allevents"
-    alert_type = "event"
+class OpenTripMapScraper(BaseScraper):
+    source_name = "opentripmap"
+    alert_type = "location information"
 
     def fetch_raw_data(self) -> list[dict]:
         # If API key not configured, avoid making external HTTP calls during tests
-        if not settings.FESTIVALS_API_KEY:
+        if not settings.OPENTRIPMAP_API_KEY:
             return []
 
-        url = "https://www.allevents.developer.azure-api.net/aq/observation/zipCode/current/"
+        url = "https://api.opentripmap.org/0.1/en/places/by-bbox"
         params = {
             "format": "application/json",
-            "zipCode": settings.DEFAULT_ZIP_CODE,
-            "distance": 25,
-            "API_KEY": settings.FESTIVALS_API_KEY,
+            "bbox": f"{settings.DEFAULT_LON_MIN},{settings.DEFAULT_LAT_MIN},{settings.DEFAULT_LON_MAX},{settings.DEFAULT_LAT_MAX}",
+            "radius": 25,
+            "api_key": settings.OPENTRIPMAP_API_KEY,
         }
 
         resp = httpx.get(url, params=params, timeout=30)

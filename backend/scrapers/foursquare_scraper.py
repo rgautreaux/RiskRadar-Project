@@ -10,17 +10,6 @@ import httpx
 from config.settings import settings
 from scrapers.base_scraper import BaseScraper
 
-
-def _aqi_to_severity(aqi: int) -> str:
-    if aqi <= 50:
-        return "low"
-    if aqi <= 100:
-        return "moderate"
-    if aqi <= 200:
-        return "high"
-    return "critical"
-
-
 class FourSquareScraper(BaseScraper):
     source_name = "foursquare"
     alert_type = "geospace"

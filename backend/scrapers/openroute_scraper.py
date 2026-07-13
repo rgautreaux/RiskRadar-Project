@@ -1,7 +1,8 @@
-"""Allevents - integrating event information.
+"""OpenRoute - helps find routes, maps, and a plethora of other geospatial information
 
-API docs: https://allevents.developer.azure-api.net/apis
-Offers a free tier for developers to get started and prototype. The free access tier is for basic or limited use, with the scope not fully detailed and intended for prototyping, small-scale testing, or low-volume requests
+API site: https://openrouteservice.org/services/
+API docs: https://openrouteservice.org/dev/#/api-docs
+Offers a free tier with limited access and usability
 """
 
 import httpx
@@ -10,21 +11,22 @@ from config.settings import settings
 from scrapers.base_scraper import BaseScraper
 
 
-class AlleventsScraper(BaseScraper):
-    source_name = "allevents"
-    alert_type = "event"
+
+class OpenRouteScraper(BaseScraper):
+    source_name = "openroute"
+    alert_type = "navigation"
 
     def fetch_raw_data(self) -> list[dict]:
         # If API key not configured, avoid making external HTTP calls during tests
-        if not settings.FESTIVALS_API_KEY:
+        if not settings.OPENROUTE_API_KEY:
             return []
 
-        url = "https://www.allevents.developer.azure-api.net/aq/observation/zipCode/current/"
+        url = "https://api.openrouteservice.org/v1/places/by-bbox"
         params = {
             "format": "application/json",
-            "zipCode": settings.DEFAULT_ZIP_CODE,
-            "distance": 25,
-            "API_KEY": settings.FESTIVALS_API_KEY,
+            "bbox": f"{settings.DEFAULT_LON_MIN},{settings.DEFAULT_LAT_MIN},{settings.DEFAULT_LON_MAX},{settings.DEFAULT_LAT_MAX}",
+            "radius": 25,
+            "api_key": settings.OPENROUTE_API_KEY,
         }
 
         resp = httpx.get(url, params=params, timeout=30)

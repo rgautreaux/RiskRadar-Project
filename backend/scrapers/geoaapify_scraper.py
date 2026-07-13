@@ -1,7 +1,8 @@
-"""Allevents - integrating event information.
+"""Geomapify - provides adress search, routes, maps, place information, and locational analysis
 
-API docs: https://allevents.developer.azure-api.net/apis
-Offers a free tier for developers to get started and prototype. The free access tier is for basic or limited use, with the scope not fully detailed and intended for prototyping, small-scale testing, or low-volume requests
+API site: https://www.geoapify.com/products-and-services/
+API docs: https://apidocs.geoapify.com/docs/places/
+Offers a free tier with limited access and usability
 """
 
 import httpx
@@ -10,21 +11,22 @@ from config.settings import settings
 from scrapers.base_scraper import BaseScraper
 
 
-class AlleventsScraper(BaseScraper):
-    source_name = "allevents"
-    alert_type = "event"
+
+class GeomapifyScraper(BaseScraper):
+    source_name = "geomapify"
+    alert_type = "location information"
 
     def fetch_raw_data(self) -> list[dict]:
         # If API key not configured, avoid making external HTTP calls during tests
-        if not settings.FESTIVALS_API_KEY:
+        if not settings.GEOMAPIFY_API_KEY:
             return []
 
-        url = "https://www.allevents.developer.azure-api.net/aq/observation/zipCode/current/"
+        url = "https://api.geoapify.com/v1/places/by-bbox"
         params = {
             "format": "application/json",
-            "zipCode": settings.DEFAULT_ZIP_CODE,
-            "distance": 25,
-            "API_KEY": settings.FESTIVALS_API_KEY,
+            "bbox": f"{settings.DEFAULT_LON_MIN},{settings.DEFAULT_LAT_MIN},{settings.DEFAULT_LON_MAX},{settings.DEFAULT_LAT_MAX}",
+            "radius": 25,
+            "api_key": settings.GEOMAPIFY_API_KEY,
         }
 
         resp = httpx.get(url, params=params, timeout=30)

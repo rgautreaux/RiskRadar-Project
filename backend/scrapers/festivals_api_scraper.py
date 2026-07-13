@@ -11,14 +11,6 @@ from config.settings import settings
 from scrapers.base_scraper import BaseScraper
 
 
-def _aqi_to_severity(aqi: int) -> str:
-    if aqi <= 50:
-        return "low"
-    if aqi <= 100:
-        return "moderate"
-    if aqi <= 200:
-        return "high"
-    return "critical"
 
 
 class FestivalAPIScraper(BaseScraper):
@@ -54,7 +46,6 @@ class FestivalAPIScraper(BaseScraper):
             "source": self.source_name,
             "source_id": f"{settings.DEFAULT_ZIP_CODE}_{param}_{date}",
             "alert_type": self.alert_type,
-            "severity": _aqi_to_severity(aqi),
             "title": f"{param} AQI: {aqi} ({category})",
             "description": f"There is an event in {area}, {state}: {param} The Event is {aqi} ({category}). Observed {date}.",
             "raw_data": raw,
