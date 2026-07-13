@@ -1,0 +1,1 @@
+from backend.scrapers.restful_scraper import *

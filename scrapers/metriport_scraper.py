@@ -1,0 +1,1 @@
+from backend.scrapers.metriport_scraper import *

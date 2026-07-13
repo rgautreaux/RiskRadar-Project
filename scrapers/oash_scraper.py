@@ -1,0 +1,1 @@
+from backend.scrapers.oash_scraper import *
