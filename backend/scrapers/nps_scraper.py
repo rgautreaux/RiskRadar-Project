@@ -13,7 +13,7 @@ from scrapers.base_scraper import BaseScraper
 
 class NationalParksScraper(BaseScraper):
     source_name = "nps"
-    alert_type = "location information"
+    alert_type = "geospatial"
 
     def fetch_raw_data(self) -> list[dict]:
         # If API key not configured, avoid making external HTTP calls during tests

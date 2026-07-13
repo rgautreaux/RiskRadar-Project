@@ -1,0 +1,1 @@
+from backend.scrapers.openstreetmap_scraper import *

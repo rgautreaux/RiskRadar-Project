@@ -1,0 +1,1 @@
+from backend.scrapers.accomadations_scraper import *

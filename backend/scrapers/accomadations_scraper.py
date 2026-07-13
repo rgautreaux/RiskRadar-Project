@@ -1,7 +1,9 @@
-"""Open Trip Map - provides data for 10 million tourist attractions and facilities around the world
+"""Accommodation API - provides access to a comprehensive dataset of accommodations, including hotels, guesthouses, and similar types of lodging
 
-API docs: https://dev.opentripmap.org/docs
-Free to use!
+
+API docs: https://databrowser.opendatahub.com/dataset-overview/7c8f490d-7b54-4a88-801f-f7669f5aaed9?ref=freepublicapis.com
+API Site: https://www.freepublicapis.com/accommodation-api
+Unclear terms
 """
 
 import httpx
@@ -10,21 +12,18 @@ from config.settings import settings
 from scrapers.base_scraper import BaseScraper
 
 
-class OpenTripMapScraper(BaseScraper):
-    source_name = "opentripmap"
-    alert_type = "geospatial"
+class AccommodationAPI(BaseScraper):
+    source_name = "accommodation"
+    alert_type = "lodging"
 
     def fetch_raw_data(self) -> list[dict]:
         # If API key not configured, avoid making external HTTP calls during tests
-        if not settings.OPENTRIPMAP_API_KEY:
+        if not settings.ACCOMMODATION_API_KEY:
             return []
 
-        url = "https://api.opentripmap.org/0.1/en/places/by-bbox"
+        url = "https://api.accommodation.com/accommodation-api/1.0/"
         params = {
-            "format": "application/json",
             "bbox": f"{settings.DEFAULT_LON_MIN},{settings.DEFAULT_LAT_MIN},{settings.DEFAULT_LON_MAX},{settings.DEFAULT_LAT_MAX}",
-            "radius": 25,
-            "api_key": settings.OPENTRIPMAP_API_KEY,
         }
 
         resp = httpx.get(url, params=params, timeout=30)
